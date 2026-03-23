@@ -5,15 +5,11 @@
          <lastmod>2026-03-23</lastmod>
     </url>
     <url>
-         <loc>https://yourusername.github.io/docwiki/about/</loc>
-         <lastmod>2026-03-23</lastmod>
-    </url>
-    <url>
-         <loc>https://yourusername.github.io/docwiki/getting-started/</loc>
-         <lastmod>2026-03-23</lastmod>
-    </url>
-    <url>
          <loc>https://yourusername.github.io/docwiki/how_kubespray_k3d_generate_kubeconfig/</loc>
+         <lastmod>2026-03-23</lastmod>
+    </url>
+    <url>
+         <loc>https://yourusername.github.io/docwiki/openstack-magnum-deploy/</loc>
          <lastmod>2026-03-23</lastmod>
     </url>
 </urlset>
