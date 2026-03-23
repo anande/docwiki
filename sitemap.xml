@@ -1,15 +1,3 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-    <url>
-         <loc>https://yourusername.github.io/docwiki/</loc>
-         <lastmod>2026-03-23</lastmod>
-    </url>
-    <url>
-         <loc>https://yourusername.github.io/docwiki/how_kubespray_k3d_generate_kubeconfig/</loc>
-         <lastmod>2026-03-23</lastmod>
-    </url>
-    <url>
-         <loc>https://yourusername.github.io/docwiki/openstack-magnum-deploy/</loc>
-         <lastmod>2026-03-23</lastmod>
-    </url>
 </urlset>
