@@ -354,6 +354,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Prerequisites Check">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create-management-cluster-vms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create Management Cluster VM's
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verify-python-3-is-installed-on-all-master-nodes-in-the-management-cluster" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verify Python 3 is installed on all master nodes in the management cluster.
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1540,6 +1568,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Prerequisites Check">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create-management-cluster-vms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create Management Cluster VM's
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verify-python-3-is-installed-on-all-master-nodes-in-the-management-cluster" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verify Python 3 is installed on all master nodes in the management cluster.
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -2699,7 +2755,120 @@
     style F fill:#2196F3
     style D fill:#FF9800</code></pre>
 <h3 id="prerequisites-check"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m23 12-2.44-2.78.34-3.68-3.61-.82-1.89-3.18L12 3 8.6 1.54 6.71 4.72l-3.61.81.34 3.68L1 12l2.44 2.78-.34 3.69 3.61.82 1.89 3.18L12 21l3.4 1.46 1.89-3.18 3.61-.82-.34-3.68zm-13 5-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9z"/></svg></span> Prerequisites Check</h3>
-<p>Verify Python 3 is installed on all master nodes in the management cluster.</p>
+<h4 id="create-management-cluster-vms">Create Management Cluster VM's</h4>
+<div class="admonition note">
+<p class="admonition-title">Openstack as a Platform for Creating Management VM</p>
+<p>If these VM's are to be created as admin tenant on openstack, A relevant flavor needs to be created with the following recommendations.</p>
+</div>
+<ul>
+<li>CPU: 12 vCPU per VM</li>
+<li>Memory: 16 GB per VM</li>
+<li>Disk: Minimum 100GB disk</li>
+</ul>
+<p>Following Disk Size/Paritioning is an example only:</p>
+<table>
+<thead>
+<tr>
+<th>Mount point</th>
+<th>Capacity</th>
+<th>FS</th>
+<th>VG</th>
+<th>LV</th>
+<th>Disk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/boot</code></td>
+<td>1GB</td>
+<td>ext4</td>
+<td>-</td>
+<td>-</td>
+<td>sda</td>
+</tr>
+<tr>
+<td><code>/boot/efi</code></td>
+<td>256MB</td>
+<td>fat32</td>
+<td>-</td>
+<td>-</td>
+<td>sda</td>
+</tr>
+<tr>
+<td><code>/home</code></td>
+<td>10GB</td>
+<td>ext4</td>
+<td>vglocal00</td>
+<td>lv-home</td>
+<td>sda</td>
+</tr>
+<tr>
+<td><code>/</code></td>
+<td>100GB</td>
+<td>ext4</td>
+<td>vglocal00</td>
+<td>lv-root</td>
+<td>sda</td>
+</tr>
+<tr>
+<td><code>/opt</code></td>
+<td>10GB</td>
+<td>ext4</td>
+<td>vglocal00</td>
+<td>lv-opt</td>
+<td>sda</td>
+</tr>
+<tr>
+<td><code>/root</code></td>
+<td>20GB</td>
+<td>ext4</td>
+<td>vglocal00</td>
+<td>lv-home-root</td>
+<td>sda</td>
+</tr>
+<tr>
+<td><code>/tmp</code></td>
+<td>10GB</td>
+<td>ext4</td>
+<td>vglocal00</td>
+<td>lv-tmp</td>
+<td>sda</td>
+</tr>
+<tr>
+<td><code>/var</code></td>
+<td>50GB</td>
+<td>ext4</td>
+<td>vglocal00</td>
+<td>lv-var</td>
+<td>sda</td>
+</tr>
+<tr>
+<td><code>/var/log</code></td>
+<td>50GB</td>
+<td>ext4</td>
+<td>vglocal00</td>
+<td>lv-log</td>
+<td>sda</td>
+</tr>
+<tr>
+<td><code>/var/lib/kubelet</code></td>
+<td>50GB</td>
+<td>ext4</td>
+<td>vglocal00</td>
+<td>lv-kubelet</td>
+<td>sda</td>
+</tr>
+<tr>
+<td><code>/var/lib/etcd</code></td>
+<td>50GB</td>
+<td>ext4</td>
+<td>vglocal00</td>
+<td>-</td>
+<td>sdb</td>
+</tr>
+</tbody>
+</table>
+<h4 id="verify-python-3-is-installed-on-all-master-nodes-in-the-management-cluster">Verify Python 3 is installed on all master nodes in the management cluster.</h4>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Command</label><label for="__tabbed_1_2">Expected Output</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
@@ -4677,27 +4846,93 @@ Script located in <code>/opt/genestack/bin</code>.</p>
 </code></pre></div>
 <hr />
 <h3 id="upgrade-cluster"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> Upgrade Cluster</h3>
-<p>Upgrade Kubernetes version (if supported by template).</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-89-1" name="__codelineno-89-1" href="#__codelineno-89-1"></a>openstack<span class="w"> </span>coe<span class="w"> </span>cluster<span class="w"> </span>upgrade<span class="w"> </span>k8s-flatcar<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-89-2" name="__codelineno-89-2" href="#__codelineno-89-2"></a><span class="w">  </span>--cluster-template<span class="w"> </span>flatcar-template-v1-33
-</code></pre></div>
-<hr />
-<h3 id="delete-cluster"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z"/></svg></span> Delete Cluster</h3>
-<p>Remove a cluster when no longer needed.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="36:2"><input checked="checked" id="__tabbed_36_1" name="__tabbed_36" type="radio" /><input id="__tabbed_36_2" name="__tabbed_36" type="radio" /><div class="tabbed-labels"><label for="__tabbed_36_1">Delete Command</label><label for="__tabbed_36_2">Confirm Deletion</label></div>
+<p>Before upgrading, verify that your cluster template supports the target Kubernetes version.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="36:4"><input checked="checked" id="__tabbed_36_1" name="__tabbed_36" type="radio" /><input id="__tabbed_36_2" name="__tabbed_36" type="radio" /><input id="__tabbed_36_3" name="__tabbed_36" type="radio" /><input id="__tabbed_36_4" name="__tabbed_36" type="radio" /><div class="tabbed-labels"><label for="__tabbed_36_1">Check Current Template</label><label for="__tabbed_36_2">Verify Target Template Exists</label><label for="__tabbed_36_3">Perform Upgrade</label><label for="__tabbed_36_4">Monitor Upgrade</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-90-1" name="__codelineno-90-1" href="#__codelineno-90-1"></a>openstack<span class="w"> </span>coe<span class="w"> </span>cluster<span class="w"> </span>delete<span class="w"> </span>k8s-flatcar
+<p>Inspect the template currently associated with your cluster:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-89-1" name="__codelineno-89-1" href="#__codelineno-89-1"></a><span class="c1"># Show the cluster&#39;s current template</span>
+<a id="__codelineno-89-2" name="__codelineno-89-2" href="#__codelineno-89-2"></a>openstack<span class="w"> </span>coe<span class="w"> </span>cluster<span class="w"> </span>show<span class="w"> </span>k8s-flatcar<span class="w"> </span>-c<span class="w"> </span>cluster_template_id<span class="w"> </span>-f<span class="w"> </span>value
+<a id="__codelineno-89-3" name="__codelineno-89-3" href="#__codelineno-89-3"></a>
+<a id="__codelineno-89-4" name="__codelineno-89-4" href="#__codelineno-89-4"></a><span class="c1"># View template details including image and labels</span>
+<a id="__codelineno-89-5" name="__codelineno-89-5" href="#__codelineno-89-5"></a>openstack<span class="w"> </span>coe<span class="w"> </span>cluster<span class="w"> </span>template<span class="w"> </span>show<span class="w"> </span>flatcar-template
+</code></pre></div>
+<p>Key fields to check:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>What to Look For</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>image_id</code></td>
+<td>Image must include the target Kubernetes version binaries</td>
+</tr>
+<tr>
+<td><code>labels.kube_tag</code></td>
+<td>If set, must match or support the target version</td>
+</tr>
+<tr>
+<td><code>coe</code></td>
+<td>Must be <code>kubernetes</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="tabbed-block">
+<p>If upgrading to a new template, confirm it exists and has the correct configuration:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-90-1" name="__codelineno-90-1" href="#__codelineno-90-1"></a><span class="c1"># List all available templates</span>
+<a id="__codelineno-90-2" name="__codelineno-90-2" href="#__codelineno-90-2"></a>openstack<span class="w"> </span>coe<span class="w"> </span>cluster<span class="w"> </span>template<span class="w"> </span>list
+<a id="__codelineno-90-3" name="__codelineno-90-3" href="#__codelineno-90-3"></a>
+<a id="__codelineno-90-4" name="__codelineno-90-4" href="#__codelineno-90-4"></a><span class="c1"># Inspect the target template</span>
+<a id="__codelineno-90-5" name="__codelineno-90-5" href="#__codelineno-90-5"></a>openstack<span class="w"> </span>coe<span class="w"> </span>cluster<span class="w"> </span>template<span class="w"> </span>show<span class="w"> </span>flatcar-template-v1-33
+</code></pre></div>
+<p>Ensure the target template's image contains the desired Kubernetes version. You can verify this by checking the image properties:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-91-1" name="__codelineno-91-1" href="#__codelineno-91-1"></a>openstack<span class="w"> </span>image<span class="w"> </span>show<span class="w"> </span>&lt;image_name_or_id&gt;<span class="w"> </span>-c<span class="w"> </span>properties<span class="w"> </span>-f<span class="w"> </span>value
+</code></pre></div>
+<p>Look for <code>kube_version</code> or similar metadata confirming the bundled Kubernetes version.</p>
+</div>
+<div class="tabbed-block">
+<p>Once you have confirmed template compatibility, run the upgrade:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-92-1" name="__codelineno-92-1" href="#__codelineno-92-1"></a>openstack<span class="w"> </span>coe<span class="w"> </span>cluster<span class="w"> </span>upgrade<span class="w"> </span>k8s-flatcar<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-92-2" name="__codelineno-92-2" href="#__codelineno-92-2"></a><span class="w">  </span>--cluster-template<span class="w"> </span>flatcar-template-v1-33
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-91-1" name="__codelineno-91-1" href="#__codelineno-91-1"></a>openstack<span class="w"> </span>coe<span class="w"> </span>cluster<span class="w"> </span>list
-<a id="__codelineno-91-2" name="__codelineno-91-2" href="#__codelineno-91-2"></a>
-<a id="__codelineno-91-3" name="__codelineno-91-3" href="#__codelineno-91-3"></a>+--------------------------------------+--------------+---------+------------+--------------+-------------------+---------------+
-<a id="__codelineno-91-4" name="__codelineno-91-4" href="#__codelineno-91-4"></a><span class="p">|</span><span class="w"> </span>uuid<span class="w">                                 </span><span class="p">|</span><span class="w"> </span>name<span class="w">         </span><span class="p">|</span><span class="w"> </span>keypair<span class="w"> </span><span class="p">|</span><span class="w"> </span>node_count<span class="w"> </span><span class="p">|</span><span class="w"> </span>master_count<span class="w"> </span><span class="p">|</span><span class="w"> </span>status<span class="w">            </span><span class="p">|</span><span class="w"> </span>health_status<span class="w"> </span><span class="p">|</span>
-<a id="__codelineno-91-5" name="__codelineno-91-5" href="#__codelineno-91-5"></a>+--------------------------------------+--------------+---------+------------+--------------+-------------------+---------------+
-<a id="__codelineno-91-6" name="__codelineno-91-6" href="#__codelineno-91-6"></a><span class="p">|</span><span class="w"> </span>9j0k1l2m-3n4o-5p6q-7r8s-t9u0v1w2x3y4<span class="w"> </span><span class="p">|</span><span class="w"> </span>k8s-flatcar<span class="w">  </span><span class="p">|</span><span class="w"> </span>test_k<span class="w">  </span><span class="p">|</span><span class="w"> </span><span class="m">3</span><span class="w">          </span><span class="p">|</span><span class="w"> </span><span class="m">3</span><span class="w">            </span><span class="p">|</span><span class="w"> </span>DELETE_IN_PROGRESS<span class="w"> </span><span class="p">|</span><span class="w"> </span>None<span class="w">         </span><span class="p">|</span>
-<a id="__codelineno-91-7" name="__codelineno-91-7" href="#__codelineno-91-7"></a>+--------------------------------------+--------------+---------+------------+--------------+-------------------+---------------+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-93-1" name="__codelineno-93-1" href="#__codelineno-93-1"></a><span class="c1"># Watch cluster status during upgrade</span>
+<a id="__codelineno-93-2" name="__codelineno-93-2" href="#__codelineno-93-2"></a>watch<span class="w"> </span>-n<span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="s1">&#39;openstack coe cluster show k8s-flatcar -c status -c status_reason -f value&#39;</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Upgrade Considerations</p>
+<ul>
+<li>The target template's image must contain the Kubernetes version you want to upgrade to.</li>
+<li>Only single minor version jumps are recommended (e.g., v1.32 → v1.33). Skipping minor versions is unsupported.</li>
+<li>Back up etcd and critical workloads before upgrading.</li>
+<li>Nodes are upgraded in a rolling fashion; expect temporary capacity reduction during the process.</li>
+</ul>
+</div>
+<hr />
+<h3 id="delete-cluster"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z"/></svg></span> Delete Cluster</h3>
+<p>Remove a cluster when no longer needed.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="37:2"><input checked="checked" id="__tabbed_37_1" name="__tabbed_37" type="radio" /><input id="__tabbed_37_2" name="__tabbed_37" type="radio" /><div class="tabbed-labels"><label for="__tabbed_37_1">Delete Command</label><label for="__tabbed_37_2">Confirm Deletion</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-94-1" name="__codelineno-94-1" href="#__codelineno-94-1"></a>openstack<span class="w"> </span>coe<span class="w"> </span>cluster<span class="w"> </span>delete<span class="w"> </span>k8s-flatcar
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-95-1" name="__codelineno-95-1" href="#__codelineno-95-1"></a>openstack<span class="w"> </span>coe<span class="w"> </span>cluster<span class="w"> </span>list
+<a id="__codelineno-95-2" name="__codelineno-95-2" href="#__codelineno-95-2"></a>
+<a id="__codelineno-95-3" name="__codelineno-95-3" href="#__codelineno-95-3"></a>+--------------------------------------+--------------+---------+------------+--------------+-------------------+---------------+
+<a id="__codelineno-95-4" name="__codelineno-95-4" href="#__codelineno-95-4"></a><span class="p">|</span><span class="w"> </span>uuid<span class="w">                                 </span><span class="p">|</span><span class="w"> </span>name<span class="w">         </span><span class="p">|</span><span class="w"> </span>keypair<span class="w"> </span><span class="p">|</span><span class="w"> </span>node_count<span class="w"> </span><span class="p">|</span><span class="w"> </span>master_count<span class="w"> </span><span class="p">|</span><span class="w"> </span>status<span class="w">            </span><span class="p">|</span><span class="w"> </span>health_status<span class="w"> </span><span class="p">|</span>
+<a id="__codelineno-95-5" name="__codelineno-95-5" href="#__codelineno-95-5"></a>+--------------------------------------+--------------+---------+------------+--------------+-------------------+---------------+
+<a id="__codelineno-95-6" name="__codelineno-95-6" href="#__codelineno-95-6"></a><span class="p">|</span><span class="w"> </span>9j0k1l2m-3n4o-5p6q-7r8s-t9u0v1w2x3y4<span class="w"> </span><span class="p">|</span><span class="w"> </span>k8s-flatcar<span class="w">  </span><span class="p">|</span><span class="w"> </span>test_k<span class="w">  </span><span class="p">|</span><span class="w"> </span><span class="m">3</span><span class="w">          </span><span class="p">|</span><span class="w"> </span><span class="m">3</span><span class="w">            </span><span class="p">|</span><span class="w"> </span>DELETE_IN_PROGRESS<span class="w"> </span><span class="p">|</span><span class="w"> </span>None<span class="w">         </span><span class="p">|</span>
+<a id="__codelineno-95-7" name="__codelineno-95-7" href="#__codelineno-95-7"></a>+--------------------------------------+--------------+---------+------------+--------------+-------------------+---------------+
 </code></pre></div>
 </div>
 </div>
@@ -4711,7 +4946,7 @@ Script located in <code>/opt/genestack/bin</code>.</p>
 <details class="warning">
 <summary>Cluster Creation Fails</summary>
 <p><strong>Check cluster status:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-92-1" name="__codelineno-92-1" href="#__codelineno-92-1"></a>openstack<span class="w"> </span>coe<span class="w"> </span>cluster<span class="w"> </span>show<span class="w"> </span>k8s-flatcar<span class="w"> </span>-f<span class="w"> </span>yaml
+<div class="highlight"><pre><span></span><code><a id="__codelineno-96-1" name="__codelineno-96-1" href="#__codelineno-96-1"></a>openstack<span class="w"> </span>coe<span class="w"> </span>cluster<span class="w"> </span>show<span class="w"> </span>k8s-flatcar<span class="w"> </span>-f<span class="w"> </span>yaml
 </code></pre></div></p>
 <p><strong>Common issues:</strong></p>
 <ul>
@@ -4721,14 +4956,14 @@ Script located in <code>/opt/genestack/bin</code>.</p>
 <li>Flavor too small for Kubernetes requirements</li>
 </ul>
 <p><strong>View detailed errors:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-93-1" name="__codelineno-93-1" href="#__codelineno-93-1"></a>openstack<span class="w"> </span>coe<span class="w"> </span>cluster<span class="w"> </span>show<span class="w"> </span>k8s-flatcar<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-i<span class="w"> </span>fault
+<div class="highlight"><pre><span></span><code><a id="__codelineno-97-1" name="__codelineno-97-1" href="#__codelineno-97-1"></a>openstack<span class="w"> </span>coe<span class="w"> </span>cluster<span class="w"> </span>show<span class="w"> </span>k8s-flatcar<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-i<span class="w"> </span>fault
 </code></pre></div></p>
 </details>
 <details class="warning">
 <summary>Nodes Not Ready</summary>
 <p><strong>Check node status:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-94-1" name="__codelineno-94-1" href="#__codelineno-94-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>nodes
-<a id="__codelineno-94-2" name="__codelineno-94-2" href="#__codelineno-94-2"></a>kubectl<span class="w"> </span>describe<span class="w"> </span>node<span class="w"> </span>&lt;node-name&gt;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-98-1" name="__codelineno-98-1" href="#__codelineno-98-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>nodes
+<a id="__codelineno-98-2" name="__codelineno-98-2" href="#__codelineno-98-2"></a>kubectl<span class="w"> </span>describe<span class="w"> </span>node<span class="w"> </span>&lt;node-name&gt;
 </code></pre></div></p>
 <p><strong>Common causes:</strong></p>
 <ul>
@@ -4741,23 +4976,23 @@ Script located in <code>/opt/genestack/bin</code>.</p>
 <details class="warning">
 <summary>Cannot Access Cluster</summary>
 <p><strong>Verify kubeconfig:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-95-1" name="__codelineno-95-1" href="#__codelineno-95-1"></a><span class="nb">echo</span><span class="w"> </span><span class="nv">$KUBECONFIG</span>
-<a id="__codelineno-95-2" name="__codelineno-95-2" href="#__codelineno-95-2"></a>kubectl<span class="w"> </span>config<span class="w"> </span>view
+<div class="highlight"><pre><span></span><code><a id="__codelineno-99-1" name="__codelineno-99-1" href="#__codelineno-99-1"></a><span class="nb">echo</span><span class="w"> </span><span class="nv">$KUBECONFIG</span>
+<a id="__codelineno-99-2" name="__codelineno-99-2" href="#__codelineno-99-2"></a>kubectl<span class="w"> </span>config<span class="w"> </span>view
 </code></pre></div></p>
 <p><strong>Check API endpoint:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-96-1" name="__codelineno-96-1" href="#__codelineno-96-1"></a>openstack<span class="w"> </span>coe<span class="w"> </span>cluster<span class="w"> </span>show<span class="w"> </span>k8s-flatcar<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>api_address
+<div class="highlight"><pre><span></span><code><a id="__codelineno-100-1" name="__codelineno-100-1" href="#__codelineno-100-1"></a>openstack<span class="w"> </span>coe<span class="w"> </span>cluster<span class="w"> </span>show<span class="w"> </span>k8s-flatcar<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>api_address
 </code></pre></div></p>
 <p><strong>Test connectivity:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-97-1" name="__codelineno-97-1" href="#__codelineno-97-1"></a>curl<span class="w"> </span>-k<span class="w"> </span>https://&lt;api-address&gt;:6443/version
+<div class="highlight"><pre><span></span><code><a id="__codelineno-101-1" name="__codelineno-101-1" href="#__codelineno-101-1"></a>curl<span class="w"> </span>-k<span class="w"> </span>https://&lt;api-address&gt;:6443/version
 </code></pre></div></p>
 </details>
 <details class="question">
 <summary>How to SSH into Nodes?</summary>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-98-1" name="__codelineno-98-1" href="#__codelineno-98-1"></a><span class="c1"># Get node floating IP</span>
-<a id="__codelineno-98-2" name="__codelineno-98-2" href="#__codelineno-98-2"></a>openstack<span class="w"> </span>server<span class="w"> </span>list<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>k8s-flatcar
-<a id="__codelineno-98-3" name="__codelineno-98-3" href="#__codelineno-98-3"></a>
-<a id="__codelineno-98-4" name="__codelineno-98-4" href="#__codelineno-98-4"></a><span class="c1"># SSH using keypair</span>
-<a id="__codelineno-98-5" name="__codelineno-98-5" href="#__codelineno-98-5"></a>ssh<span class="w"> </span>-i<span class="w"> </span>~/.ssh/test_keypair<span class="w"> </span>core@&lt;floating-ip&gt;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-102-1" name="__codelineno-102-1" href="#__codelineno-102-1"></a><span class="c1"># Get node floating IP</span>
+<a id="__codelineno-102-2" name="__codelineno-102-2" href="#__codelineno-102-2"></a>openstack<span class="w"> </span>server<span class="w"> </span>list<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>k8s-flatcar
+<a id="__codelineno-102-3" name="__codelineno-102-3" href="#__codelineno-102-3"></a>
+<a id="__codelineno-102-4" name="__codelineno-102-4" href="#__codelineno-102-4"></a><span class="c1"># SSH using keypair</span>
+<a id="__codelineno-102-5" name="__codelineno-102-5" href="#__codelineno-102-5"></a>ssh<span class="w"> </span>-i<span class="w"> </span>~/.ssh/test_keypair<span class="w"> </span>core@&lt;floating-ip&gt;
 </code></pre></div>
 <p>Note: Default user depends on image:
 - Flatcar: <code>core</code>
@@ -4904,20 +5139,20 @@ Script located in <code>/opt/genestack/bin</code>.</p>
 <hr />
 <h3 id="step-1-install-required-packages">Step 1: Install Required Packages</h3>
 <p>Install all necessary packages for building QEMU-based images.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="37:2"><input checked="checked" id="__tabbed_37_1" name="__tabbed_37" type="radio" /><input id="__tabbed_37_2" name="__tabbed_37" type="radio" /><div class="tabbed-labels"><label for="__tabbed_37_1">Command</label><label for="__tabbed_37_2">Package Descriptions</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="38:2"><input checked="checked" id="__tabbed_38_1" name="__tabbed_38" type="radio" /><input id="__tabbed_38_2" name="__tabbed_38" type="radio" /><div class="tabbed-labels"><label for="__tabbed_38_1">Command</label><label for="__tabbed_38_2">Package Descriptions</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-99-1" name="__codelineno-99-1" href="#__codelineno-99-1"></a>apt-get<span class="w"> </span>update
-<a id="__codelineno-99-2" name="__codelineno-99-2" href="#__codelineno-99-2"></a>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-99-3" name="__codelineno-99-3" href="#__codelineno-99-3"></a><span class="w">  </span>qemu-system<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-99-4" name="__codelineno-99-4" href="#__codelineno-99-4"></a><span class="w">  </span>qemu-utils<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-99-5" name="__codelineno-99-5" href="#__codelineno-99-5"></a><span class="w">  </span>libvirt-daemon-system<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-99-6" name="__codelineno-99-6" href="#__codelineno-99-6"></a><span class="w">  </span>git<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-99-7" name="__codelineno-99-7" href="#__codelineno-99-7"></a><span class="w">  </span>build-essential<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-99-8" name="__codelineno-99-8" href="#__codelineno-99-8"></a><span class="w">  </span>jq<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-99-9" name="__codelineno-99-9" href="#__codelineno-99-9"></a><span class="w">  </span>python3<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-99-10" name="__codelineno-99-10" href="#__codelineno-99-10"></a><span class="w">  </span>python3-pip<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-99-11" name="__codelineno-99-11" href="#__codelineno-99-11"></a><span class="w">  </span>unzip
+<div class="highlight"><pre><span></span><code><a id="__codelineno-103-1" name="__codelineno-103-1" href="#__codelineno-103-1"></a>apt-get<span class="w"> </span>update
+<a id="__codelineno-103-2" name="__codelineno-103-2" href="#__codelineno-103-2"></a>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-103-3" name="__codelineno-103-3" href="#__codelineno-103-3"></a><span class="w">  </span>qemu-system<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-103-4" name="__codelineno-103-4" href="#__codelineno-103-4"></a><span class="w">  </span>qemu-utils<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-103-5" name="__codelineno-103-5" href="#__codelineno-103-5"></a><span class="w">  </span>libvirt-daemon-system<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-103-6" name="__codelineno-103-6" href="#__codelineno-103-6"></a><span class="w">  </span>git<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-103-7" name="__codelineno-103-7" href="#__codelineno-103-7"></a><span class="w">  </span>build-essential<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-103-8" name="__codelineno-103-8" href="#__codelineno-103-8"></a><span class="w">  </span>jq<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-103-9" name="__codelineno-103-9" href="#__codelineno-103-9"></a><span class="w">  </span>python3<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-103-10" name="__codelineno-103-10" href="#__codelineno-103-10"></a><span class="w">  </span>python3-pip<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-103-11" name="__codelineno-103-11" href="#__codelineno-103-11"></a><span class="w">  </span>unzip
 </code></pre></div>
 </div>
 <div class="tabbed-block">
@@ -4977,20 +5212,20 @@ Script located in <code>/opt/genestack/bin</code>.</p>
 <hr />
 <h3 id="step-2-configure-path-environment">Step 2: Configure PATH Environment</h3>
 <p>Add the local binary directory to your PATH for accessing installed tools.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="38:3"><input checked="checked" id="__tabbed_38_1" name="__tabbed_38" type="radio" /><input id="__tabbed_38_2" name="__tabbed_38" type="radio" /><input id="__tabbed_38_3" name="__tabbed_38" type="radio" /><div class="tabbed-labels"><label for="__tabbed_38_1">Check Current PATH</label><label for="__tabbed_38_2">Add Local Bin Directory</label><label for="__tabbed_38_3">Verify Updated PATH</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="39:3"><input checked="checked" id="__tabbed_39_1" name="__tabbed_39" type="radio" /><input id="__tabbed_39_2" name="__tabbed_39" type="radio" /><input id="__tabbed_39_3" name="__tabbed_39" type="radio" /><div class="tabbed-labels"><label for="__tabbed_39_1">Check Current PATH</label><label for="__tabbed_39_2">Add Local Bin Directory</label><label for="__tabbed_39_3">Verify Updated PATH</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-100-1" name="__codelineno-100-1" href="#__codelineno-100-1"></a><span class="nb">echo</span><span class="w"> </span><span class="nv">$PATH</span>
-<a id="__codelineno-100-2" name="__codelineno-100-2" href="#__codelineno-100-2"></a>/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+<div class="highlight"><pre><span></span><code><a id="__codelineno-104-1" name="__codelineno-104-1" href="#__codelineno-104-1"></a><span class="nb">echo</span><span class="w"> </span><span class="nv">$PATH</span>
+<a id="__codelineno-104-2" name="__codelineno-104-2" href="#__codelineno-104-2"></a>/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-101-1" name="__codelineno-101-1" href="#__codelineno-101-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$PATH</span><span class="s2">:/root/.local/bin&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-105-1" name="__codelineno-105-1" href="#__codelineno-105-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$PATH</span><span class="s2">:/root/.local/bin&quot;</span>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-102-1" name="__codelineno-102-1" href="#__codelineno-102-1"></a><span class="nb">echo</span><span class="w"> </span><span class="nv">$PATH</span>
-<a id="__codelineno-102-2" name="__codelineno-102-2" href="#__codelineno-102-2"></a>/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/.local/bin
+<div class="highlight"><pre><span></span><code><a id="__codelineno-106-1" name="__codelineno-106-1" href="#__codelineno-106-1"></a><span class="nb">echo</span><span class="w"> </span><span class="nv">$PATH</span>
+<a id="__codelineno-106-2" name="__codelineno-106-2" href="#__codelineno-106-2"></a>/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/.local/bin
 </code></pre></div>
 </div>
 </div>
@@ -4998,38 +5233,38 @@ Script located in <code>/opt/genestack/bin</code>.</p>
 <div class="admonition tip">
 <p class="admonition-title">Make PATH Permanent</p>
 <p>To persist this change across sessions, add it to your shell profile:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-103-1" name="__codelineno-103-1" href="#__codelineno-103-1"></a><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;export PATH=&quot;$PATH:/root/.local/bin&quot;&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
-<a id="__codelineno-103-2" name="__codelineno-103-2" href="#__codelineno-103-2"></a><span class="nb">source</span><span class="w"> </span>~/.bashrc
+<div class="highlight"><pre><span></span><code><a id="__codelineno-107-1" name="__codelineno-107-1" href="#__codelineno-107-1"></a><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;export PATH=&quot;$PATH:/root/.local/bin&quot;&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
+<a id="__codelineno-107-2" name="__codelineno-107-2" href="#__codelineno-107-2"></a><span class="nb">source</span><span class="w"> </span>~/.bashrc
 </code></pre></div>
 </div>
 <hr />
 <h3 id="step-3-clone-image-builder-repository">Step 3: Clone Image Builder Repository</h3>
 <p>Clone the official Kubernetes Image Builder repository.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="39:3"><input checked="checked" id="__tabbed_39_1" name="__tabbed_39" type="radio" /><input id="__tabbed_39_2" name="__tabbed_39" type="radio" /><input id="__tabbed_39_3" name="__tabbed_39" type="radio" /><div class="tabbed-labels"><label for="__tabbed_39_1">Clone Repository</label><label for="__tabbed_39_2">Expected Output</label><label for="__tabbed_39_3">Verify Repository</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="40:3"><input checked="checked" id="__tabbed_40_1" name="__tabbed_40" type="radio" /><input id="__tabbed_40_2" name="__tabbed_40" type="radio" /><input id="__tabbed_40_3" name="__tabbed_40" type="radio" /><div class="tabbed-labels"><label for="__tabbed_40_1">Clone Repository</label><label for="__tabbed_40_2">Expected Output</label><label for="__tabbed_40_3">Verify Repository</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-104-1" name="__codelineno-104-1" href="#__codelineno-104-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/kubernetes-sigs/image-builder.git
-<a id="__codelineno-104-2" name="__codelineno-104-2" href="#__codelineno-104-2"></a><span class="nb">cd</span><span class="w"> </span>image-builder
+<div class="highlight"><pre><span></span><code><a id="__codelineno-108-1" name="__codelineno-108-1" href="#__codelineno-108-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/kubernetes-sigs/image-builder.git
+<a id="__codelineno-108-2" name="__codelineno-108-2" href="#__codelineno-108-2"></a><span class="nb">cd</span><span class="w"> </span>image-builder
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-105-1" name="__codelineno-105-1" href="#__codelineno-105-1"></a>Cloning<span class="w"> </span>into<span class="w"> </span><span class="s1">&#39;image-builder&#39;</span>...
-<a id="__codelineno-105-2" name="__codelineno-105-2" href="#__codelineno-105-2"></a>remote:<span class="w"> </span>Enumerating<span class="w"> </span>objects:<span class="w"> </span><span class="m">15234</span>,<span class="w"> </span><span class="k">done</span>.
-<a id="__codelineno-105-3" name="__codelineno-105-3" href="#__codelineno-105-3"></a>remote:<span class="w"> </span>Counting<span class="w"> </span>objects:<span class="w"> </span><span class="m">100</span>%<span class="w"> </span><span class="o">(</span><span class="m">523</span>/523<span class="o">)</span>,<span class="w"> </span><span class="k">done</span>.
-<a id="__codelineno-105-4" name="__codelineno-105-4" href="#__codelineno-105-4"></a>remote:<span class="w"> </span>Compressing<span class="w"> </span>objects:<span class="w"> </span><span class="m">100</span>%<span class="w"> </span><span class="o">(</span><span class="m">312</span>/312<span class="o">)</span>,<span class="w"> </span><span class="k">done</span>.
-<a id="__codelineno-105-5" name="__codelineno-105-5" href="#__codelineno-105-5"></a>remote:<span class="w"> </span>Total<span class="w"> </span><span class="m">15234</span><span class="w"> </span><span class="o">(</span>delta<span class="w"> </span><span class="m">245</span><span class="o">)</span>,<span class="w"> </span>reused<span class="w"> </span><span class="m">398</span><span class="w"> </span><span class="o">(</span>delta<span class="w"> </span><span class="m">198</span><span class="o">)</span>,<span class="w"> </span>pack-reused<span class="w"> </span><span class="m">14711</span>
-<a id="__codelineno-105-6" name="__codelineno-105-6" href="#__codelineno-105-6"></a>Receiving<span class="w"> </span>objects:<span class="w"> </span><span class="m">100</span>%<span class="w"> </span><span class="o">(</span><span class="m">15234</span>/15234<span class="o">)</span>,<span class="w"> </span><span class="m">5</span>.23<span class="w"> </span>MiB<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">8</span>.45<span class="w"> </span>MiB/s,<span class="w"> </span><span class="k">done</span>.
-<a id="__codelineno-105-7" name="__codelineno-105-7" href="#__codelineno-105-7"></a>Resolving<span class="w"> </span>deltas:<span class="w"> </span><span class="m">100</span>%<span class="w"> </span><span class="o">(</span><span class="m">9876</span>/9876<span class="o">)</span>,<span class="w"> </span><span class="k">done</span>.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-109-1" name="__codelineno-109-1" href="#__codelineno-109-1"></a>Cloning<span class="w"> </span>into<span class="w"> </span><span class="s1">&#39;image-builder&#39;</span>...
+<a id="__codelineno-109-2" name="__codelineno-109-2" href="#__codelineno-109-2"></a>remote:<span class="w"> </span>Enumerating<span class="w"> </span>objects:<span class="w"> </span><span class="m">15234</span>,<span class="w"> </span><span class="k">done</span>.
+<a id="__codelineno-109-3" name="__codelineno-109-3" href="#__codelineno-109-3"></a>remote:<span class="w"> </span>Counting<span class="w"> </span>objects:<span class="w"> </span><span class="m">100</span>%<span class="w"> </span><span class="o">(</span><span class="m">523</span>/523<span class="o">)</span>,<span class="w"> </span><span class="k">done</span>.
+<a id="__codelineno-109-4" name="__codelineno-109-4" href="#__codelineno-109-4"></a>remote:<span class="w"> </span>Compressing<span class="w"> </span>objects:<span class="w"> </span><span class="m">100</span>%<span class="w"> </span><span class="o">(</span><span class="m">312</span>/312<span class="o">)</span>,<span class="w"> </span><span class="k">done</span>.
+<a id="__codelineno-109-5" name="__codelineno-109-5" href="#__codelineno-109-5"></a>remote:<span class="w"> </span>Total<span class="w"> </span><span class="m">15234</span><span class="w"> </span><span class="o">(</span>delta<span class="w"> </span><span class="m">245</span><span class="o">)</span>,<span class="w"> </span>reused<span class="w"> </span><span class="m">398</span><span class="w"> </span><span class="o">(</span>delta<span class="w"> </span><span class="m">198</span><span class="o">)</span>,<span class="w"> </span>pack-reused<span class="w"> </span><span class="m">14711</span>
+<a id="__codelineno-109-6" name="__codelineno-109-6" href="#__codelineno-109-6"></a>Receiving<span class="w"> </span>objects:<span class="w"> </span><span class="m">100</span>%<span class="w"> </span><span class="o">(</span><span class="m">15234</span>/15234<span class="o">)</span>,<span class="w"> </span><span class="m">5</span>.23<span class="w"> </span>MiB<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="m">8</span>.45<span class="w"> </span>MiB/s,<span class="w"> </span><span class="k">done</span>.
+<a id="__codelineno-109-7" name="__codelineno-109-7" href="#__codelineno-109-7"></a>Resolving<span class="w"> </span>deltas:<span class="w"> </span><span class="m">100</span>%<span class="w"> </span><span class="o">(</span><span class="m">9876</span>/9876<span class="o">)</span>,<span class="w"> </span><span class="k">done</span>.
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-106-1" name="__codelineno-106-1" href="#__codelineno-106-1"></a>ls<span class="w"> </span>-la
-<a id="__codelineno-106-2" name="__codelineno-106-2" href="#__codelineno-106-2"></a>drwxr-xr-x<span class="w">  </span><span class="m">8</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">4096</span><span class="w"> </span>Mar<span class="w"> </span><span class="m">13</span><span class="w"> </span><span class="m">10</span>:30<span class="w"> </span>.
-<a id="__codelineno-106-3" name="__codelineno-106-3" href="#__codelineno-106-3"></a>drwxr-xr-x<span class="w">  </span><span class="m">5</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">4096</span><span class="w"> </span>Mar<span class="w"> </span><span class="m">13</span><span class="w"> </span><span class="m">10</span>:29<span class="w"> </span>..
-<a id="__codelineno-106-4" name="__codelineno-106-4" href="#__codelineno-106-4"></a>drwxr-xr-x<span class="w">  </span><span class="m">8</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">4096</span><span class="w"> </span>Mar<span class="w"> </span><span class="m">13</span><span class="w"> </span><span class="m">10</span>:30<span class="w"> </span>.git
-<a id="__codelineno-106-5" name="__codelineno-106-5" href="#__codelineno-106-5"></a>-rw-r--r--<span class="w">  </span><span class="m">1</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">1234</span><span class="w"> </span>Mar<span class="w"> </span><span class="m">13</span><span class="w"> </span><span class="m">10</span>:30<span class="w"> </span>README.md
-<a id="__codelineno-106-6" name="__codelineno-106-6" href="#__codelineno-106-6"></a>drwxr-xr-x<span class="w">  </span><span class="m">3</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">4096</span><span class="w"> </span>Mar<span class="w"> </span><span class="m">13</span><span class="w"> </span><span class="m">10</span>:30<span class="w"> </span>images
-<a id="__codelineno-106-7" name="__codelineno-106-7" href="#__codelineno-106-7"></a>-rw-r--r--<span class="w">  </span><span class="m">1</span><span class="w"> </span>root<span class="w"> </span>root<span class="w">  </span><span class="m">567</span><span class="w"> </span>Mar<span class="w"> </span><span class="m">13</span><span class="w"> </span><span class="m">10</span>:30<span class="w"> </span>Makefile
+<div class="highlight"><pre><span></span><code><a id="__codelineno-110-1" name="__codelineno-110-1" href="#__codelineno-110-1"></a>ls<span class="w"> </span>-la
+<a id="__codelineno-110-2" name="__codelineno-110-2" href="#__codelineno-110-2"></a>drwxr-xr-x<span class="w">  </span><span class="m">8</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">4096</span><span class="w"> </span>Mar<span class="w"> </span><span class="m">13</span><span class="w"> </span><span class="m">10</span>:30<span class="w"> </span>.
+<a id="__codelineno-110-3" name="__codelineno-110-3" href="#__codelineno-110-3"></a>drwxr-xr-x<span class="w">  </span><span class="m">5</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">4096</span><span class="w"> </span>Mar<span class="w"> </span><span class="m">13</span><span class="w"> </span><span class="m">10</span>:29<span class="w"> </span>..
+<a id="__codelineno-110-4" name="__codelineno-110-4" href="#__codelineno-110-4"></a>drwxr-xr-x<span class="w">  </span><span class="m">8</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">4096</span><span class="w"> </span>Mar<span class="w"> </span><span class="m">13</span><span class="w"> </span><span class="m">10</span>:30<span class="w"> </span>.git
+<a id="__codelineno-110-5" name="__codelineno-110-5" href="#__codelineno-110-5"></a>-rw-r--r--<span class="w">  </span><span class="m">1</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">1234</span><span class="w"> </span>Mar<span class="w"> </span><span class="m">13</span><span class="w"> </span><span class="m">10</span>:30<span class="w"> </span>README.md
+<a id="__codelineno-110-6" name="__codelineno-110-6" href="#__codelineno-110-6"></a>drwxr-xr-x<span class="w">  </span><span class="m">3</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">4096</span><span class="w"> </span>Mar<span class="w"> </span><span class="m">13</span><span class="w"> </span><span class="m">10</span>:30<span class="w"> </span>images
+<a id="__codelineno-110-7" name="__codelineno-110-7" href="#__codelineno-110-7"></a>-rw-r--r--<span class="w">  </span><span class="m">1</span><span class="w"> </span>root<span class="w"> </span>root<span class="w">  </span><span class="m">567</span><span class="w"> </span>Mar<span class="w"> </span><span class="m">13</span><span class="w"> </span><span class="m">10</span>:30<span class="w"> </span>Makefile
 </code></pre></div>
 </div>
 </div>
@@ -5041,40 +5276,40 @@ Script located in <code>/opt/genestack/bin</code>.</p>
 <hr />
 <h3 id="step-4-create-configuration-file">Step 4: Create Configuration File</h3>
 <p>Create a configuration file specifying the Kubernetes version to include in the image.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="40:4"><input checked="checked" id="__tabbed_40_1" name="__tabbed_40" type="radio" /><input id="__tabbed_40_2" name="__tabbed_40" type="radio" /><input id="__tabbed_40_3" name="__tabbed_40" type="radio" /><input id="__tabbed_40_4" name="__tabbed_40" type="radio" /><div class="tabbed-labels"><label for="__tabbed_40_1">Navigate to CAPI Directory</label><label for="__tabbed_40_2">Create Configuration File</label><label for="__tabbed_40_3">Verify Configuration</label><label for="__tabbed_40_4">Alternative: Latest Kubernetes Version</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="41:4"><input checked="checked" id="__tabbed_41_1" name="__tabbed_41" type="radio" /><input id="__tabbed_41_2" name="__tabbed_41" type="radio" /><input id="__tabbed_41_3" name="__tabbed_41" type="radio" /><input id="__tabbed_41_4" name="__tabbed_41" type="radio" /><div class="tabbed-labels"><label for="__tabbed_41_1">Navigate to CAPI Directory</label><label for="__tabbed_41_2">Create Configuration File</label><label for="__tabbed_41_3">Verify Configuration</label><label for="__tabbed_41_4">Alternative: Latest Kubernetes Version</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-107-1" name="__codelineno-107-1" href="#__codelineno-107-1"></a><span class="nb">cd</span><span class="w"> </span>image-builder/images/capi/
-<a id="__codelineno-107-2" name="__codelineno-107-2" href="#__codelineno-107-2"></a><span class="nb">pwd</span>
-<a id="__codelineno-107-3" name="__codelineno-107-3" href="#__codelineno-107-3"></a>/root/image-builder/images/capi
+<div class="highlight"><pre><span></span><code><a id="__codelineno-111-1" name="__codelineno-111-1" href="#__codelineno-111-1"></a><span class="nb">cd</span><span class="w"> </span>image-builder/images/capi/
+<a id="__codelineno-111-2" name="__codelineno-111-2" href="#__codelineno-111-2"></a><span class="nb">pwd</span>
+<a id="__codelineno-111-3" name="__codelineno-111-3" href="#__codelineno-111-3"></a>/root/image-builder/images/capi
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-108-1" name="__codelineno-108-1" href="#__codelineno-108-1"></a>cat<span class="w"> </span>&gt;<span class="w"> </span>flatcar-vars.json<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
-<a id="__codelineno-108-2" name="__codelineno-108-2" href="#__codelineno-108-2"></a><span class="s">{</span>
-<a id="__codelineno-108-3" name="__codelineno-108-3" href="#__codelineno-108-3"></a><span class="s">  &quot;kubernetes_semver&quot;: &quot;v1.28.1&quot;,</span>
-<a id="__codelineno-108-4" name="__codelineno-108-4" href="#__codelineno-108-4"></a><span class="s">  &quot;kubernetes_series&quot;: &quot;v1.28&quot;</span>
-<a id="__codelineno-108-5" name="__codelineno-108-5" href="#__codelineno-108-5"></a><span class="s">}</span>
-<a id="__codelineno-108-6" name="__codelineno-108-6" href="#__codelineno-108-6"></a><span class="s">EOF</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-112-1" name="__codelineno-112-1" href="#__codelineno-112-1"></a>cat<span class="w"> </span>&gt;<span class="w"> </span>flatcar-vars.json<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
+<a id="__codelineno-112-2" name="__codelineno-112-2" href="#__codelineno-112-2"></a><span class="s">{</span>
+<a id="__codelineno-112-3" name="__codelineno-112-3" href="#__codelineno-112-3"></a><span class="s">  &quot;kubernetes_semver&quot;: &quot;v1.28.1&quot;,</span>
+<a id="__codelineno-112-4" name="__codelineno-112-4" href="#__codelineno-112-4"></a><span class="s">  &quot;kubernetes_series&quot;: &quot;v1.28&quot;</span>
+<a id="__codelineno-112-5" name="__codelineno-112-5" href="#__codelineno-112-5"></a><span class="s">}</span>
+<a id="__codelineno-112-6" name="__codelineno-112-6" href="#__codelineno-112-6"></a><span class="s">EOF</span>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-109-1" name="__codelineno-109-1" href="#__codelineno-109-1"></a>cat<span class="w"> </span>flatcar-vars.json
+<div class="highlight"><pre><span></span><code><a id="__codelineno-113-1" name="__codelineno-113-1" href="#__codelineno-113-1"></a>cat<span class="w"> </span>flatcar-vars.json
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-110-1" name="__codelineno-110-1" href="#__codelineno-110-1"></a><span class="p">{</span>
-<a id="__codelineno-110-2" name="__codelineno-110-2" href="#__codelineno-110-2"></a><span class="w">  </span><span class="nt">&quot;kubernetes_semver&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;v1.28.1&quot;</span><span class="p">,</span>
-<a id="__codelineno-110-3" name="__codelineno-110-3" href="#__codelineno-110-3"></a><span class="w">  </span><span class="nt">&quot;kubernetes_series&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;v1.28&quot;</span>
-<a id="__codelineno-110-4" name="__codelineno-110-4" href="#__codelineno-110-4"></a><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-114-1" name="__codelineno-114-1" href="#__codelineno-114-1"></a><span class="p">{</span>
+<a id="__codelineno-114-2" name="__codelineno-114-2" href="#__codelineno-114-2"></a><span class="w">  </span><span class="nt">&quot;kubernetes_semver&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;v1.28.1&quot;</span><span class="p">,</span>
+<a id="__codelineno-114-3" name="__codelineno-114-3" href="#__codelineno-114-3"></a><span class="w">  </span><span class="nt">&quot;kubernetes_series&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;v1.28&quot;</span>
+<a id="__codelineno-114-4" name="__codelineno-114-4" href="#__codelineno-114-4"></a><span class="p">}</span>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
 <p>For Kubernetes 1.32.x:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-111-1" name="__codelineno-111-1" href="#__codelineno-111-1"></a>cat<span class="w"> </span>&gt;<span class="w"> </span>flatcar-vars.json<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
-<a id="__codelineno-111-2" name="__codelineno-111-2" href="#__codelineno-111-2"></a><span class="s">{</span>
-<a id="__codelineno-111-3" name="__codelineno-111-3" href="#__codelineno-111-3"></a><span class="s">  &quot;kubernetes_semver&quot;: &quot;v1.32.0&quot;,</span>
-<a id="__codelineno-111-4" name="__codelineno-111-4" href="#__codelineno-111-4"></a><span class="s">  &quot;kubernetes_series&quot;: &quot;v1.32&quot;</span>
-<a id="__codelineno-111-5" name="__codelineno-111-5" href="#__codelineno-111-5"></a><span class="s">}</span>
-<a id="__codelineno-111-6" name="__codelineno-111-6" href="#__codelineno-111-6"></a><span class="s">EOF</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-115-1" name="__codelineno-115-1" href="#__codelineno-115-1"></a>cat<span class="w"> </span>&gt;<span class="w"> </span>flatcar-vars.json<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
+<a id="__codelineno-115-2" name="__codelineno-115-2" href="#__codelineno-115-2"></a><span class="s">{</span>
+<a id="__codelineno-115-3" name="__codelineno-115-3" href="#__codelineno-115-3"></a><span class="s">  &quot;kubernetes_semver&quot;: &quot;v1.32.0&quot;,</span>
+<a id="__codelineno-115-4" name="__codelineno-115-4" href="#__codelineno-115-4"></a><span class="s">  &quot;kubernetes_series&quot;: &quot;v1.32&quot;</span>
+<a id="__codelineno-115-5" name="__codelineno-115-5" href="#__codelineno-115-5"></a><span class="s">}</span>
+<a id="__codelineno-115-6" name="__codelineno-115-6" href="#__codelineno-115-6"></a><span class="s">EOF</span>
 </code></pre></div>
 </div>
 </div>
@@ -5113,31 +5348,31 @@ Script located in <code>/opt/genestack/bin</code>.</p>
 <hr />
 <h3 id="step-5-install-build-dependencies">Step 5: Install Build Dependencies</h3>
 <p>Install additional dependencies required for building QEMU images.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="41:3"><input checked="checked" id="__tabbed_41_1" name="__tabbed_41" type="radio" /><input id="__tabbed_41_2" name="__tabbed_41" type="radio" /><input id="__tabbed_41_3" name="__tabbed_41" type="radio" /><div class="tabbed-labels"><label for="__tabbed_41_1">Install Dependencies</label><label for="__tabbed_41_2">Expected Output</label><label for="__tabbed_41_3">Verify Installation</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="42:3"><input checked="checked" id="__tabbed_42_1" name="__tabbed_42" type="radio" /><input id="__tabbed_42_2" name="__tabbed_42" type="radio" /><input id="__tabbed_42_3" name="__tabbed_42" type="radio" /><div class="tabbed-labels"><label for="__tabbed_42_1">Install Dependencies</label><label for="__tabbed_42_2">Expected Output</label><label for="__tabbed_42_3">Verify Installation</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-112-1" name="__codelineno-112-1" href="#__codelineno-112-1"></a>make<span class="w"> </span>deps-qemu
+<div class="highlight"><pre><span></span><code><a id="__codelineno-116-1" name="__codelineno-116-1" href="#__codelineno-116-1"></a>make<span class="w"> </span>deps-qemu
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-113-1" name="__codelineno-113-1" href="#__codelineno-113-1"></a>Installing<span class="w"> </span>dependencies<span class="w"> </span><span class="k">for</span><span class="w"> </span>QEMU<span class="w"> </span>image<span class="w"> </span>builds...
-<a id="__codelineno-113-2" name="__codelineno-113-2" href="#__codelineno-113-2"></a>+<span class="w"> </span>pip3<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>-r<span class="w"> </span>requirements.txt
-<a id="__codelineno-113-3" name="__codelineno-113-3" href="#__codelineno-113-3"></a>Collecting<span class="w"> </span><span class="nv">ansible</span><span class="o">==</span><span class="m">8</span>.5.0
-<a id="__codelineno-113-4" name="__codelineno-113-4" href="#__codelineno-113-4"></a><span class="w">  </span>Downloading<span class="w"> </span>ansible-8.5.0-py3-none-any.whl<span class="w"> </span><span class="o">(</span><span class="m">48</span>.3<span class="w"> </span>MB<span class="o">)</span>
-<a id="__codelineno-113-5" name="__codelineno-113-5" href="#__codelineno-113-5"></a>Collecting<span class="w"> </span>ansible-core~<span class="o">=</span><span class="m">2</span>.15.5
-<a id="__codelineno-113-6" name="__codelineno-113-6" href="#__codelineno-113-6"></a><span class="w">  </span>Downloading<span class="w"> </span>ansible_core-2.15.5-py3-none-any.whl<span class="w"> </span><span class="o">(</span><span class="m">2</span>.3<span class="w"> </span>MB<span class="o">)</span>
-<a id="__codelineno-113-7" name="__codelineno-113-7" href="#__codelineno-113-7"></a>Collecting<span class="w"> </span>jinja2&gt;<span class="o">=</span><span class="m">3</span>.0.0
-<a id="__codelineno-113-8" name="__codelineno-113-8" href="#__codelineno-113-8"></a><span class="w">  </span>Using<span class="w"> </span>cached<span class="w"> </span>Jinja2-3.1.3-py3-none-any.whl<span class="w"> </span><span class="o">(</span><span class="m">133</span><span class="w"> </span>kB<span class="o">)</span>
-<a id="__codelineno-113-9" name="__codelineno-113-9" href="#__codelineno-113-9"></a>...
-<a id="__codelineno-113-10" name="__codelineno-113-10" href="#__codelineno-113-10"></a>Successfully<span class="w"> </span>installed<span class="w"> </span>ansible-8.5.0<span class="w"> </span>ansible-core-2.15.5<span class="w"> </span>...
-<a id="__codelineno-113-11" name="__codelineno-113-11" href="#__codelineno-113-11"></a>+<span class="w"> </span>Installing<span class="w"> </span>Packer...
-<a id="__codelineno-113-12" name="__codelineno-113-12" href="#__codelineno-113-12"></a>+<span class="w"> </span>Downloading<span class="w"> </span>Packer<span class="w"> </span>v1.9.4...
-<a id="__codelineno-113-13" name="__codelineno-113-13" href="#__codelineno-113-13"></a>+<span class="w"> </span>Packer<span class="w"> </span>installed<span class="w"> </span>successfully
+<div class="highlight"><pre><span></span><code><a id="__codelineno-117-1" name="__codelineno-117-1" href="#__codelineno-117-1"></a>Installing<span class="w"> </span>dependencies<span class="w"> </span><span class="k">for</span><span class="w"> </span>QEMU<span class="w"> </span>image<span class="w"> </span>builds...
+<a id="__codelineno-117-2" name="__codelineno-117-2" href="#__codelineno-117-2"></a>+<span class="w"> </span>pip3<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+<a id="__codelineno-117-3" name="__codelineno-117-3" href="#__codelineno-117-3"></a>Collecting<span class="w"> </span><span class="nv">ansible</span><span class="o">==</span><span class="m">8</span>.5.0
+<a id="__codelineno-117-4" name="__codelineno-117-4" href="#__codelineno-117-4"></a><span class="w">  </span>Downloading<span class="w"> </span>ansible-8.5.0-py3-none-any.whl<span class="w"> </span><span class="o">(</span><span class="m">48</span>.3<span class="w"> </span>MB<span class="o">)</span>
+<a id="__codelineno-117-5" name="__codelineno-117-5" href="#__codelineno-117-5"></a>Collecting<span class="w"> </span>ansible-core~<span class="o">=</span><span class="m">2</span>.15.5
+<a id="__codelineno-117-6" name="__codelineno-117-6" href="#__codelineno-117-6"></a><span class="w">  </span>Downloading<span class="w"> </span>ansible_core-2.15.5-py3-none-any.whl<span class="w"> </span><span class="o">(</span><span class="m">2</span>.3<span class="w"> </span>MB<span class="o">)</span>
+<a id="__codelineno-117-7" name="__codelineno-117-7" href="#__codelineno-117-7"></a>Collecting<span class="w"> </span>jinja2&gt;<span class="o">=</span><span class="m">3</span>.0.0
+<a id="__codelineno-117-8" name="__codelineno-117-8" href="#__codelineno-117-8"></a><span class="w">  </span>Using<span class="w"> </span>cached<span class="w"> </span>Jinja2-3.1.3-py3-none-any.whl<span class="w"> </span><span class="o">(</span><span class="m">133</span><span class="w"> </span>kB<span class="o">)</span>
+<a id="__codelineno-117-9" name="__codelineno-117-9" href="#__codelineno-117-9"></a>...
+<a id="__codelineno-117-10" name="__codelineno-117-10" href="#__codelineno-117-10"></a>Successfully<span class="w"> </span>installed<span class="w"> </span>ansible-8.5.0<span class="w"> </span>ansible-core-2.15.5<span class="w"> </span>...
+<a id="__codelineno-117-11" name="__codelineno-117-11" href="#__codelineno-117-11"></a>+<span class="w"> </span>Installing<span class="w"> </span>Packer...
+<a id="__codelineno-117-12" name="__codelineno-117-12" href="#__codelineno-117-12"></a>+<span class="w"> </span>Downloading<span class="w"> </span>Packer<span class="w"> </span>v1.9.4...
+<a id="__codelineno-117-13" name="__codelineno-117-13" href="#__codelineno-117-13"></a>+<span class="w"> </span>Packer<span class="w"> </span>installed<span class="w"> </span>successfully
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-114-1" name="__codelineno-114-1" href="#__codelineno-114-1"></a>packer<span class="w"> </span>version
-<a id="__codelineno-114-2" name="__codelineno-114-2" href="#__codelineno-114-2"></a>Packer<span class="w"> </span>v1.9.4
+<div class="highlight"><pre><span></span><code><a id="__codelineno-118-1" name="__codelineno-118-1" href="#__codelineno-118-1"></a>packer<span class="w"> </span>version
+<a id="__codelineno-118-2" name="__codelineno-118-2" href="#__codelineno-118-2"></a>Packer<span class="w"> </span>v1.9.4
 </code></pre></div>
 </div>
 </div>
@@ -5155,30 +5390,30 @@ Script located in <code>/opt/genestack/bin</code>.</p>
 <hr />
 <h3 id="step-6-build-the-flatcar-image">Step 6: Build the Flatcar Image</h3>
 <p>Build the Flatcar image with OpenStack OEM configuration.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="42:2"><input checked="checked" id="__tabbed_42_1" name="__tabbed_42" type="radio" /><input id="__tabbed_42_2" name="__tabbed_42" type="radio" /><div class="tabbed-labels"><label for="__tabbed_42_1">Build Command</label><label for="__tabbed_42_2">Build Process Output</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="43:2"><input checked="checked" id="__tabbed_43_1" name="__tabbed_43" type="radio" /><input id="__tabbed_43_2" name="__tabbed_43" type="radio" /><div class="tabbed-labels"><label for="__tabbed_43_1">Build Command</label><label for="__tabbed_43_2">Build Process Output</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-115-1" name="__codelineno-115-1" href="#__codelineno-115-1"></a><span class="nv">PACKER_VAR_FILES</span><span class="o">=</span>flatcar-vars.json<span class="w"> </span><span class="nv">OEM_ID</span><span class="o">=</span>openstack<span class="w"> </span>make<span class="w"> </span>build-qemu-flatcar
+<div class="highlight"><pre><span></span><code><a id="__codelineno-119-1" name="__codelineno-119-1" href="#__codelineno-119-1"></a><span class="nv">PACKER_VAR_FILES</span><span class="o">=</span>flatcar-vars.json<span class="w"> </span><span class="nv">OEM_ID</span><span class="o">=</span>openstack<span class="w"> </span>make<span class="w"> </span>build-qemu-flatcar
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-116-1" name="__codelineno-116-1" href="#__codelineno-116-1"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Retrieving<span class="w"> </span>Flatcar<span class="w"> </span>image...
-<a id="__codelineno-116-2" name="__codelineno-116-2" href="#__codelineno-116-2"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Downloading<span class="w"> </span>Flatcar<span class="w"> </span>stable<span class="w"> </span><span class="m">4459</span>.2.3...
-<a id="__codelineno-116-3" name="__codelineno-116-3" href="#__codelineno-116-3"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Starting<span class="w"> </span>QEMU<span class="w"> </span>VM...
-<a id="__codelineno-116-4" name="__codelineno-116-4" href="#__codelineno-116-4"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Waiting<span class="w"> </span><span class="k">for</span><span class="w"> </span>SSH<span class="w"> </span>to<span class="w"> </span>become<span class="w"> </span>available...
-<a id="__codelineno-116-5" name="__codelineno-116-5" href="#__codelineno-116-5"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Connected<span class="w"> </span>to<span class="w"> </span>SSH!
-<a id="__codelineno-116-6" name="__codelineno-116-6" href="#__codelineno-116-6"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Provisioning<span class="w"> </span>with<span class="w"> </span>Ansible...
-<a id="__codelineno-116-7" name="__codelineno-116-7" href="#__codelineno-116-7"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Installing<span class="w"> </span>Kubernetes<span class="w"> </span>v1.28.1...
-<a id="__codelineno-116-8" name="__codelineno-116-8" href="#__codelineno-116-8"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Installing<span class="w"> </span>kubeadm,<span class="w"> </span>kubelet,<span class="w"> </span>kubectl...
-<a id="__codelineno-116-9" name="__codelineno-116-9" href="#__codelineno-116-9"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Configuring<span class="w"> </span>containerd...
-<a id="__codelineno-116-10" name="__codelineno-116-10" href="#__codelineno-116-10"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Installing<span class="w"> </span>CNI<span class="w"> </span>plugins...
-<a id="__codelineno-116-11" name="__codelineno-116-11" href="#__codelineno-116-11"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Cleaning<span class="w"> </span>up<span class="w"> </span>temporary<span class="w"> </span>files...
-<a id="__codelineno-116-12" name="__codelineno-116-12" href="#__codelineno-116-12"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Shutting<span class="w"> </span>down<span class="w"> </span>VM...
-<a id="__codelineno-116-13" name="__codelineno-116-13" href="#__codelineno-116-13"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Converting<span class="w"> </span>image<span class="w"> </span>to<span class="w"> </span>qcow2<span class="w"> </span>format...
-<a id="__codelineno-116-14" name="__codelineno-116-14" href="#__codelineno-116-14"></a>Build<span class="w"> </span><span class="s1">&#39;qemu.flatcar&#39;</span><span class="w"> </span>finished<span class="w"> </span>after<span class="w"> </span><span class="m">23</span><span class="w"> </span>minutes<span class="w"> </span><span class="m">45</span><span class="w"> </span>seconds.
-<a id="__codelineno-116-15" name="__codelineno-116-15" href="#__codelineno-116-15"></a>
-<a id="__codelineno-116-16" name="__codelineno-116-16" href="#__codelineno-116-16"></a><span class="o">==</span>&gt;<span class="w"> </span>Builds<span class="w"> </span>finished.<span class="w"> </span>The<span class="w"> </span>artifacts<span class="w"> </span>of<span class="w"> </span>successful<span class="w"> </span>builds<span class="w"> </span>are:
-<a id="__codelineno-116-17" name="__codelineno-116-17" href="#__codelineno-116-17"></a>--&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>VM<span class="w"> </span>files<span class="w"> </span><span class="k">in</span><span class="w"> </span>directory:<span class="w"> </span>output/flatcar-stable-4459.2.3-kube-v1.28.1/
+<div class="highlight"><pre><span></span><code><a id="__codelineno-120-1" name="__codelineno-120-1" href="#__codelineno-120-1"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Retrieving<span class="w"> </span>Flatcar<span class="w"> </span>image...
+<a id="__codelineno-120-2" name="__codelineno-120-2" href="#__codelineno-120-2"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Downloading<span class="w"> </span>Flatcar<span class="w"> </span>stable<span class="w"> </span><span class="m">4459</span>.2.3...
+<a id="__codelineno-120-3" name="__codelineno-120-3" href="#__codelineno-120-3"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Starting<span class="w"> </span>QEMU<span class="w"> </span>VM...
+<a id="__codelineno-120-4" name="__codelineno-120-4" href="#__codelineno-120-4"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Waiting<span class="w"> </span><span class="k">for</span><span class="w"> </span>SSH<span class="w"> </span>to<span class="w"> </span>become<span class="w"> </span>available...
+<a id="__codelineno-120-5" name="__codelineno-120-5" href="#__codelineno-120-5"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Connected<span class="w"> </span>to<span class="w"> </span>SSH!
+<a id="__codelineno-120-6" name="__codelineno-120-6" href="#__codelineno-120-6"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Provisioning<span class="w"> </span>with<span class="w"> </span>Ansible...
+<a id="__codelineno-120-7" name="__codelineno-120-7" href="#__codelineno-120-7"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Installing<span class="w"> </span>Kubernetes<span class="w"> </span>v1.28.1...
+<a id="__codelineno-120-8" name="__codelineno-120-8" href="#__codelineno-120-8"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Installing<span class="w"> </span>kubeadm,<span class="w"> </span>kubelet,<span class="w"> </span>kubectl...
+<a id="__codelineno-120-9" name="__codelineno-120-9" href="#__codelineno-120-9"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Configuring<span class="w"> </span>containerd...
+<a id="__codelineno-120-10" name="__codelineno-120-10" href="#__codelineno-120-10"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Installing<span class="w"> </span>CNI<span class="w"> </span>plugins...
+<a id="__codelineno-120-11" name="__codelineno-120-11" href="#__codelineno-120-11"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Cleaning<span class="w"> </span>up<span class="w"> </span>temporary<span class="w"> </span>files...
+<a id="__codelineno-120-12" name="__codelineno-120-12" href="#__codelineno-120-12"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Shutting<span class="w"> </span>down<span class="w"> </span>VM...
+<a id="__codelineno-120-13" name="__codelineno-120-13" href="#__codelineno-120-13"></a><span class="o">==</span>&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>Converting<span class="w"> </span>image<span class="w"> </span>to<span class="w"> </span>qcow2<span class="w"> </span>format...
+<a id="__codelineno-120-14" name="__codelineno-120-14" href="#__codelineno-120-14"></a>Build<span class="w"> </span><span class="s1">&#39;qemu.flatcar&#39;</span><span class="w"> </span>finished<span class="w"> </span>after<span class="w"> </span><span class="m">23</span><span class="w"> </span>minutes<span class="w"> </span><span class="m">45</span><span class="w"> </span>seconds.
+<a id="__codelineno-120-15" name="__codelineno-120-15" href="#__codelineno-120-15"></a>
+<a id="__codelineno-120-16" name="__codelineno-120-16" href="#__codelineno-120-16"></a><span class="o">==</span>&gt;<span class="w"> </span>Builds<span class="w"> </span>finished.<span class="w"> </span>The<span class="w"> </span>artifacts<span class="w"> </span>of<span class="w"> </span>successful<span class="w"> </span>builds<span class="w"> </span>are:
+<a id="__codelineno-120-17" name="__codelineno-120-17" href="#__codelineno-120-17"></a>--&gt;<span class="w"> </span>qemu.flatcar:<span class="w"> </span>VM<span class="w"> </span>files<span class="w"> </span><span class="k">in</span><span class="w"> </span>directory:<span class="w"> </span>output/flatcar-stable-4459.2.3-kube-v1.28.1/
 </code></pre></div>
 </div>
 </div>
@@ -5232,34 +5467,34 @@ Script located in <code>/opt/genestack/bin</code>.</p>
 <hr />
 <h3 id="step-7-verify-built-image">Step 7: Verify Built Image</h3>
 <p>Check that the image was successfully created and inspect its properties.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="43:5"><input checked="checked" id="__tabbed_43_1" name="__tabbed_43" type="radio" /><input id="__tabbed_43_2" name="__tabbed_43" type="radio" /><input id="__tabbed_43_3" name="__tabbed_43" type="radio" /><input id="__tabbed_43_4" name="__tabbed_43" type="radio" /><input id="__tabbed_43_5" name="__tabbed_43" type="radio" /><div class="tabbed-labels"><label for="__tabbed_43_1">Navigate to Output Directory</label><label for="__tabbed_43_2">List Image Files</label><label for="__tabbed_43_3">Check File Type</label><label for="__tabbed_43_4">Check Image Size</label><label for="__tabbed_43_5">Verify Checksum</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="44:5"><input checked="checked" id="__tabbed_44_1" name="__tabbed_44" type="radio" /><input id="__tabbed_44_2" name="__tabbed_44" type="radio" /><input id="__tabbed_44_3" name="__tabbed_44" type="radio" /><input id="__tabbed_44_4" name="__tabbed_44" type="radio" /><input id="__tabbed_44_5" name="__tabbed_44" type="radio" /><div class="tabbed-labels"><label for="__tabbed_44_1">Navigate to Output Directory</label><label for="__tabbed_44_2">List Image Files</label><label for="__tabbed_44_3">Check File Type</label><label for="__tabbed_44_4">Check Image Size</label><label for="__tabbed_44_5">Verify Checksum</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-117-1" name="__codelineno-117-1" href="#__codelineno-117-1"></a><span class="nb">cd</span><span class="w"> </span>output/
-<a id="__codelineno-117-2" name="__codelineno-117-2" href="#__codelineno-117-2"></a>ls<span class="w"> </span>-la
-<a id="__codelineno-117-3" name="__codelineno-117-3" href="#__codelineno-117-3"></a>drwxr-xr-x<span class="w"> </span><span class="m">2</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">4096</span><span class="w"> </span>Mar<span class="w"> </span><span class="m">13</span><span class="w"> </span><span class="m">11</span>:15<span class="w"> </span>flatcar-stable-4459.2.3-kube-v1.28.1
+<div class="highlight"><pre><span></span><code><a id="__codelineno-121-1" name="__codelineno-121-1" href="#__codelineno-121-1"></a><span class="nb">cd</span><span class="w"> </span>output/
+<a id="__codelineno-121-2" name="__codelineno-121-2" href="#__codelineno-121-2"></a>ls<span class="w"> </span>-la
+<a id="__codelineno-121-3" name="__codelineno-121-3" href="#__codelineno-121-3"></a>drwxr-xr-x<span class="w"> </span><span class="m">2</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">4096</span><span class="w"> </span>Mar<span class="w"> </span><span class="m">13</span><span class="w"> </span><span class="m">11</span>:15<span class="w"> </span>flatcar-stable-4459.2.3-kube-v1.28.1
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-118-1" name="__codelineno-118-1" href="#__codelineno-118-1"></a><span class="nb">cd</span><span class="w"> </span>flatcar-stable-4459.2.3-kube-v1.28.1/
-<a id="__codelineno-118-2" name="__codelineno-118-2" href="#__codelineno-118-2"></a>ls<span class="w"> </span>-lh
-<a id="__codelineno-118-3" name="__codelineno-118-3" href="#__codelineno-118-3"></a>-rw-r--r--<span class="w"> </span><span class="m">1</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">1</span>.2G<span class="w"> </span>Mar<span class="w"> </span><span class="m">13</span><span class="w"> </span><span class="m">11</span>:15<span class="w"> </span>flatcar-stable-4459.2.3-kube-v1.28.1
-<a id="__codelineno-118-4" name="__codelineno-118-4" href="#__codelineno-118-4"></a>-rw-r--r--<span class="w"> </span><span class="m">1</span><span class="w"> </span>root<span class="w"> </span>root<span class="w">  </span><span class="m">512</span><span class="w"> </span>Mar<span class="w"> </span><span class="m">13</span><span class="w"> </span><span class="m">11</span>:15<span class="w"> </span>flatcar-stable-4459.2.3-kube-v1.28.1.sha256
+<div class="highlight"><pre><span></span><code><a id="__codelineno-122-1" name="__codelineno-122-1" href="#__codelineno-122-1"></a><span class="nb">cd</span><span class="w"> </span>flatcar-stable-4459.2.3-kube-v1.28.1/
+<a id="__codelineno-122-2" name="__codelineno-122-2" href="#__codelineno-122-2"></a>ls<span class="w"> </span>-lh
+<a id="__codelineno-122-3" name="__codelineno-122-3" href="#__codelineno-122-3"></a>-rw-r--r--<span class="w"> </span><span class="m">1</span><span class="w"> </span>root<span class="w"> </span>root<span class="w"> </span><span class="m">1</span>.2G<span class="w"> </span>Mar<span class="w"> </span><span class="m">13</span><span class="w"> </span><span class="m">11</span>:15<span class="w"> </span>flatcar-stable-4459.2.3-kube-v1.28.1
+<a id="__codelineno-122-4" name="__codelineno-122-4" href="#__codelineno-122-4"></a>-rw-r--r--<span class="w"> </span><span class="m">1</span><span class="w"> </span>root<span class="w"> </span>root<span class="w">  </span><span class="m">512</span><span class="w"> </span>Mar<span class="w"> </span><span class="m">13</span><span class="w"> </span><span class="m">11</span>:15<span class="w"> </span>flatcar-stable-4459.2.3-kube-v1.28.1.sha256
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-119-1" name="__codelineno-119-1" href="#__codelineno-119-1"></a>file<span class="w"> </span>flatcar-stable-4459.2.3-kube-v1.28.1
-<a id="__codelineno-119-2" name="__codelineno-119-2" href="#__codelineno-119-2"></a>flatcar-stable-4459.2.3-kube-v1.28.1:<span class="w"> </span>QEMU<span class="w"> </span>QCOW2<span class="w"> </span>Image<span class="w"> </span><span class="o">(</span>v3<span class="o">)</span>,<span class="w"> </span><span class="m">10737418240</span><span class="w"> </span>bytes
+<div class="highlight"><pre><span></span><code><a id="__codelineno-123-1" name="__codelineno-123-1" href="#__codelineno-123-1"></a>file<span class="w"> </span>flatcar-stable-4459.2.3-kube-v1.28.1
+<a id="__codelineno-123-2" name="__codelineno-123-2" href="#__codelineno-123-2"></a>flatcar-stable-4459.2.3-kube-v1.28.1:<span class="w"> </span>QEMU<span class="w"> </span>QCOW2<span class="w"> </span>Image<span class="w"> </span><span class="o">(</span>v3<span class="o">)</span>,<span class="w"> </span><span class="m">10737418240</span><span class="w"> </span>bytes
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-120-1" name="__codelineno-120-1" href="#__codelineno-120-1"></a>du<span class="w"> </span>-sh<span class="w"> </span>flatcar-stable-4459.2.3-kube-v1.28.1
-<a id="__codelineno-120-2" name="__codelineno-120-2" href="#__codelineno-120-2"></a><span class="m">1</span>.2G<span class="w">    </span>flatcar-stable-4459.2.3-kube-v1.28.1
+<div class="highlight"><pre><span></span><code><a id="__codelineno-124-1" name="__codelineno-124-1" href="#__codelineno-124-1"></a>du<span class="w"> </span>-sh<span class="w"> </span>flatcar-stable-4459.2.3-kube-v1.28.1
+<a id="__codelineno-124-2" name="__codelineno-124-2" href="#__codelineno-124-2"></a><span class="m">1</span>.2G<span class="w">    </span>flatcar-stable-4459.2.3-kube-v1.28.1
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-121-1" name="__codelineno-121-1" href="#__codelineno-121-1"></a>sha256sum<span class="w"> </span>-c<span class="w"> </span>flatcar-stable-4459.2.3-kube-v1.28.1.sha256
-<a id="__codelineno-121-2" name="__codelineno-121-2" href="#__codelineno-121-2"></a>flatcar-stable-4459.2.3-kube-v1.28.1:<span class="w"> </span>OK
+<div class="highlight"><pre><span></span><code><a id="__codelineno-125-1" name="__codelineno-125-1" href="#__codelineno-125-1"></a>sha256sum<span class="w"> </span>-c<span class="w"> </span>flatcar-stable-4459.2.3-kube-v1.28.1.sha256
+<a id="__codelineno-125-2" name="__codelineno-125-2" href="#__codelineno-125-2"></a>flatcar-stable-4459.2.3-kube-v1.28.1:<span class="w"> </span>OK
 </code></pre></div>
 </div>
 </div>
@@ -5308,47 +5543,47 @@ Script located in <code>/opt/genestack/bin</code>.</p>
 <hr />
 <h3 id="step-8-upload-image-to-openstack">Step 8: Upload Image to OpenStack</h3>
 <p>Upload the built image to OpenStack Glance for use with Magnum.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="44:3"><input checked="checked" id="__tabbed_44_1" name="__tabbed_44" type="radio" /><input id="__tabbed_44_2" name="__tabbed_44" type="radio" /><input id="__tabbed_44_3" name="__tabbed_44" type="radio" /><div class="tabbed-labels"><label for="__tabbed_44_1">Upload to Glance</label><label for="__tabbed_44_2">Expected Output</label><label for="__tabbed_44_3">Verify Upload</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="45:3"><input checked="checked" id="__tabbed_45_1" name="__tabbed_45" type="radio" /><input id="__tabbed_45_2" name="__tabbed_45" type="radio" /><input id="__tabbed_45_3" name="__tabbed_45" type="radio" /><div class="tabbed-labels"><label for="__tabbed_45_1">Upload to Glance</label><label for="__tabbed_45_2">Expected Output</label><label for="__tabbed_45_3">Verify Upload</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-122-1" name="__codelineno-122-1" href="#__codelineno-122-1"></a>openstack<span class="w"> </span>image<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-122-2" name="__codelineno-122-2" href="#__codelineno-122-2"></a><span class="w">  </span>--disk-format<span class="w"> </span>qcow2<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-122-3" name="__codelineno-122-3" href="#__codelineno-122-3"></a><span class="w">  </span>--container-format<span class="w"> </span>bare<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-122-4" name="__codelineno-122-4" href="#__codelineno-122-4"></a><span class="w">  </span>--file<span class="w"> </span>flatcar<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-122-5" name="__codelineno-122-5" href="#__codelineno-122-5"></a><span class="w">  </span>--property<span class="w"> </span><span class="nv">os_distro</span><span class="o">=</span>flatcar<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-122-6" name="__codelineno-122-6" href="#__codelineno-122-6"></a><span class="w">  </span>--property<span class="w"> </span><span class="nv">os_version</span><span class="o">=</span><span class="m">4459</span>.2.3<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-122-7" name="__codelineno-122-7" href="#__codelineno-122-7"></a><span class="w">  </span>--property<span class="w"> </span><span class="nv">kube_version</span><span class="o">=</span>v1.28.1<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-122-8" name="__codelineno-122-8" href="#__codelineno-122-8"></a><span class="w">  </span>--public<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-122-9" name="__codelineno-122-9" href="#__codelineno-122-9"></a><span class="w">  </span>flatcar-k8s-v1.28.1
+<div class="highlight"><pre><span></span><code><a id="__codelineno-126-1" name="__codelineno-126-1" href="#__codelineno-126-1"></a>openstack<span class="w"> </span>image<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-126-2" name="__codelineno-126-2" href="#__codelineno-126-2"></a><span class="w">  </span>--disk-format<span class="w"> </span>qcow2<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-126-3" name="__codelineno-126-3" href="#__codelineno-126-3"></a><span class="w">  </span>--container-format<span class="w"> </span>bare<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-126-4" name="__codelineno-126-4" href="#__codelineno-126-4"></a><span class="w">  </span>--file<span class="w"> </span>flatcar<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-126-5" name="__codelineno-126-5" href="#__codelineno-126-5"></a><span class="w">  </span>--property<span class="w"> </span><span class="nv">os_distro</span><span class="o">=</span>flatcar<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-126-6" name="__codelineno-126-6" href="#__codelineno-126-6"></a><span class="w">  </span>--property<span class="w"> </span><span class="nv">os_version</span><span class="o">=</span><span class="m">4459</span>.2.3<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-126-7" name="__codelineno-126-7" href="#__codelineno-126-7"></a><span class="w">  </span>--property<span class="w"> </span><span class="nv">kube_version</span><span class="o">=</span>v1.28.1<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-126-8" name="__codelineno-126-8" href="#__codelineno-126-8"></a><span class="w">  </span>--public<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-126-9" name="__codelineno-126-9" href="#__codelineno-126-9"></a><span class="w">  </span>flatcar-k8s-v1.28.1
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-123-1" name="__codelineno-123-1" href="#__codelineno-123-1"></a>+------------------+------------------------------------------------------+
-<a id="__codelineno-123-2" name="__codelineno-123-2" href="#__codelineno-123-2"></a><span class="p">|</span><span class="w"> </span>Field<span class="w">            </span><span class="p">|</span><span class="w"> </span>Value<span class="w">                                                </span><span class="p">|</span>
-<a id="__codelineno-123-3" name="__codelineno-123-3" href="#__codelineno-123-3"></a>+------------------+------------------------------------------------------+
-<a id="__codelineno-123-4" name="__codelineno-123-4" href="#__codelineno-123-4"></a><span class="p">|</span><span class="w"> </span>container_format<span class="w"> </span><span class="p">|</span><span class="w"> </span>bare<span class="w">                                                 </span><span class="p">|</span>
-<a id="__codelineno-123-5" name="__codelineno-123-5" href="#__codelineno-123-5"></a><span class="p">|</span><span class="w"> </span>created_at<span class="w">       </span><span class="p">|</span><span class="w"> </span><span class="m">2026</span>-03-13T11:30:45Z<span class="w">                                </span><span class="p">|</span>
-<a id="__codelineno-123-6" name="__codelineno-123-6" href="#__codelineno-123-6"></a><span class="p">|</span><span class="w"> </span>disk_format<span class="w">      </span><span class="p">|</span><span class="w"> </span>qcow2<span class="w">                                                </span><span class="p">|</span>
-<a id="__codelineno-123-7" name="__codelineno-123-7" href="#__codelineno-123-7"></a><span class="p">|</span><span class="w"> </span>file<span class="w">             </span><span class="p">|</span><span class="w"> </span>/v2/images/abc123.../file<span class="w">                            </span><span class="p">|</span>
-<a id="__codelineno-123-8" name="__codelineno-123-8" href="#__codelineno-123-8"></a><span class="p">|</span><span class="w"> </span>id<span class="w">               </span><span class="p">|</span><span class="w"> </span>abc12345-6789-0def-ghij-klmnopqrstuv<span class="w">                </span><span class="p">|</span>
-<a id="__codelineno-123-9" name="__codelineno-123-9" href="#__codelineno-123-9"></a><span class="p">|</span><span class="w"> </span>min_disk<span class="w">         </span><span class="p">|</span><span class="w"> </span><span class="m">0</span><span class="w">                                                    </span><span class="p">|</span>
-<a id="__codelineno-123-10" name="__codelineno-123-10" href="#__codelineno-123-10"></a><span class="p">|</span><span class="w"> </span>min_ram<span class="w">          </span><span class="p">|</span><span class="w"> </span><span class="m">0</span><span class="w">                                                    </span><span class="p">|</span>
-<a id="__codelineno-123-11" name="__codelineno-123-11" href="#__codelineno-123-11"></a><span class="p">|</span><span class="w"> </span>name<span class="w">             </span><span class="p">|</span><span class="w"> </span>flatcar-k8s-v1.28.1<span class="w">                                  </span><span class="p">|</span>
-<a id="__codelineno-123-12" name="__codelineno-123-12" href="#__codelineno-123-12"></a><span class="p">|</span><span class="w"> </span>owner<span class="w">            </span><span class="p">|</span><span class="w"> </span>project-id-here<span class="w">                                      </span><span class="p">|</span>
-<a id="__codelineno-123-13" name="__codelineno-123-13" href="#__codelineno-123-13"></a><span class="p">|</span><span class="w"> </span>properties<span class="w">       </span><span class="p">|</span><span class="w"> </span><span class="nv">os_distro</span><span class="o">=</span><span class="s1">&#39;flatcar&#39;</span>,<span class="w"> </span><span class="nv">os_version</span><span class="o">=</span><span class="s1">&#39;4459.2.3&#39;</span>,<span class="w"> </span>...<span class="w">      </span><span class="p">|</span>
-<a id="__codelineno-123-14" name="__codelineno-123-14" href="#__codelineno-123-14"></a><span class="p">|</span><span class="w"> </span>protected<span class="w">        </span><span class="p">|</span><span class="w"> </span>False<span class="w">                                                </span><span class="p">|</span>
-<a id="__codelineno-123-15" name="__codelineno-123-15" href="#__codelineno-123-15"></a><span class="p">|</span><span class="w"> </span>schema<span class="w">           </span><span class="p">|</span><span class="w"> </span>/v2/schemas/image<span class="w">                                    </span><span class="p">|</span>
-<a id="__codelineno-123-16" name="__codelineno-123-16" href="#__codelineno-123-16"></a><span class="p">|</span><span class="w"> </span>size<span class="w">             </span><span class="p">|</span><span class="w"> </span><span class="m">1288490188</span><span class="w">                                           </span><span class="p">|</span>
-<a id="__codelineno-123-17" name="__codelineno-123-17" href="#__codelineno-123-17"></a><span class="p">|</span><span class="w"> </span>status<span class="w">           </span><span class="p">|</span><span class="w"> </span>active<span class="w">                                               </span><span class="p">|</span>
-<a id="__codelineno-123-18" name="__codelineno-123-18" href="#__codelineno-123-18"></a><span class="p">|</span><span class="w"> </span>tags<span class="w">             </span><span class="p">|</span><span class="w">                                                      </span><span class="p">|</span>
-<a id="__codelineno-123-19" name="__codelineno-123-19" href="#__codelineno-123-19"></a><span class="p">|</span><span class="w"> </span>updated_at<span class="w">       </span><span class="p">|</span><span class="w"> </span><span class="m">2026</span>-03-13T11:32:15Z<span class="w">                                </span><span class="p">|</span>
-<a id="__codelineno-123-20" name="__codelineno-123-20" href="#__codelineno-123-20"></a><span class="p">|</span><span class="w"> </span>visibility<span class="w">       </span><span class="p">|</span><span class="w"> </span>public<span class="w">                                               </span><span class="p">|</span>
-<a id="__codelineno-123-21" name="__codelineno-123-21" href="#__codelineno-123-21"></a>+------------------+------------------------------------------------------+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-127-1" name="__codelineno-127-1" href="#__codelineno-127-1"></a>+------------------+------------------------------------------------------+
+<a id="__codelineno-127-2" name="__codelineno-127-2" href="#__codelineno-127-2"></a><span class="p">|</span><span class="w"> </span>Field<span class="w">            </span><span class="p">|</span><span class="w"> </span>Value<span class="w">                                                </span><span class="p">|</span>
+<a id="__codelineno-127-3" name="__codelineno-127-3" href="#__codelineno-127-3"></a>+------------------+------------------------------------------------------+
+<a id="__codelineno-127-4" name="__codelineno-127-4" href="#__codelineno-127-4"></a><span class="p">|</span><span class="w"> </span>container_format<span class="w"> </span><span class="p">|</span><span class="w"> </span>bare<span class="w">                                                 </span><span class="p">|</span>
+<a id="__codelineno-127-5" name="__codelineno-127-5" href="#__codelineno-127-5"></a><span class="p">|</span><span class="w"> </span>created_at<span class="w">       </span><span class="p">|</span><span class="w"> </span><span class="m">2026</span>-03-13T11:30:45Z<span class="w">                                </span><span class="p">|</span>
+<a id="__codelineno-127-6" name="__codelineno-127-6" href="#__codelineno-127-6"></a><span class="p">|</span><span class="w"> </span>disk_format<span class="w">      </span><span class="p">|</span><span class="w"> </span>qcow2<span class="w">                                                </span><span class="p">|</span>
+<a id="__codelineno-127-7" name="__codelineno-127-7" href="#__codelineno-127-7"></a><span class="p">|</span><span class="w"> </span>file<span class="w">             </span><span class="p">|</span><span class="w"> </span>/v2/images/abc123.../file<span class="w">                            </span><span class="p">|</span>
+<a id="__codelineno-127-8" name="__codelineno-127-8" href="#__codelineno-127-8"></a><span class="p">|</span><span class="w"> </span>id<span class="w">               </span><span class="p">|</span><span class="w"> </span>abc12345-6789-0def-ghij-klmnopqrstuv<span class="w">                </span><span class="p">|</span>
+<a id="__codelineno-127-9" name="__codelineno-127-9" href="#__codelineno-127-9"></a><span class="p">|</span><span class="w"> </span>min_disk<span class="w">         </span><span class="p">|</span><span class="w"> </span><span class="m">0</span><span class="w">                                                    </span><span class="p">|</span>
+<a id="__codelineno-127-10" name="__codelineno-127-10" href="#__codelineno-127-10"></a><span class="p">|</span><span class="w"> </span>min_ram<span class="w">          </span><span class="p">|</span><span class="w"> </span><span class="m">0</span><span class="w">                                                    </span><span class="p">|</span>
+<a id="__codelineno-127-11" name="__codelineno-127-11" href="#__codelineno-127-11"></a><span class="p">|</span><span class="w"> </span>name<span class="w">             </span><span class="p">|</span><span class="w"> </span>flatcar-k8s-v1.28.1<span class="w">                                  </span><span class="p">|</span>
+<a id="__codelineno-127-12" name="__codelineno-127-12" href="#__codelineno-127-12"></a><span class="p">|</span><span class="w"> </span>owner<span class="w">            </span><span class="p">|</span><span class="w"> </span>project-id-here<span class="w">                                      </span><span class="p">|</span>
+<a id="__codelineno-127-13" name="__codelineno-127-13" href="#__codelineno-127-13"></a><span class="p">|</span><span class="w"> </span>properties<span class="w">       </span><span class="p">|</span><span class="w"> </span><span class="nv">os_distro</span><span class="o">=</span><span class="s1">&#39;flatcar&#39;</span>,<span class="w"> </span><span class="nv">os_version</span><span class="o">=</span><span class="s1">&#39;4459.2.3&#39;</span>,<span class="w"> </span>...<span class="w">      </span><span class="p">|</span>
+<a id="__codelineno-127-14" name="__codelineno-127-14" href="#__codelineno-127-14"></a><span class="p">|</span><span class="w"> </span>protected<span class="w">        </span><span class="p">|</span><span class="w"> </span>False<span class="w">                                                </span><span class="p">|</span>
+<a id="__codelineno-127-15" name="__codelineno-127-15" href="#__codelineno-127-15"></a><span class="p">|</span><span class="w"> </span>schema<span class="w">           </span><span class="p">|</span><span class="w"> </span>/v2/schemas/image<span class="w">                                    </span><span class="p">|</span>
+<a id="__codelineno-127-16" name="__codelineno-127-16" href="#__codelineno-127-16"></a><span class="p">|</span><span class="w"> </span>size<span class="w">             </span><span class="p">|</span><span class="w"> </span><span class="m">1288490188</span><span class="w">                                           </span><span class="p">|</span>
+<a id="__codelineno-127-17" name="__codelineno-127-17" href="#__codelineno-127-17"></a><span class="p">|</span><span class="w"> </span>status<span class="w">           </span><span class="p">|</span><span class="w"> </span>active<span class="w">                                               </span><span class="p">|</span>
+<a id="__codelineno-127-18" name="__codelineno-127-18" href="#__codelineno-127-18"></a><span class="p">|</span><span class="w"> </span>tags<span class="w">             </span><span class="p">|</span><span class="w">                                                      </span><span class="p">|</span>
+<a id="__codelineno-127-19" name="__codelineno-127-19" href="#__codelineno-127-19"></a><span class="p">|</span><span class="w"> </span>updated_at<span class="w">       </span><span class="p">|</span><span class="w"> </span><span class="m">2026</span>-03-13T11:32:15Z<span class="w">                                </span><span class="p">|</span>
+<a id="__codelineno-127-20" name="__codelineno-127-20" href="#__codelineno-127-20"></a><span class="p">|</span><span class="w"> </span>visibility<span class="w">       </span><span class="p">|</span><span class="w"> </span>public<span class="w">                                               </span><span class="p">|</span>
+<a id="__codelineno-127-21" name="__codelineno-127-21" href="#__codelineno-127-21"></a>+------------------+------------------------------------------------------+
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-124-1" name="__codelineno-124-1" href="#__codelineno-124-1"></a>openstack<span class="w"> </span>image<span class="w"> </span>list<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>flatcar
-<a id="__codelineno-124-2" name="__codelineno-124-2" href="#__codelineno-124-2"></a><span class="p">|</span><span class="w"> </span>abc12345-6789-0def-ghij-klmnopqrstuv<span class="w"> </span><span class="p">|</span><span class="w"> </span>flatcar-k8s-v1.28.1<span class="w"> </span><span class="p">|</span><span class="w"> </span>active<span class="w"> </span><span class="p">|</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-128-1" name="__codelineno-128-1" href="#__codelineno-128-1"></a>openstack<span class="w"> </span>image<span class="w"> </span>list<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>flatcar
+<a id="__codelineno-128-2" name="__codelineno-128-2" href="#__codelineno-128-2"></a><span class="p">|</span><span class="w"> </span>abc12345-6789-0def-ghij-klmnopqrstuv<span class="w"> </span><span class="p">|</span><span class="w"> </span>flatcar-k8s-v1.28.1<span class="w"> </span><span class="p">|</span><span class="w"> </span>active<span class="w"> </span><span class="p">|</span>
 </code></pre></div>
 </div>
 </div>
@@ -5410,7 +5645,7 @@ Script located in <code>/opt/genestack/bin</code>.</p>
 <details class="warning">
 <summary>Build Fails: Cannot Download Flatcar Image</summary>
 <p><strong>Error:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-125-1" name="__codelineno-125-1" href="#__codelineno-125-1"></a>==&gt; qemu.flatcar: Error downloading Flatcar image
+<div class="highlight"><pre><span></span><code><a id="__codelineno-129-1" name="__codelineno-129-1" href="#__codelineno-129-1"></a>==&gt; qemu.flatcar: Error downloading Flatcar image
 </code></pre></div></p>
 <p><strong>Solutions:</strong></p>
 <ul>
@@ -5423,8 +5658,8 @@ Script located in <code>/opt/genestack/bin</code>.</p>
 <details class="warning">
 <summary>Build Fails: Ansible Provisioning Error</summary>
 <p><strong>Error:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-126-1" name="__codelineno-126-1" href="#__codelineno-126-1"></a>==&gt; qemu.flatcar: Provisioning with Ansible...
-<a id="__codelineno-126-2" name="__codelineno-126-2" href="#__codelineno-126-2"></a>==&gt; qemu.flatcar: fatal: [default]: FAILED!
+<div class="highlight"><pre><span></span><code><a id="__codelineno-130-1" name="__codelineno-130-1" href="#__codelineno-130-1"></a>==&gt; qemu.flatcar: Provisioning with Ansible...
+<a id="__codelineno-130-2" name="__codelineno-130-2" href="#__codelineno-130-2"></a>==&gt; qemu.flatcar: fatal: [default]: FAILED!
 </code></pre></div></p>
 <p><strong>Solutions:</strong></p>
 <ul>
@@ -5437,7 +5672,7 @@ Script located in <code>/opt/genestack/bin</code>.</p>
 <details class="warning">
 <summary>Build Fails: QEMU/KVM Issues</summary>
 <p><strong>Error:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-127-1" name="__codelineno-127-1" href="#__codelineno-127-1"></a>==&gt; qemu.flatcar: Error launching VM
+<div class="highlight"><pre><span></span><code><a id="__codelineno-131-1" name="__codelineno-131-1" href="#__codelineno-131-1"></a>==&gt; qemu.flatcar: Error launching VM
 </code></pre></div></p>
 <p><strong>Solutions:</strong></p>
 <ul>
@@ -5450,7 +5685,7 @@ Script located in <code>/opt/genestack/bin</code>.</p>
 <details class="warning">
 <summary>Image Upload Fails</summary>
 <p><strong>Error:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-128-1" name="__codelineno-128-1" href="#__codelineno-128-1"></a>Error: Unable to upload image to Glance
+<div class="highlight"><pre><span></span><code><a id="__codelineno-132-1" name="__codelineno-132-1" href="#__codelineno-132-1"></a>Error: Unable to upload image to Glance
 </code></pre></div></p>
 <p><strong>Solutions:</strong></p>
 <ul>
@@ -5470,12 +5705,12 @@ Script located in <code>/opt/genestack/bin</code>.</p>
 <li><strong>Set custom kernel parameters</strong> in the build variables</li>
 </ol>
 <p>Example custom configuration:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-129-1" name="__codelineno-129-1" href="#__codelineno-129-1"></a><span class="p">{</span>
-<a id="__codelineno-129-2" name="__codelineno-129-2" href="#__codelineno-129-2"></a><span class="w">  </span><span class="nt">&quot;kubernetes_semver&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;v1.28.1&quot;</span><span class="p">,</span>
-<a id="__codelineno-129-3" name="__codelineno-129-3" href="#__codelineno-129-3"></a><span class="w">  </span><span class="nt">&quot;kubernetes_series&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;v1.28&quot;</span><span class="p">,</span>
-<a id="__codelineno-129-4" name="__codelineno-129-4" href="#__codelineno-129-4"></a><span class="w">  </span><span class="nt">&quot;additional_packages&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vim,htop,curl&quot;</span><span class="p">,</span>
-<a id="__codelineno-129-5" name="__codelineno-129-5" href="#__codelineno-129-5"></a><span class="w">  </span><span class="nt">&quot;custom_role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-custom-role&quot;</span>
-<a id="__codelineno-129-6" name="__codelineno-129-6" href="#__codelineno-129-6"></a><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-133-1" name="__codelineno-133-1" href="#__codelineno-133-1"></a><span class="p">{</span>
+<a id="__codelineno-133-2" name="__codelineno-133-2" href="#__codelineno-133-2"></a><span class="w">  </span><span class="nt">&quot;kubernetes_semver&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;v1.28.1&quot;</span><span class="p">,</span>
+<a id="__codelineno-133-3" name="__codelineno-133-3" href="#__codelineno-133-3"></a><span class="w">  </span><span class="nt">&quot;kubernetes_series&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;v1.28&quot;</span><span class="p">,</span>
+<a id="__codelineno-133-4" name="__codelineno-133-4" href="#__codelineno-133-4"></a><span class="w">  </span><span class="nt">&quot;additional_packages&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vim,htop,curl&quot;</span><span class="p">,</span>
+<a id="__codelineno-133-5" name="__codelineno-133-5" href="#__codelineno-133-5"></a><span class="w">  </span><span class="nt">&quot;custom_role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-custom-role&quot;</span>
+<a id="__codelineno-133-6" name="__codelineno-133-6" href="#__codelineno-133-6"></a><span class="p">}</span>
 </code></pre></div>
 </details>
 <hr />
