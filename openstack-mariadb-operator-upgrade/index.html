@@ -570,6 +570,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#step-7-run-the-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 7: Run the migration
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -606,23 +617,6 @@
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="0.38.1">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#run-the-migration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run the migration
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
         
@@ -952,26 +946,7 @@ This strategy ensures safer rolling updates by upgrading replicas first.</p>
 <p>Set <code>autoUpdateDataPlane: false</code> as per the <a href="#preflight-update-mariadb-image-and-enable-autoupdatedataplane">preflight section</a> and re-apply:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>kubectl<span class="w"> </span>--namespace<span class="w"> </span>openstack<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>/etc/genestack/kustomize/mariadb-cluster/overlay
 </code></pre></div>
-<hr />
-<h2 id="version-specific-notes"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m21.41 11.58-9-9A2 2 0 0 0 11 2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 .59 1.41l9 9A2 2 0 0 0 13 22a2 2 0 0 0 1.41-.59l7-7A2 2 0 0 0 22 13a2 2 0 0 0-.59-1.42M6.5 8A1.5 1.5 0 1 1 8 6.5 1.5 1.5 0 0 1 6.5 8m5.09 7.41-4-4L9 10l4 4m2.59.41-5.5-5.5L11.5 7.5 17 13Z"/></svg></span> Version-Specific Notes<a class="headerlink" href="#version-specific-notes" title="Permanent link">&para;</a></h2>
-<h3 id="0371">0.37.1<a class="headerlink" href="#0371" title="Permanent link">&para;</a></h3>
-<div class="admonition note">
-<p class="admonition-title">References</p>
-<ul>
-<li><a href="https://github.com/mariadb-operator/mariadb-operator/releases/tag/0.37.1">Release 0.37.1</a></li>
-<li><a href="https://github.com/mariadb-operator/mariadb-operator/blob/main/docs/releases/UPGRADE_0.37.1.md">Upgrade Guide 0.37.1</a></li>
-</ul>
-</div>
-<p>Follow the <a href="#per-version-upgrade-procedure">standard procedure</a> above. No special steps required.</p>
-<h3 id="0381">0.38.1<a class="headerlink" href="#0381" title="Permanent link">&para;</a></h3>
-<div class="admonition note">
-<p class="admonition-title">References</p>
-<ul>
-<li><a href="https://github.com/mariadb-operator/mariadb-operator/releases/tag/0.38.1">Release 0.38.1</a></li>
-<li><a href="https://github.com/mariadb-operator/mariadb-operator/blob/main/docs/releases/UPGRADE_0.38.0.md">Upgrade Guide 0.38.0</a></li>
-<li><a href="https://github.com/mariadb-operator/mariadb-operator/blob/main/docs/releases/UPGRADE_0.38.1.md">Upgrade Guide 0.38.1</a></li>
-</ul>
-</div>
+<h3 id="step-7-run-the-migration"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5M7 15a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg></span> Step 7: Run the migration<a class="headerlink" href="#step-7-run-the-migration" title="Permanent link">&para;</a></h3>
 <div class="admonition warning">
 <p class="admonition-title">Replication Migration Required</p>
 <p>After the operator upgrade, you must run the replication migration script.</p>
@@ -984,7 +959,6 @@ For each replica it:</p>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Waits for it to come back ready</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Verifies replication is working again</li>
 </ul>
-<h4 id="run-the-migration">Run the migration<a class="headerlink" href="#run-the-migration" title="Permanent link">&para;</a></h4>
 <p>Set the required environment variables:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MARIADB_NAME</span><span class="o">=</span>mariadb-cluster
 <a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MARIADB_NAMESPACE</span><span class="o">=</span>openstack
@@ -1081,7 +1055,30 @@ For each replica it:</p>
 <a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">  </span>-u<span class="w"> </span>root<span class="w"> </span>-p<span class="s2">&quot;</span><span class="nv">$MARIADB_ROOT_PASSWORD</span><span class="s2">&quot;</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;KILL &lt;thread_id&gt;;&quot;</span>
 </code></pre></div>
 </details>
+<hr />
+<h2 id="version-specific-notes"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m21.41 11.58-9-9A2 2 0 0 0 11 2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 .59 1.41l9 9A2 2 0 0 0 13 22a2 2 0 0 0 1.41-.59l7-7A2 2 0 0 0 22 13a2 2 0 0 0-.59-1.42M6.5 8A1.5 1.5 0 1 1 8 6.5 1.5 1.5 0 0 1 6.5 8m5.09 7.41-4-4L9 10l4 4m2.59.41-5.5-5.5L11.5 7.5 17 13Z"/></svg></span> Version-Specific Notes<a class="headerlink" href="#version-specific-notes" title="Permanent link">&para;</a></h2>
+<h3 id="0371">0.37.1<a class="headerlink" href="#0371" title="Permanent link">&para;</a></h3>
+<p>Skip 0.37.0</p>
+<div class="admonition note">
+<p class="admonition-title">References</p>
+<ul>
+<li><a href="https://github.com/mariadb-operator/mariadb-operator/releases/tag/0.37.1">Release 0.37.1</a></li>
+<li><a href="https://github.com/mariadb-operator/mariadb-operator/blob/main/docs/releases/UPGRADE_0.37.1.md">Upgrade Guide 0.37.1</a></li>
+</ul>
+</div>
+<p>Follow the <a href="#per-version-upgrade-procedure">standard procedure</a> above. No special steps required.</p>
+<h3 id="0381">0.38.1<a class="headerlink" href="#0381" title="Permanent link">&para;</a></h3>
+<p>Skip 0.38.0</p>
+<div class="admonition note">
+<p class="admonition-title">References</p>
+<ul>
+<li><a href="https://github.com/mariadb-operator/mariadb-operator/releases/tag/0.38.1">Release 0.38.1</a></li>
+<li><a href="https://github.com/mariadb-operator/mariadb-operator/blob/main/docs/releases/UPGRADE_0.38.0.md">Upgrade Guide 0.38.0</a></li>
+<li><a href="https://github.com/mariadb-operator/mariadb-operator/blob/main/docs/releases/UPGRADE_0.38.1.md">Upgrade Guide 0.38.1</a></li>
+</ul>
+</div>
 <h3 id="2584">25.8.4<a class="headerlink" href="#2584" title="Permanent link">&para;</a></h3>
+<p>Skip 25.08.0</p>
 <div class="admonition note">
 <p class="admonition-title">References</p>
 <ul>
@@ -1091,10 +1088,22 @@ For each replica it:</p>
 </ul>
 </div>
 <div class="admonition warning">
-<p class="admonition-title">Patch-by-patch upgrade required</p>
-<p>Skip 25.08.0, start at 25.8.1. Step through each patch release using the standard procedure:</p>
+<p class="admonition-title">Patch-by-patch upgrade is NOT required for 25.8.x</p>
+<p>You do not need to step through each patch releases in between 25.8.x - using the above standard procedure:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>25.8.1 → 25.8.2 → 25.8.3 → 25.8.4
 </code></pre></div>
+<p>If you are migrating from <code>0.38.1</code>, check the <code>helm search repo mariadb-operator/mariadb-operator --versions</code> output:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>mariadb-operator/mariadb-operator       25.8.4          25.8.4      Run and operate MariaDB in a cloud native way
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>mariadb-operator/mariadb-operator       25.8.3          25.8.3      Run and operate MariaDB in a cloud native way
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>mariadb-operator/mariadb-operator       25.8.2          25.8.2      Run and operate MariaDB in a cloud native way
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a>mariadb-operator/mariadb-operator       25.8.1          25.8.1      Run and operate MariaDB in a cloud native way
+<a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a>mariadb-operator/mariadb-operator       25.08.0         25.08.0     Run and operate MariaDB in a cloud native way
+<a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>mariadb-operator/mariadb-operator       0.38.1          0.38.1      Run and operate MariaDB in a cloud native way
+<a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a>mariadb-operator/mariadb-operator       0.38.0          0.38.0      Run and operate MariaDB in a cloud native way
+<a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a>mariadb-operator/mariadb-operator       0.37.1          0.37.1      Run and operate MariaDB in a cloud native way
+<a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a>mariadb-operator/mariadb-operator       0.37.0          0.37.0      Run and operate MariaDB in a cloud native way
+</code></pre></div>
+<p>and you can directly jump from <code>0.38.1 → 25.8.4</code></p>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">Kubernetes version requirement</p>
@@ -1103,21 +1112,28 @@ For each replica it:</p>
 <details class="bug">
 <summary>Known Issue: Webhook cert validation loop</summary>
 <p>If operator pods are stuck logging:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="p">{</span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="s2">&quot;info&quot;</span><span class="p">,</span><span class="nt">&quot;ts&quot;</span><span class="p">:</span><span class="err">...</span><span class="p">,</span><span class="nt">&quot;logger&quot;</span><span class="p">:</span><span class="s2">&quot;setup&quot;</span><span class="p">,</span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="s2">&quot;Validating certs&quot;</span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="p">{</span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="s2">&quot;info&quot;</span><span class="p">,</span><span class="nt">&quot;ts&quot;</span><span class="p">:</span><span class="err">...</span><span class="p">,</span><span class="nt">&quot;logger&quot;</span><span class="p">:</span><span class="s2">&quot;setup&quot;</span><span class="p">,</span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="s2">&quot;Validating certs&quot;</span><span class="p">}</span>
 </code></pre></div>
 <p>Check the certificate:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>certificate<span class="w"> </span>-n<span class="w"> </span>mariadb-system
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>certificate<span class="w"> </span>-n<span class="w"> </span>mariadb-system
 </code></pre></div>
 <p>If you see <code>Existing private key is not up to date for spec: [spec.privateKey.algorithm]</code>,
 fix by deleting the secret and webhook deployment:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>secret<span class="w"> </span>mariadb-operator-webhook-cert<span class="w"> </span>-n<span class="w"> </span>mariadb-system
-<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span>-n<span class="w"> </span>mariadb-system
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>secret<span class="w"> </span>mariadb-operator-webhook-cert<span class="w"> </span>-n<span class="w"> </span>mariadb-system
+<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span>-n<span class="w"> </span>mariadb-system
 </code></pre></div>
 <p>Then re-run the install script to recreate them.</p>
 </details>
 <h3 id="25104">25.10.4<a class="headerlink" href="#25104" title="Permanent link">&para;</a></h3>
-<p>Follow the <a href="#per-version-upgrade-procedure">standard procedure</a>. No special steps required beyond the
-standard preflight and upgrade.</p>
+<p>Skip 25.10.0, You do not need to step through each patch releases in between 25.8.x - using the above standard procedure.</p>
+<div class="admonition warning">
+<p class="admonition-title">Patch-by-patch upgrade is NOT required for 25.10.x</p>
+<p>You do not need to step through each patch releases in between 25.8.x - using the above standard procedure:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>25.10.1 → 25.10.2 → 25.10.3 → 25.10.4
+</code></pre></div>
+</div>
+<p>For <code>25.10.4</code>, Follow the <a href="#per-version-upgrade-procedure">standard procedure</a>. 
+No special steps required beyond the standard preflight and upgrade.</p>
 <h3 id="2630">26.3.0<a class="headerlink" href="#2630" title="Permanent link">&para;</a></h3>
 <div class="admonition note">
 <p class="admonition-title">References</p>
@@ -1130,9 +1146,9 @@ standard preflight and upgrade.</p>
 <p><code>syncBinlog</code> changed from <strong>boolean</strong> to <strong>integer</strong>.</p>
 <p>If the existing MariaDB CR has <code>syncBinlog: true</code>, the new webhook will
 reject patches. Remove the webhook before patching:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>validatingwebhookconfiguration<span class="w"> </span>mariadb-operator-webhook
-<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>kubectl<span class="w"> </span>-n<span class="w"> </span>openstack<span class="w"> </span>patch<span class="w"> </span>mariadb<span class="w"> </span>mariadb-cluster<span class="w"> </span>--type<span class="w"> </span>merge<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;spec&quot;:{&quot;replication&quot;:{&quot;syncBinlog&quot;:1}}}&#39;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>validatingwebhookconfiguration<span class="w"> </span>mariadb-operator-webhook
+<a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a>kubectl<span class="w"> </span>-n<span class="w"> </span>openstack<span class="w"> </span>patch<span class="w"> </span>mariadb<span class="w"> </span>mariadb-cluster<span class="w"> </span>--type<span class="w"> </span>merge<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;spec&quot;:{&quot;replication&quot;:{&quot;syncBinlog&quot;:1}}}&#39;</span>
 </code></pre></div>
 <p>Then re-run the install script to restore the webhook.</p>
 </div>
@@ -1142,15 +1158,15 @@ reject patches. Remove the webhook before patching:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Old Format</label><label for="__tabbed_3_2">New Format</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="nt">config</span><span class="p">:</span>
-<a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="w">  </span><span class="nt">mariadbImageName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">repo/image:tag_version</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="nt">config</span><span class="p">:</span>
+<a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a><span class="w">  </span><span class="nt">mariadbImageName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">repo/image:tag_version</span>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="nt">config</span><span class="p">:</span>
-<a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="w">  </span><span class="nt">mariadbImage</span><span class="p">:</span>
-<a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="w">    </span><span class="nt">repository</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">repo/image</span>
-<a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a><span class="w">    </span><span class="nt">tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;version&gt;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="nt">config</span><span class="p">:</span>
+<a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="w">  </span><span class="nt">mariadbImage</span><span class="p">:</span>
+<a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a><span class="w">    </span><span class="nt">repository</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">repo/image</span>
+<a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a><span class="w">    </span><span class="nt">tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;version&gt;</span>
 </code></pre></div>
 </div>
 </div>
@@ -1167,18 +1183,18 @@ uses the new format before upgrading to 26.3.0.</p>
 <h3 id="webhook-blocks-patches-due-to-old-stored-values">Webhook blocks patches due to old stored values<a class="headerlink" href="#webhook-blocks-patches-due-to-old-stored-values" title="Permanent link">&para;</a></h3>
 <p>If the webhook rejects changes because the existing resource in etcd has
 old-format values (e.g. <code>syncBinlog: true</code>), temporarily remove the webhook:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>kubectl<span class="w"> </span>scale<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator<span class="w"> </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span>--replicas<span class="o">=</span><span class="m">0</span>
-<a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a>kubectl<span class="w"> </span>scale<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span>--replicas<span class="o">=</span><span class="m">0</span>
-<a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>validatingwebhookconfiguration<span class="w"> </span>mariadb-operator-webhook
-<a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>mutatingwebhookconfiguration<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">true</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a>kubectl<span class="w"> </span>scale<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator<span class="w"> </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span>--replicas<span class="o">=</span><span class="m">0</span>
+<a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a>kubectl<span class="w"> </span>scale<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span>--replicas<span class="o">=</span><span class="m">0</span>
+<a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>validatingwebhookconfiguration<span class="w"> </span>mariadb-operator-webhook
+<a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>mutatingwebhookconfiguration<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">true</span>
 </code></pre></div>
 <p>Apply the fix, then re-run the install script to restore everything.</p>
 <h3 id="webhook-cert-validation-loop">Webhook cert validation loop<a class="headerlink" href="#webhook-cert-validation-loop" title="Permanent link">&para;</a></h3>
 <p>If operator pods are stuck in a <code>Validating certs</code> loop, delete the webhook
 cert secret and deployment, then re-run the install script:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>secret<span class="w"> </span>mariadb-operator-webhook-cert<span class="w"> </span>-n<span class="w"> </span>mariadb-system
-<a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span>-n<span class="w"> </span>mariadb-system
-<a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a>/opt/genestack/bin/install-mariadb-operator.sh
+<div class="highlight"><pre><span></span><code><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>secret<span class="w"> </span>mariadb-operator-webhook-cert<span class="w"> </span>-n<span class="w"> </span>mariadb-system
+<a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span>-n<span class="w"> </span>mariadb-system
+<a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a>/opt/genestack/bin/install-mariadb-operator.sh
 </code></pre></div>
 
 
