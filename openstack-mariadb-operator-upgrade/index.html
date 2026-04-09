@@ -9,6 +9,8 @@
       
       
       
+        <link rel="prev" href="../ntu-msai-learning-plan/">
+      
       
       
         
@@ -19,7 +21,7 @@
     
     
       
-        <title>MariaDB Operator Upgrade Runbook - Cloud Native Field Notes</title>
+        <title>MariaDB Operator Upgrade - Cloud Native Field Notes</title>
       
     
     
@@ -108,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              MariaDB Operator Upgrade Runbook
+              MariaDB Operator Upgrade
             
           </span>
         </div>
@@ -329,6 +331,418 @@
   
 
       </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MariaDB Operator Upgrade
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MariaDB Operator Upgrade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#check-current-installed-versions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check current installed versions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-helm-repo-and-list-available-chart-versions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update Helm repo and list available chart versions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pre-upgrade-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pre-Upgrade Checks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pre-Upgrade Checks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-retrieve-mariadb-root-password" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Retrieve MariaDB root password
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-create-full-database-backup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Create full database backup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-check-database-sizes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Check database sizes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-verify-galera-cluster-health" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Verify Galera cluster health
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-verify-cluster-and-pod-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Verify cluster and pod status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-verify-current-operator-webhook-and-mariadb-image-versions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Verify current operator, webhook, and MariaDB image versions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#per-version-upgrade-procedure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-Version Upgrade Procedure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Per-Version Upgrade Procedure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#preflight-update-mariadb-image-and-enable-autoupdatedataplane" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preflight: Update MariaDB image and enable autoUpdateDataPlane
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-1-scale-down-operator-and-remove-webhooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Scale down operator and remove webhooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-update-chart-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Update chart version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-uninstall-and-reinstall-operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Uninstall and reinstall operator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-verify-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Verify deployment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-post-upgrade-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Post-upgrade validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-disable-autoupdatedataplane" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 6: Disable autoUpdateDataPlane
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-7-run-the-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 7: Run the migration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#version-specific-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version-Specific Notes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Version-Specific Notes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#0371" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.37.1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0381" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.38.1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2584" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        25.8.4
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25104" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        25.10.4
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2630" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        26.3.0
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webhook-blocks-patches-due-to-old-stored-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Webhook blocks patches due to old stored values
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webhook-cert-validation-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Webhook cert validation loop
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
