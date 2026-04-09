@@ -486,10 +486,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-verify-galera-cluster-health" class="md-nav__link">
+  <a href="#4-verify-cluster-health" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Verify Galera cluster health
+        4. Verify cluster health
       
     </span>
   </a>
@@ -613,10 +613,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-7-run-the-migration" class="md-nav__link">
+  <a href="#step-7-run-the-migration-replication-clusters-only" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 7: Run the migration
+        Step 7: Run the migration (Replication clusters only)
       
     </span>
   </a>
@@ -858,10 +858,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-verify-galera-cluster-health" class="md-nav__link">
+  <a href="#4-verify-cluster-health" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Verify Galera cluster health
+        4. Verify cluster health
       
     </span>
   </a>
@@ -985,10 +985,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-7-run-the-migration" class="md-nav__link">
+  <a href="#step-7-run-the-migration-replication-clusters-only" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 7: Run the migration
+        Step 7: Run the migration (Replication clusters only)
       
     </span>
   </a>
@@ -1185,7 +1185,11 @@ cause DB downtime.</p>
 <a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">table_schema</span>
 <a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">Size_MB</span><span class="w"> </span><span class="k">DESC</span><span class="p">;</span><span class="err">&quot;</span>
 </code></pre></div>
-<h3 id="4-verify-galera-cluster-health">4. Verify Galera cluster health<a class="headerlink" href="#4-verify-galera-cluster-health" title="Permanent link">&para;</a></h3>
+<h3 id="4-verify-cluster-health">4. Verify cluster health<a class="headerlink" href="#4-verify-cluster-health" title="Permanent link">&para;</a></h3>
+<p>Determine your cluster topology and run the appropriate checks:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Galera Cluster</label><label for="__tabbed_1_2">Primary/Replica (Replication)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">kubectl</span><span class="w"> </span><span class="k">exec</span><span class="w"> </span><span class="o">-</span><span class="n">it</span><span class="w"> </span><span class="n">mariadb</span><span class="o">-</span><span class="k">cluster</span><span class="o">-</span><span class="mi">0</span><span class="w"> </span><span class="o">-</span><span class="n">n</span><span class="w"> </span><span class="n">openstack</span><span class="w"> </span><span class="c1">-- mariadb -u root -p&quot;$MARIADB_ROOT_PASSWORD&quot; -e &quot;</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">SHOW</span><span class="w"> </span><span class="n">STATUS</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;wsrep_cluster_size&#39;</span><span class="p">;</span>
 <a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="k">SHOW</span><span class="w"> </span><span class="n">STATUS</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;wsrep_cluster_status&#39;</span><span class="p">;</span>
@@ -1216,46 +1220,93 @@ cause DB downtime.</p>
 </tbody>
 </table>
 </div>
+</div>
+<div class="tabbed-block">
+<p>Check the primary:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>mariadb<span class="w"> </span>mariadb-cluster<span class="w"> </span>-n<span class="w"> </span>openstack<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&quot;{.status.currentPrimary}&quot;</span>
+</code></pre></div>
+<p>Check replication status on each replica:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">kubectl</span><span class="w"> </span><span class="k">exec</span><span class="w"> </span><span class="o">-</span><span class="n">it</span><span class="w"> </span><span class="n">mariadb</span><span class="o">-</span><span class="k">cluster</span><span class="o">-</span><span class="mi">1</span><span class="w"> </span><span class="o">-</span><span class="n">n</span><span class="w"> </span><span class="n">openstack</span><span class="w"> </span><span class="c1">-- mariadb -u root -p&quot;$MARIADB_ROOT_PASSWORD&quot; -e &quot;</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="k">SHOW</span><span class="w"> </span><span class="n">REPLICA</span><span class="w"> </span><span class="n">STATUS</span><span class="err">\</span><span class="k">G</span><span class="err">&quot;</span>
+</code></pre></div>
+<div class="admonition success">
+<p class="admonition-title">Expected Values</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Slave_IO_Running</code></td>
+<td><code>Yes</code></td>
+</tr>
+<tr>
+<td><code>Slave_SQL_Running</code></td>
+<td><code>Yes</code></td>
+</tr>
+<tr>
+<td><code>Seconds_Behind_Master</code></td>
+<td><code>0</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">How to identify your topology</p>
+<p>Check the MariaDB CR spec:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>mariadb<span class="w"> </span>mariadb-cluster<span class="w"> </span>-n<span class="w"> </span>openstack<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&quot;{.spec.galera.enabled}&quot;</span>
+</code></pre></div>
+<ul>
+<li>Returns <code>true</code> → Galera cluster</li>
+<li>Returns empty/false → Primary/Replica (replication)</li>
+</ul>
+</div>
 <h3 id="5-verify-cluster-and-pod-status">5. Verify cluster and pod status<a class="headerlink" href="#5-verify-cluster-and-pod-status" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>mariadb<span class="w"> </span>-n<span class="w"> </span>openstack
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-l<span class="w"> </span>app.kubernetes.io/name<span class="o">=</span>mariadb<span class="w"> </span>-n<span class="w"> </span>openstack
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>kubectl<span class="w"> </span>get<span class="w"> </span>mariadb<span class="w"> </span>-n<span class="w"> </span>openstack<span class="w"> </span>-o<span class="w"> </span>yaml<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-B1<span class="w"> </span>autoFailover<span class="w">  </span><span class="c1">#Read &quot;Disclaimer&quot; below</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>kubectl<span class="w"> </span>get<span class="w"> </span>crd<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>mariadb
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>mariadb<span class="w"> </span>-n<span class="w"> </span>openstack
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-l<span class="w"> </span>app.kubernetes.io/name<span class="o">=</span>mariadb<span class="w"> </span>-n<span class="w"> </span>openstack
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>kubectl<span class="w"> </span>get<span class="w"> </span>mariadb<span class="w"> </span>-n<span class="w"> </span>openstack<span class="w"> </span>-o<span class="w"> </span>yaml<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-B1<span class="w"> </span>autoFailover<span class="w">  </span><span class="c1">#Read &quot;Disclaimer&quot; below</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>kubectl<span class="w"> </span>get<span class="w"> </span>crd<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>mariadb
 </code></pre></div>
 <div class="admonition info">
 <p class="admonition-title">Disclaimer</p>
 <p>Only present on versions &gt;= 25.10.4</p>
 </div>
 <h3 id="6-verify-current-operator-webhook-and-mariadb-image-versions">6. Verify current operator, webhook, and MariaDB image versions<a class="headerlink" href="#6-verify-current-operator-webhook-and-mariadb-image-versions" title="Permanent link">&para;</a></h3>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Operator Image</label><label for="__tabbed_1_2">Webhook Image</label><label for="__tabbed_1_3">MariaDB Image</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:3"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><input id="__tabbed_2_3" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Operator Image</label><label for="__tabbed_2_2">Webhook Image</label><label for="__tabbed_2_3">MariaDB Image</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span>-o<span class="w"> </span>wide
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span>-l<span class="w"> </span>app.kubernetes.io/name<span class="o">=</span>mariadb-operator<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">    </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.items[0].metadata.name}&#39;</span><span class="k">)</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">    </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">    </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&quot;{..image}&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-s<span class="w"> </span><span class="s1">&#39;[:space:]&#39;</span><span class="w"> </span><span class="s1">&#39;\n&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-u
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span>-o<span class="w"> </span>wide
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span>-l<span class="w"> </span>app.kubernetes.io/name<span class="o">=</span>mariadb-operator<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">    </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">    </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.items[0].metadata.name}&#39;</span><span class="k">)</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">    </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">    </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&quot;{..image}&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-s<span class="w"> </span><span class="s1">&#39;[:space:]&#39;</span><span class="w"> </span><span class="s1">&#39;\n&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-u
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span>-l<span class="w"> </span>app.kubernetes.io/name<span class="o">=</span>mariadb-operator-webhook<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.items[0].metadata.name}&#39;</span><span class="k">)</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">    </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">    </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&quot;{..image}&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-s<span class="w"> </span><span class="s1">&#39;[:space:]&#39;</span><span class="w"> </span><span class="s1">&#39;\n&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-u
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">    </span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">    </span>-l<span class="w"> </span>app.kubernetes.io/name<span class="o">=</span>mariadb-operator-webhook<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">    </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">    </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.items[0].metadata.name}&#39;</span><span class="k">)</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">    </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">    </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&quot;{..image}&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-s<span class="w"> </span><span class="s1">&#39;[:space:]&#39;</span><span class="w"> </span><span class="s1">&#39;\n&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-u
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>mariadb-cluster-0<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span>-n<span class="w"> </span>openstack<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&quot;{..image}&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-s<span class="w"> </span><span class="s1">&#39;[:space:]&#39;</span><span class="w"> </span><span class="s1">&#39;\n&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-u
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>mariadb-cluster-0<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span>-n<span class="w"> </span>openstack<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&quot;{..image}&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">    </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-s<span class="w"> </span><span class="s1">&#39;[:space:]&#39;</span><span class="w"> </span><span class="s1">&#39;\n&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-u
 </code></pre></div>
 </div>
 </div>
@@ -1268,48 +1319,48 @@ notes are listed in the <a href="#version-specific-notes">next section</a>.</p>
 <p>Update the MariaDB image in <code>/opt/genestack/base-kustomize/mariadb-cluster/base/mariadb-replication.yaml</code>
 to match the version compatible with the operator chart version being deployed.
 With every release update you must update this image <strong>before</strong> upgrading the
-mariadb-cluster (Galera).</p>
+mariadb-cluster (Galera or Replication).</p>
 <details class="info">
 <summary>Finding the compatible MariaDB image</summary>
 <p>Check the <code>config.mariadbImage</code> value in the upstream chart's <code>values.yaml</code> at the
 corresponding tag:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>https://github.com/mariadb-operator/mariadb-operator/blob/v&lt;VERSION&gt;/deploy/charts/mariadb-operator/values.yaml
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>https://github.com/mariadb-operator/mariadb-operator/blob/v&lt;VERSION&gt;/deploy/charts/mariadb-operator/values.yaml
 </code></pre></div>
 <p>For example, for chart version <strong>25.8.4</strong>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>https://github.com/mariadb-operator/mariadb-operator/blob/v25.8.4/deploy/charts/mariadb-operator/values.yaml
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>https://github.com/mariadb-operator/mariadb-operator/blob/v25.8.4/deploy/charts/mariadb-operator/values.yaml
 </code></pre></div>
 <p>shows <code>mariadbImage: docker-registry1.mariadb.com/library/mariadb:11.8.2</code>.</p>
 </details>
 <p>Update the image in the base manifest. Below is an example while upgrading to <code>25.8.4</code> compliant mariadb image:</p>
-<div class="highlight"><span class="filename">mariadb-replication.yaml</span><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nt">spec</span><span class="p">:</span>
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker-registry1.mariadb.com/library/mariadb:11.8.2</span>
+<div class="highlight"><span class="filename">mariadb-replication.yaml</span><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker-registry1.mariadb.com/library/mariadb:11.8.2</span>
 </code></pre></div>
 <p>Then set <code>autoUpdateDataPlane: true</code> using one of the following methods:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Kustomize Overlay (Recommended)</label><label for="__tabbed_2_2">Base Manifest</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Kustomize Overlay (Recommended)</label><label for="__tabbed_3_2">Base Manifest</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>Edit <code>/etc/genestack/kustomize/mariadb-cluster/overlay/kustomization.yaml</code>:</p>
-<div class="highlight"><span class="filename">kustomization.yaml</span><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kustomize.config.k8s.io/v1beta1</span>
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Kustomization</span>
-<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="nt">resources</span><span class="p">:</span>
-<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../galera</span>
-<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>
-<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="nt">patches</span><span class="p">:</span>
-<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">target</span><span class="p">:</span>
-<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">      </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MariaDB</span>
-<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mariadb-cluster</span>
-<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="w">      </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openstack</span>
-<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="w">    </span><span class="nt">patch</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|-</span>
-<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="w">      </span><span class="no">- op: replace</span>
-<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="w">        </span><span class="no">path: /spec/updateStrategy/autoUpdateDataPlane</span>
-<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="w">        </span><span class="no">value: true</span>
+<div class="highlight"><span class="filename">kustomization.yaml</span><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kustomize.config.k8s.io/v1beta1</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Kustomization</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="nt">resources</span><span class="p">:</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../galera</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="nt">patches</span><span class="p">:</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">target</span><span class="p">:</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="w">      </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MariaDB</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mariadb-cluster</span>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="w">      </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openstack</span>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="w">    </span><span class="nt">patch</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|-</span>
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="w">      </span><span class="no">- op: replace</span>
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a><span class="w">        </span><span class="no">path: /spec/updateStrategy/autoUpdateDataPlane</span>
+<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a><span class="w">        </span><span class="no">value: true</span>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
 <p>Edit <code>/etc/genestack/kustomize/mariadb-cluster/base/mariadb-replication.yaml</code>:</p>
-<div class="highlight"><span class="filename">mariadb-replication.yaml</span><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nt">spec</span><span class="p">:</span>
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span><span class="nt">updateStrategy</span><span class="p">:</span>
-<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">    </span><span class="nt">autoUpdateDataPlane</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<div class="highlight"><span class="filename">mariadb-replication.yaml</span><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">  </span><span class="nt">updateStrategy</span><span class="p">:</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">    </span><span class="nt">autoUpdateDataPlane</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 </code></pre></div>
 </div>
 </div>
@@ -1317,53 +1368,58 @@ corresponding tag:</p>
 <div class="admonition note">
 <p class="admonition-title">Why autoUpdateDataPlane?</p>
 <p>Enabling <code>autoUpdateDataPlane</code> uses a <strong>ReplicasFirstPrimaryLast</strong> strategy instead of
-<strong>RollingUpdate</strong>. In an HA Galera cluster:</p>
+<strong>RollingUpdate</strong>. This applies to both cluster topologies:</p>
 <ul>
-<li>1 Primary (read/write)</li>
-<li>N Replicas (read-only followers)</li>
+<li><strong>Galera</strong>: Updates replica nodes first, then the primary. Avoids breaking the
+  quorum by ensuring a majority of nodes remain available during the rollout.</li>
+<li><strong>Primary/Replica</strong>: Updates replicas first, then the primary. Prevents write
+  downtime and data inconsistency by keeping the primary running until all
+  replicas are updated and healthy.</li>
 </ul>
-<p>Updating the primary first can cause downtime, break writes, and risk data inconsistency.
-This strategy ensures safer rolling updates by upgrading replicas first.</p>
+<p>In both cases, updating the primary first risks downtime and data inconsistency.</p>
 </div>
 <p>Apply the changes:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>kubectl<span class="w"> </span>--namespace<span class="w"> </span>openstack<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>/etc/genestack/kustomize/mariadb-cluster/overlay
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>kubectl<span class="w"> </span>--namespace<span class="w"> </span>openstack<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>/etc/genestack/kustomize/mariadb-cluster/overlay
 </code></pre></div>
 <h3 id="step-1-scale-down-operator-and-remove-webhooks"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 4h6v8h4.84L12 19.84 4.16 12H9z"/></svg></span> Step 1: Scale down operator and remove webhooks<a class="headerlink" href="#step-1-scale-down-operator-and-remove-webhooks" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>kubectl<span class="w"> </span>scale<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator<span class="w"> </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span>--replicas<span class="o">=</span><span class="m">0</span>
-<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>kubectl<span class="w"> </span>scale<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span>--replicas<span class="o">=</span><span class="m">0</span>
-<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>validatingwebhookconfiguration<span class="w"> </span>mariadb-operator-webhook
-<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>mutatingwebhookconfiguration<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">true</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>kubectl<span class="w"> </span>scale<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator<span class="w"> </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span>--replicas<span class="o">=</span><span class="m">0</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>kubectl<span class="w"> </span>scale<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span>--replicas<span class="o">=</span><span class="m">0</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>validatingwebhookconfiguration<span class="w"> </span>mariadb-operator-webhook
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>mutatingwebhookconfiguration<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">true</span>
 </code></pre></div>
 <h3 id="step-2-update-chart-version"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z"/></svg></span> Step 2: Update chart version<a class="headerlink" href="#step-2-update-chart-version" title="Permanent link">&para;</a></h3>
 <p>Edit <code>/etc/genestack/helm-chart-versions.yaml</code>:</p>
-<div class="highlight"><span class="filename">helm-chart-versions.yaml</span><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="nt">mariadb-operator</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;TARGET_VERSION&gt;</span>
+<div class="highlight"><span class="filename">helm-chart-versions.yaml</span><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="nt">mariadb-operator</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;TARGET_VERSION&gt;</span>
 </code></pre></div>
 <p>Confirm the version has been set:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>grep<span class="w"> </span>mariadb-operator<span class="w"> </span>/etc/genestack/helm-chart-versions.yaml
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>grep<span class="w"> </span>mariadb-operator<span class="w"> </span>/etc/genestack/helm-chart-versions.yaml
 </code></pre></div>
 <h3 id="step-3-uninstall-and-reinstall-operator"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m21 9-4-4v3h-7v2h7v3M7 11l-4 4 4 4v-3h7v-2H7z"/></svg></span> Step 3: Uninstall and reinstall operator<a class="headerlink" href="#step-3-uninstall-and-reinstall-operator" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>helm<span class="w"> </span>uninstall<span class="w"> </span>mariadb-operator<span class="w"> </span>-n<span class="w"> </span>mariadb-system
-<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>/opt/genestack/bin/install-mariadb-operator.sh
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>helm<span class="w"> </span>uninstall<span class="w"> </span>mariadb-operator<span class="w"> </span>-n<span class="w"> </span>mariadb-system
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>/opt/genestack/bin/install-mariadb-operator.sh
 </code></pre></div>
 <h3 id="step-4-verify-deployment"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2m-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8z"/></svg></span> Step 4: Verify deployment<a class="headerlink" href="#step-4-verify-deployment" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>helm<span class="w"> </span>list<span class="w"> </span>-A<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>mariadb
-<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span>-o<span class="w"> </span>wide
-<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>&lt;new-operator-pod&gt;<span class="w"> </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&quot;{..image}&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-s<span class="w"> </span><span class="s1">&#39;[:space:]&#39;</span><span class="w"> </span><span class="s1">&#39;\n&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-u
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>helm<span class="w"> </span>list<span class="w"> </span>-A<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>mariadb
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span>-o<span class="w"> </span>wide
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>&lt;new-operator-pod&gt;<span class="w"> </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&quot;{..image}&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-s<span class="w"> </span><span class="s1">&#39;[:space:]&#39;</span><span class="w"> </span><span class="s1">&#39;\n&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-u
 </code></pre></div>
 <h3 id="step-5-post-upgrade-validation"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 8c.56 0 1 .43 1 1a1 1 0 0 1-1 1c-.57 0-1-.45-1-1 0-.57.43-1 1-1M2 2v9c0 2.96 2.19 5.5 5.14 5.91.62 3.01 3.28 5.09 6.36 5.09a6.5 6.5 0 0 0 6.5-6.5v-3.69c1.16-.42 2-1.52 2-2.81a3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 1.29.84 2.4 2 2.81v3.6c0 2.5-2 4.5-4.5 4.5-2 0-3.68-1.21-4.28-3.01C12 16.3 14 13.8 14 11V2h-4v3h2v6a4 4 0 0 1-4 4 4 4 0 0 1-4-4V5h2V2z"/></svg></span> Step 5: Post-upgrade validation<a class="headerlink" href="#step-5-post-upgrade-validation" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>openstack<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>mariadb
-<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>mariadb<span class="w"> </span>-n<span class="w"> </span>openstack
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>openstack<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>mariadb
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>mariadb<span class="w"> </span>-n<span class="w"> </span>openstack
 </code></pre></div>
-<p>Run the <a href="#4-verify-galera-cluster-health">Galera health checks from the pre-upgrade section</a> again.</p>
+<p>Run the <a href="#4-verify-cluster-health">cluster health checks from the pre-upgrade section</a> again.</p>
 <h3 id="step-6-disable-autoupdatedataplane"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5M7 15a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg></span> Step 6: Disable autoUpdateDataPlane<a class="headerlink" href="#step-6-disable-autoupdatedataplane" title="Permanent link">&para;</a></h3>
 <p>Set <code>autoUpdateDataPlane: false</code> as per the <a href="#preflight-update-mariadb-image-and-enable-autoupdatedataplane">preflight section</a> and re-apply:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>kubectl<span class="w"> </span>--namespace<span class="w"> </span>openstack<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>/etc/genestack/kustomize/mariadb-cluster/overlay
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>kubectl<span class="w"> </span>--namespace<span class="w"> </span>openstack<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>/etc/genestack/kustomize/mariadb-cluster/overlay
 </code></pre></div>
-<h3 id="step-7-run-the-migration"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5M7 15a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg></span> Step 7: Run the migration<a class="headerlink" href="#step-7-run-the-migration" title="Permanent link">&para;</a></h3>
+<h3 id="step-7-run-the-migration-replication-clusters-only"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5M7 15a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg></span> Step 7: Run the migration (Replication clusters only)<a class="headerlink" href="#step-7-run-the-migration-replication-clusters-only" title="Permanent link">&para;</a></h3>
 <div class="admonition warning">
-<p class="admonition-title">Replication Migration Required</p>
-<p>After the operator upgrade, you must run the replication migration script.</p>
+<p class="admonition-title">Replication Migration — Primary/Replica clusters only</p>
+<p>This step is only required for <strong>Primary/Replica (replication)</strong> clusters.
+If you are running a <strong>Galera</strong> cluster, skip this step.</p>
+<p>After the operator upgrade, you must run the replication migration script
+to reset and re-establish replication on each replica pod.</p>
 </div>
 <p>The script automatically identifies the primary pod (skips it) and processes only the replicas.
 For each replica it:</p>
@@ -1374,99 +1430,99 @@ For each replica it:</p>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Verifies replication is working again</li>
 </ul>
 <p>Set the required environment variables:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MARIADB_NAME</span><span class="o">=</span>mariadb-cluster
-<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MARIADB_NAMESPACE</span><span class="o">=</span>openstack
-<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MARIADB_ROOT_PASSWORD</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>mariadb<span class="w"> </span>-n<span class="w"> </span>openstack<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.root-password}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d<span class="k">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MARIADB_NAME</span><span class="o">=</span>mariadb-cluster
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MARIADB_NAMESPACE</span><span class="o">=</span>openstack
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MARIADB_ROOT_PASSWORD</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>mariadb<span class="w"> </span>-n<span class="w"> </span>openstack<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.root-password}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d<span class="k">)</span>
 </code></pre></div>
 <p>Save the script to a file (e.g. <code>/tmp/migrate-replication.sh</code>):</p>
 <details class="example">
 <summary>migrate-replication.sh (click to expand)</summary>
-<div class="highlight"><span class="filename">migrate-replication.sh</span><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="ch">#!/bin/bash</span>
-<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>
-<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="nb">set</span><span class="w"> </span>-eo<span class="w"> </span>pipefail
-<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>
-<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="k">if</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span>-z<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MARIADB_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span>-z<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MARIADB_NAMESPACE</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span>-z<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MARIADB_ROOT_PASSWORD</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
-<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Error: MARIADB_NAME, MARIADB_NAMESPACE and MARIADB_ROOT_PASSWORD env vars must be set.&quot;</span>
-<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a><span class="w">  </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
-<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a><span class="k">fi</span>
-<a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a>
-<a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a><span class="k">function</span><span class="w"> </span>exec_sql<span class="w"> </span><span class="o">{</span>
-<a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">pod</span><span class="o">=</span><span class="nv">$1</span>
-<a id="__codelineno-26-12" name="__codelineno-26-12" href="#__codelineno-26-12"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">sql</span><span class="o">=</span><span class="nv">$2</span>
-<a id="__codelineno-26-13" name="__codelineno-26-13" href="#__codelineno-26-13"></a><span class="w">  </span>kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MARIADB_NAMESPACE</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$pod</span><span class="s2">&quot;</span><span class="w"> </span>--<span class="w"> </span>mariadb<span class="w"> </span>-u<span class="w"> </span>root<span class="w"> </span>-p<span class="s2">&quot;</span><span class="nv">$MARIADB_ROOT_PASSWORD</span><span class="s2">&quot;</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$sql</span><span class="s2">&quot;</span>
-<a id="__codelineno-26-14" name="__codelineno-26-14" href="#__codelineno-26-14"></a><span class="o">}</span>
-<a id="__codelineno-26-15" name="__codelineno-26-15" href="#__codelineno-26-15"></a>
-<a id="__codelineno-26-16" name="__codelineno-26-16" href="#__codelineno-26-16"></a><span class="k">function</span><span class="w"> </span>wait_for_ready_replication<span class="w"> </span><span class="o">{</span>
-<a id="__codelineno-26-17" name="__codelineno-26-17" href="#__codelineno-26-17"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">pod</span><span class="o">=</span><span class="nv">$1</span>
-<a id="__codelineno-26-18" name="__codelineno-26-18" href="#__codelineno-26-18"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">timeout</span><span class="o">=</span><span class="m">300</span><span class="w">  </span><span class="c1"># 5 minutes</span>
-<a id="__codelineno-26-19" name="__codelineno-26-19" href="#__codelineno-26-19"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">interval</span><span class="o">=</span><span class="m">10</span><span class="w">  </span><span class="c1"># Check every 10 seconds</span>
-<a id="__codelineno-26-20" name="__codelineno-26-20" href="#__codelineno-26-20"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">elapsed</span><span class="o">=</span><span class="m">0</span>
-<a id="__codelineno-26-21" name="__codelineno-26-21" href="#__codelineno-26-21"></a>
-<a id="__codelineno-26-22" name="__codelineno-26-22" href="#__codelineno-26-22"></a><span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Waiting for ready replication on </span><span class="nv">$pod</span><span class="s2">...&quot;</span>
-<a id="__codelineno-26-23" name="__codelineno-26-23" href="#__codelineno-26-23"></a>
-<a id="__codelineno-26-24" name="__codelineno-26-24" href="#__codelineno-26-24"></a><span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span><span class="nv">$elapsed</span><span class="w"> </span>-lt<span class="w"> </span><span class="nv">$timeout</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
-<a id="__codelineno-26-25" name="__codelineno-26-25" href="#__codelineno-26-25"></a><span class="w">      </span><span class="nb">local</span><span class="w"> </span>status
-<a id="__codelineno-26-26" name="__codelineno-26-26" href="#__codelineno-26-26"></a><span class="w">      </span><span class="nv">status</span><span class="o">=</span><span class="k">$(</span>exec_sql<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$pod</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;SHOW REPLICA STATUS\G&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tee<span class="w"> </span>/tmp/replication_status_<span class="nv">$pod_$MARIADB_NAMESPACE</span>.txt<span class="k">)</span>
-<a id="__codelineno-26-27" name="__codelineno-26-27" href="#__codelineno-26-27"></a>
-<a id="__codelineno-26-28" name="__codelineno-26-28" href="#__codelineno-26-28"></a><span class="w">      </span><span class="k">if</span><span class="w"> </span>grep<span class="w"> </span>-q<span class="w"> </span><span class="s2">&quot;Slave_IO_Running: Yes&quot;</span><span class="w"> </span>/tmp/replication_status_<span class="nv">$pod_$MARIADB_NAMESPACE</span>.txt<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-26-29" name="__codelineno-26-29" href="#__codelineno-26-29"></a><span class="w">         </span>grep<span class="w"> </span>-q<span class="w"> </span><span class="s2">&quot;Slave_SQL_Running: Yes&quot;</span><span class="w"> </span>/tmp/replication_status_<span class="nv">$pod_$MARIADB_NAMESPACE</span>.txt<span class="p">;</span><span class="w"> </span><span class="k">then</span>
-<a id="__codelineno-26-30" name="__codelineno-26-30" href="#__codelineno-26-30"></a><span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Replication is ready on </span><span class="nv">$pod</span><span class="s2">.&quot;</span>
-<a id="__codelineno-26-31" name="__codelineno-26-31" href="#__codelineno-26-31"></a><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="m">0</span>
-<a id="__codelineno-26-32" name="__codelineno-26-32" href="#__codelineno-26-32"></a><span class="w">      </span><span class="k">fi</span>
-<a id="__codelineno-26-33" name="__codelineno-26-33" href="#__codelineno-26-33"></a>
-<a id="__codelineno-26-34" name="__codelineno-26-34" href="#__codelineno-26-34"></a><span class="w">      </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Replication not ready on </span><span class="nv">$pod</span><span class="s2">. Retrying in </span><span class="nv">$interval</span><span class="s2"> seconds...&quot;</span>
-<a id="__codelineno-26-35" name="__codelineno-26-35" href="#__codelineno-26-35"></a><span class="w">      </span>sleep<span class="w"> </span><span class="nv">$interval</span>
-<a id="__codelineno-26-36" name="__codelineno-26-36" href="#__codelineno-26-36"></a><span class="w">      </span><span class="o">((</span><span class="nv">elapsed</span><span class="o">+=</span>interval<span class="o">))</span>
-<a id="__codelineno-26-37" name="__codelineno-26-37" href="#__codelineno-26-37"></a><span class="w">  </span><span class="k">done</span>
-<a id="__codelineno-26-38" name="__codelineno-26-38" href="#__codelineno-26-38"></a>
-<a id="__codelineno-26-39" name="__codelineno-26-39" href="#__codelineno-26-39"></a><span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Error: Replication did not become ready on </span><span class="nv">$pod</span><span class="s2"> within 5 minutes.&quot;</span>
-<a id="__codelineno-26-40" name="__codelineno-26-40" href="#__codelineno-26-40"></a><span class="w">  </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
-<a id="__codelineno-26-41" name="__codelineno-26-41" href="#__codelineno-26-41"></a><span class="o">}</span>
-<a id="__codelineno-26-42" name="__codelineno-26-42" href="#__codelineno-26-42"></a>
-<a id="__codelineno-26-43" name="__codelineno-26-43" href="#__codelineno-26-43"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Migrating replication on </span><span class="nv">$MARIADB_NAME</span><span class="s2"> instance...&quot;</span>
-<a id="__codelineno-26-44" name="__codelineno-26-44" href="#__codelineno-26-44"></a>
-<a id="__codelineno-26-45" name="__codelineno-26-45" href="#__codelineno-26-45"></a><span class="nv">PODS</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MARIADB_NAMESPACE</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-26-46" name="__codelineno-26-46" href="#__codelineno-26-46"></a><span class="w">  </span>-l<span class="w"> </span>app.kubernetes.io/instance<span class="o">=</span><span class="nv">$MARIADB_NAME</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-26-47" name="__codelineno-26-47" href="#__codelineno-26-47"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&quot;{.items[*].metadata.name}&quot;</span><span class="k">)</span>
-<a id="__codelineno-26-48" name="__codelineno-26-48" href="#__codelineno-26-48"></a><span class="nv">PRIMARY_POD</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>mariadb<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MARIADB_NAME</span><span class="s2">&quot;</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MARIADB_NAMESPACE</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-26-49" name="__codelineno-26-49" href="#__codelineno-26-49"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&quot;{.status.currentPrimary}&quot;</span><span class="k">)</span>
-<a id="__codelineno-26-50" name="__codelineno-26-50" href="#__codelineno-26-50"></a>
-<a id="__codelineno-26-51" name="__codelineno-26-51" href="#__codelineno-26-51"></a><span class="k">for</span><span class="w"> </span>POD<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nv">$PODS</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
-<a id="__codelineno-26-52" name="__codelineno-26-52" href="#__codelineno-26-52"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$POD</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PRIMARY_POD</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
-<a id="__codelineno-26-53" name="__codelineno-26-53" href="#__codelineno-26-53"></a><span class="w">      </span><span class="nb">printf</span><span class="w"> </span><span class="s2">&quot;\nSkipping primary pod: </span><span class="nv">$POD</span><span class="s2">\n&quot;</span>
-<a id="__codelineno-26-54" name="__codelineno-26-54" href="#__codelineno-26-54"></a><span class="w">      </span><span class="k">continue</span>
-<a id="__codelineno-26-55" name="__codelineno-26-55" href="#__codelineno-26-55"></a><span class="w">  </span><span class="k">fi</span>
-<a id="__codelineno-26-56" name="__codelineno-26-56" href="#__codelineno-26-56"></a><span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s2">&quot;\nProcessing replica pod: </span><span class="nv">$POD</span><span class="s2">\n&quot;</span>
-<a id="__codelineno-26-57" name="__codelineno-26-57" href="#__codelineno-26-57"></a>
-<a id="__codelineno-26-58" name="__codelineno-26-58" href="#__codelineno-26-58"></a><span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Resetting replication on </span><span class="nv">$POD</span><span class="s2">...&quot;</span>
-<a id="__codelineno-26-59" name="__codelineno-26-59" href="#__codelineno-26-59"></a><span class="w">  </span>exec_sql<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$POD</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;STOP SLAVE &#39;mariadb-operator&#39;;&quot;</span>
-<a id="__codelineno-26-60" name="__codelineno-26-60" href="#__codelineno-26-60"></a><span class="w">  </span>exec_sql<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$POD</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;RESET SLAVE &#39;mariadb-operator&#39; ALL;&quot;</span>
-<a id="__codelineno-26-61" name="__codelineno-26-61" href="#__codelineno-26-61"></a>
-<a id="__codelineno-26-62" name="__codelineno-26-62" href="#__codelineno-26-62"></a><span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Deleting pod </span><span class="nv">$POD</span><span class="s2">...&quot;</span>
-<a id="__codelineno-26-63" name="__codelineno-26-63" href="#__codelineno-26-63"></a><span class="w">  </span>kubectl<span class="w"> </span>delete<span class="w"> </span>pod<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$POD</span><span class="s2">&quot;</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MARIADB_NAMESPACE</span><span class="s2">&quot;</span>
-<a id="__codelineno-26-64" name="__codelineno-26-64" href="#__codelineno-26-64"></a>
-<a id="__codelineno-26-65" name="__codelineno-26-65" href="#__codelineno-26-65"></a><span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Waiting for pod </span><span class="nv">$POD</span><span class="s2"> to become ready...&quot;</span>
-<a id="__codelineno-26-66" name="__codelineno-26-66" href="#__codelineno-26-66"></a><span class="w">  </span>kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>Ready<span class="w"> </span>pod/<span class="s2">&quot;</span><span class="nv">$POD</span><span class="s2">&quot;</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MARIADB_NAMESPACE</span><span class="s2">&quot;</span><span class="w"> </span>--timeout<span class="o">=</span>5m
-<a id="__codelineno-26-67" name="__codelineno-26-67" href="#__codelineno-26-67"></a><span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Pod </span><span class="nv">$POD</span><span class="s2"> is ready.&quot;</span>
-<a id="__codelineno-26-68" name="__codelineno-26-68" href="#__codelineno-26-68"></a>
-<a id="__codelineno-26-69" name="__codelineno-26-69" href="#__codelineno-26-69"></a><span class="w">  </span>wait_for_ready_replication<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$POD</span><span class="s2">&quot;</span>
-<a id="__codelineno-26-70" name="__codelineno-26-70" href="#__codelineno-26-70"></a><span class="k">done</span>
-<a id="__codelineno-26-71" name="__codelineno-26-71" href="#__codelineno-26-71"></a>
-<a id="__codelineno-26-72" name="__codelineno-26-72" href="#__codelineno-26-72"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Replication migration completed successfully on </span><span class="nv">$MARIADB_NAME</span><span class="s2"> instance.&quot;</span>
+<div class="highlight"><span class="filename">migrate-replication.sh</span><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="ch">#!/bin/bash</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="nb">set</span><span class="w"> </span>-eo<span class="w"> </span>pipefail
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>
+<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a><span class="k">if</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span>-z<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MARIADB_NAME</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span>-z<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MARIADB_NAMESPACE</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span>-z<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MARIADB_ROOT_PASSWORD</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a><span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Error: MARIADB_NAME, MARIADB_NAMESPACE and MARIADB_ROOT_PASSWORD env vars must be set.&quot;</span>
+<a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a><span class="w">  </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
+<a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a><span class="k">fi</span>
+<a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a>
+<a id="__codelineno-29-10" name="__codelineno-29-10" href="#__codelineno-29-10"></a><span class="k">function</span><span class="w"> </span>exec_sql<span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-29-11" name="__codelineno-29-11" href="#__codelineno-29-11"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">pod</span><span class="o">=</span><span class="nv">$1</span>
+<a id="__codelineno-29-12" name="__codelineno-29-12" href="#__codelineno-29-12"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">sql</span><span class="o">=</span><span class="nv">$2</span>
+<a id="__codelineno-29-13" name="__codelineno-29-13" href="#__codelineno-29-13"></a><span class="w">  </span>kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MARIADB_NAMESPACE</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$pod</span><span class="s2">&quot;</span><span class="w"> </span>--<span class="w"> </span>mariadb<span class="w"> </span>-u<span class="w"> </span>root<span class="w"> </span>-p<span class="s2">&quot;</span><span class="nv">$MARIADB_ROOT_PASSWORD</span><span class="s2">&quot;</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$sql</span><span class="s2">&quot;</span>
+<a id="__codelineno-29-14" name="__codelineno-29-14" href="#__codelineno-29-14"></a><span class="o">}</span>
+<a id="__codelineno-29-15" name="__codelineno-29-15" href="#__codelineno-29-15"></a>
+<a id="__codelineno-29-16" name="__codelineno-29-16" href="#__codelineno-29-16"></a><span class="k">function</span><span class="w"> </span>wait_for_ready_replication<span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-29-17" name="__codelineno-29-17" href="#__codelineno-29-17"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">pod</span><span class="o">=</span><span class="nv">$1</span>
+<a id="__codelineno-29-18" name="__codelineno-29-18" href="#__codelineno-29-18"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">timeout</span><span class="o">=</span><span class="m">300</span><span class="w">  </span><span class="c1"># 5 minutes</span>
+<a id="__codelineno-29-19" name="__codelineno-29-19" href="#__codelineno-29-19"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">interval</span><span class="o">=</span><span class="m">10</span><span class="w">  </span><span class="c1"># Check every 10 seconds</span>
+<a id="__codelineno-29-20" name="__codelineno-29-20" href="#__codelineno-29-20"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">elapsed</span><span class="o">=</span><span class="m">0</span>
+<a id="__codelineno-29-21" name="__codelineno-29-21" href="#__codelineno-29-21"></a>
+<a id="__codelineno-29-22" name="__codelineno-29-22" href="#__codelineno-29-22"></a><span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Waiting for ready replication on </span><span class="nv">$pod</span><span class="s2">...&quot;</span>
+<a id="__codelineno-29-23" name="__codelineno-29-23" href="#__codelineno-29-23"></a>
+<a id="__codelineno-29-24" name="__codelineno-29-24" href="#__codelineno-29-24"></a><span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span><span class="nv">$elapsed</span><span class="w"> </span>-lt<span class="w"> </span><span class="nv">$timeout</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<a id="__codelineno-29-25" name="__codelineno-29-25" href="#__codelineno-29-25"></a><span class="w">      </span><span class="nb">local</span><span class="w"> </span>status
+<a id="__codelineno-29-26" name="__codelineno-29-26" href="#__codelineno-29-26"></a><span class="w">      </span><span class="nv">status</span><span class="o">=</span><span class="k">$(</span>exec_sql<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$pod</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;SHOW REPLICA STATUS\G&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tee<span class="w"> </span>/tmp/replication_status_<span class="nv">$pod_$MARIADB_NAMESPACE</span>.txt<span class="k">)</span>
+<a id="__codelineno-29-27" name="__codelineno-29-27" href="#__codelineno-29-27"></a>
+<a id="__codelineno-29-28" name="__codelineno-29-28" href="#__codelineno-29-28"></a><span class="w">      </span><span class="k">if</span><span class="w"> </span>grep<span class="w"> </span>-q<span class="w"> </span><span class="s2">&quot;Slave_IO_Running: Yes&quot;</span><span class="w"> </span>/tmp/replication_status_<span class="nv">$pod_$MARIADB_NAMESPACE</span>.txt<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-29-29" name="__codelineno-29-29" href="#__codelineno-29-29"></a><span class="w">         </span>grep<span class="w"> </span>-q<span class="w"> </span><span class="s2">&quot;Slave_SQL_Running: Yes&quot;</span><span class="w"> </span>/tmp/replication_status_<span class="nv">$pod_$MARIADB_NAMESPACE</span>.txt<span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<a id="__codelineno-29-30" name="__codelineno-29-30" href="#__codelineno-29-30"></a><span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Replication is ready on </span><span class="nv">$pod</span><span class="s2">.&quot;</span>
+<a id="__codelineno-29-31" name="__codelineno-29-31" href="#__codelineno-29-31"></a><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="m">0</span>
+<a id="__codelineno-29-32" name="__codelineno-29-32" href="#__codelineno-29-32"></a><span class="w">      </span><span class="k">fi</span>
+<a id="__codelineno-29-33" name="__codelineno-29-33" href="#__codelineno-29-33"></a>
+<a id="__codelineno-29-34" name="__codelineno-29-34" href="#__codelineno-29-34"></a><span class="w">      </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Replication not ready on </span><span class="nv">$pod</span><span class="s2">. Retrying in </span><span class="nv">$interval</span><span class="s2"> seconds...&quot;</span>
+<a id="__codelineno-29-35" name="__codelineno-29-35" href="#__codelineno-29-35"></a><span class="w">      </span>sleep<span class="w"> </span><span class="nv">$interval</span>
+<a id="__codelineno-29-36" name="__codelineno-29-36" href="#__codelineno-29-36"></a><span class="w">      </span><span class="o">((</span><span class="nv">elapsed</span><span class="o">+=</span>interval<span class="o">))</span>
+<a id="__codelineno-29-37" name="__codelineno-29-37" href="#__codelineno-29-37"></a><span class="w">  </span><span class="k">done</span>
+<a id="__codelineno-29-38" name="__codelineno-29-38" href="#__codelineno-29-38"></a>
+<a id="__codelineno-29-39" name="__codelineno-29-39" href="#__codelineno-29-39"></a><span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Error: Replication did not become ready on </span><span class="nv">$pod</span><span class="s2"> within 5 minutes.&quot;</span>
+<a id="__codelineno-29-40" name="__codelineno-29-40" href="#__codelineno-29-40"></a><span class="w">  </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
+<a id="__codelineno-29-41" name="__codelineno-29-41" href="#__codelineno-29-41"></a><span class="o">}</span>
+<a id="__codelineno-29-42" name="__codelineno-29-42" href="#__codelineno-29-42"></a>
+<a id="__codelineno-29-43" name="__codelineno-29-43" href="#__codelineno-29-43"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Migrating replication on </span><span class="nv">$MARIADB_NAME</span><span class="s2"> instance...&quot;</span>
+<a id="__codelineno-29-44" name="__codelineno-29-44" href="#__codelineno-29-44"></a>
+<a id="__codelineno-29-45" name="__codelineno-29-45" href="#__codelineno-29-45"></a><span class="nv">PODS</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MARIADB_NAMESPACE</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-29-46" name="__codelineno-29-46" href="#__codelineno-29-46"></a><span class="w">  </span>-l<span class="w"> </span>app.kubernetes.io/instance<span class="o">=</span><span class="nv">$MARIADB_NAME</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-29-47" name="__codelineno-29-47" href="#__codelineno-29-47"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&quot;{.items[*].metadata.name}&quot;</span><span class="k">)</span>
+<a id="__codelineno-29-48" name="__codelineno-29-48" href="#__codelineno-29-48"></a><span class="nv">PRIMARY_POD</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>mariadb<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MARIADB_NAME</span><span class="s2">&quot;</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MARIADB_NAMESPACE</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-29-49" name="__codelineno-29-49" href="#__codelineno-29-49"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&quot;{.status.currentPrimary}&quot;</span><span class="k">)</span>
+<a id="__codelineno-29-50" name="__codelineno-29-50" href="#__codelineno-29-50"></a>
+<a id="__codelineno-29-51" name="__codelineno-29-51" href="#__codelineno-29-51"></a><span class="k">for</span><span class="w"> </span>POD<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nv">$PODS</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<a id="__codelineno-29-52" name="__codelineno-29-52" href="#__codelineno-29-52"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$POD</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PRIMARY_POD</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<a id="__codelineno-29-53" name="__codelineno-29-53" href="#__codelineno-29-53"></a><span class="w">      </span><span class="nb">printf</span><span class="w"> </span><span class="s2">&quot;\nSkipping primary pod: </span><span class="nv">$POD</span><span class="s2">\n&quot;</span>
+<a id="__codelineno-29-54" name="__codelineno-29-54" href="#__codelineno-29-54"></a><span class="w">      </span><span class="k">continue</span>
+<a id="__codelineno-29-55" name="__codelineno-29-55" href="#__codelineno-29-55"></a><span class="w">  </span><span class="k">fi</span>
+<a id="__codelineno-29-56" name="__codelineno-29-56" href="#__codelineno-29-56"></a><span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s2">&quot;\nProcessing replica pod: </span><span class="nv">$POD</span><span class="s2">\n&quot;</span>
+<a id="__codelineno-29-57" name="__codelineno-29-57" href="#__codelineno-29-57"></a>
+<a id="__codelineno-29-58" name="__codelineno-29-58" href="#__codelineno-29-58"></a><span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Resetting replication on </span><span class="nv">$POD</span><span class="s2">...&quot;</span>
+<a id="__codelineno-29-59" name="__codelineno-29-59" href="#__codelineno-29-59"></a><span class="w">  </span>exec_sql<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$POD</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;STOP SLAVE &#39;mariadb-operator&#39;;&quot;</span>
+<a id="__codelineno-29-60" name="__codelineno-29-60" href="#__codelineno-29-60"></a><span class="w">  </span>exec_sql<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$POD</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;RESET SLAVE &#39;mariadb-operator&#39; ALL;&quot;</span>
+<a id="__codelineno-29-61" name="__codelineno-29-61" href="#__codelineno-29-61"></a>
+<a id="__codelineno-29-62" name="__codelineno-29-62" href="#__codelineno-29-62"></a><span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Deleting pod </span><span class="nv">$POD</span><span class="s2">...&quot;</span>
+<a id="__codelineno-29-63" name="__codelineno-29-63" href="#__codelineno-29-63"></a><span class="w">  </span>kubectl<span class="w"> </span>delete<span class="w"> </span>pod<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$POD</span><span class="s2">&quot;</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MARIADB_NAMESPACE</span><span class="s2">&quot;</span>
+<a id="__codelineno-29-64" name="__codelineno-29-64" href="#__codelineno-29-64"></a>
+<a id="__codelineno-29-65" name="__codelineno-29-65" href="#__codelineno-29-65"></a><span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Waiting for pod </span><span class="nv">$POD</span><span class="s2"> to become ready...&quot;</span>
+<a id="__codelineno-29-66" name="__codelineno-29-66" href="#__codelineno-29-66"></a><span class="w">  </span>kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>Ready<span class="w"> </span>pod/<span class="s2">&quot;</span><span class="nv">$POD</span><span class="s2">&quot;</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MARIADB_NAMESPACE</span><span class="s2">&quot;</span><span class="w"> </span>--timeout<span class="o">=</span>5m
+<a id="__codelineno-29-67" name="__codelineno-29-67" href="#__codelineno-29-67"></a><span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Pod </span><span class="nv">$POD</span><span class="s2"> is ready.&quot;</span>
+<a id="__codelineno-29-68" name="__codelineno-29-68" href="#__codelineno-29-68"></a>
+<a id="__codelineno-29-69" name="__codelineno-29-69" href="#__codelineno-29-69"></a><span class="w">  </span>wait_for_ready_replication<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$POD</span><span class="s2">&quot;</span>
+<a id="__codelineno-29-70" name="__codelineno-29-70" href="#__codelineno-29-70"></a><span class="k">done</span>
+<a id="__codelineno-29-71" name="__codelineno-29-71" href="#__codelineno-29-71"></a>
+<a id="__codelineno-29-72" name="__codelineno-29-72" href="#__codelineno-29-72"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Replication migration completed successfully on </span><span class="nv">$MARIADB_NAME</span><span class="s2"> instance.&quot;</span>
 </code></pre></div>
 </details>
 <p>Make it executable and run:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>chmod<span class="w"> </span>+x<span class="w"> </span>/tmp/migrate-replication.sh
-<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>/tmp/migrate-replication.sh
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>chmod<span class="w"> </span>+x<span class="w"> </span>/tmp/migrate-replication.sh
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>/tmp/migrate-replication.sh
 </code></pre></div>
 <details class="tip">
 <summary>Stuck replication threads</summary>
 <p>If stuck replication threads are observed, identify and kill them:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>mariadb-cluster-1<span class="w"> </span>-n<span class="w"> </span>openstack<span class="w"> </span>--<span class="w"> </span>mariadb<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="w">  </span>-u<span class="w"> </span>root<span class="w"> </span>-p<span class="s2">&quot;</span><span class="nv">$MARIADB_ROOT_PASSWORD</span><span class="s2">&quot;</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;SHOW PROCESSLIST;&quot;</span>
-<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>mariadb-cluster-1<span class="w"> </span>-n<span class="w"> </span>openstack<span class="w"> </span>--<span class="w"> </span>mariadb<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">  </span>-u<span class="w"> </span>root<span class="w"> </span>-p<span class="s2">&quot;</span><span class="nv">$MARIADB_ROOT_PASSWORD</span><span class="s2">&quot;</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;KILL &lt;thread_id&gt;;&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>mariadb-cluster-1<span class="w"> </span>-n<span class="w"> </span>openstack<span class="w"> </span>--<span class="w"> </span>mariadb<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="w">  </span>-u<span class="w"> </span>root<span class="w"> </span>-p<span class="s2">&quot;</span><span class="nv">$MARIADB_ROOT_PASSWORD</span><span class="s2">&quot;</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;SHOW PROCESSLIST;&quot;</span>
+<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>mariadb-cluster-1<span class="w"> </span>-n<span class="w"> </span>openstack<span class="w"> </span>--<span class="w"> </span>mariadb<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="w">  </span>-u<span class="w"> </span>root<span class="w"> </span>-p<span class="s2">&quot;</span><span class="nv">$MARIADB_ROOT_PASSWORD</span><span class="s2">&quot;</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;KILL &lt;thread_id&gt;;&quot;</span>
 </code></pre></div>
 </details>
 <hr />
@@ -1504,18 +1560,18 @@ For each replica it:</p>
 <div class="admonition warning">
 <p class="admonition-title">Patch-by-patch upgrade is NOT required for 25.8.x</p>
 <p>You do not need to step through each patch releases in between 25.8.x - using the above standard procedure:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>25.8.1 → 25.8.2 → 25.8.3 → 25.8.4
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>25.8.1 → 25.8.2 → 25.8.3 → 25.8.4
 </code></pre></div>
 <p>If you are migrating from <code>0.38.1</code>, check the <code>helm search repo mariadb-operator/mariadb-operator --versions</code> output:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>mariadb-operator/mariadb-operator       25.8.4          25.8.4      Run and operate MariaDB in a cloud native way
-<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>mariadb-operator/mariadb-operator       25.8.3          25.8.3      Run and operate MariaDB in a cloud native way
-<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>mariadb-operator/mariadb-operator       25.8.2          25.8.2      Run and operate MariaDB in a cloud native way
-<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a>mariadb-operator/mariadb-operator       25.8.1          25.8.1      Run and operate MariaDB in a cloud native way
-<a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a>mariadb-operator/mariadb-operator       25.08.0         25.08.0     Run and operate MariaDB in a cloud native way
-<a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>mariadb-operator/mariadb-operator       0.38.1          0.38.1      Run and operate MariaDB in a cloud native way
-<a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a>mariadb-operator/mariadb-operator       0.38.0          0.38.0      Run and operate MariaDB in a cloud native way
-<a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a>mariadb-operator/mariadb-operator       0.37.1          0.37.1      Run and operate MariaDB in a cloud native way
-<a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a>mariadb-operator/mariadb-operator       0.37.0          0.37.0      Run and operate MariaDB in a cloud native way
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>mariadb-operator/mariadb-operator       25.8.4          25.8.4      Run and operate MariaDB in a cloud native way
+<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>mariadb-operator/mariadb-operator       25.8.3          25.8.3      Run and operate MariaDB in a cloud native way
+<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>mariadb-operator/mariadb-operator       25.8.2          25.8.2      Run and operate MariaDB in a cloud native way
+<a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a>mariadb-operator/mariadb-operator       25.8.1          25.8.1      Run and operate MariaDB in a cloud native way
+<a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a>mariadb-operator/mariadb-operator       25.08.0         25.08.0     Run and operate MariaDB in a cloud native way
+<a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a>mariadb-operator/mariadb-operator       0.38.1          0.38.1      Run and operate MariaDB in a cloud native way
+<a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a>mariadb-operator/mariadb-operator       0.38.0          0.38.0      Run and operate MariaDB in a cloud native way
+<a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a>mariadb-operator/mariadb-operator       0.37.1          0.37.1      Run and operate MariaDB in a cloud native way
+<a id="__codelineno-33-9" name="__codelineno-33-9" href="#__codelineno-33-9"></a>mariadb-operator/mariadb-operator       0.37.0          0.37.0      Run and operate MariaDB in a cloud native way
 </code></pre></div>
 <p>and you can directly jump from <code>0.38.1 → 25.8.4</code></p>
 </div>
@@ -1526,15 +1582,15 @@ For each replica it:</p>
 <details class="bug">
 <summary>Known Issue: Webhook cert validation loop</summary>
 <p>If operator pods are stuck logging:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="p">{</span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="s2">&quot;info&quot;</span><span class="p">,</span><span class="nt">&quot;ts&quot;</span><span class="p">:</span><span class="err">...</span><span class="p">,</span><span class="nt">&quot;logger&quot;</span><span class="p">:</span><span class="s2">&quot;setup&quot;</span><span class="p">,</span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="s2">&quot;Validating certs&quot;</span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="p">{</span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="s2">&quot;info&quot;</span><span class="p">,</span><span class="nt">&quot;ts&quot;</span><span class="p">:</span><span class="err">...</span><span class="p">,</span><span class="nt">&quot;logger&quot;</span><span class="p">:</span><span class="s2">&quot;setup&quot;</span><span class="p">,</span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="s2">&quot;Validating certs&quot;</span><span class="p">}</span>
 </code></pre></div>
 <p>Check the certificate:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>certificate<span class="w"> </span>-n<span class="w"> </span>mariadb-system
+<div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>certificate<span class="w"> </span>-n<span class="w"> </span>mariadb-system
 </code></pre></div>
 <p>If you see <code>Existing private key is not up to date for spec: [spec.privateKey.algorithm]</code>,
 fix by deleting the secret and webhook deployment:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>secret<span class="w"> </span>mariadb-operator-webhook-cert<span class="w"> </span>-n<span class="w"> </span>mariadb-system
-<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span>-n<span class="w"> </span>mariadb-system
+<div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>secret<span class="w"> </span>mariadb-operator-webhook-cert<span class="w"> </span>-n<span class="w"> </span>mariadb-system
+<a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span>-n<span class="w"> </span>mariadb-system
 </code></pre></div>
 <p>Then re-run the install script to recreate them.</p>
 </details>
@@ -1543,7 +1599,7 @@ fix by deleting the secret and webhook deployment:</p>
 <div class="admonition warning">
 <p class="admonition-title">Patch-by-patch upgrade is NOT required for 25.10.x</p>
 <p>You do not need to step through each patch releases in between 25.8.x - using the above standard procedure:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>25.10.1 → 25.10.2 → 25.10.3 → 25.10.4
+<div class="highlight"><pre><span></span><code><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a>25.10.1 → 25.10.2 → 25.10.3 → 25.10.4
 </code></pre></div>
 </div>
 <p>For <code>25.10.4</code>, Follow the <a href="#per-version-upgrade-procedure">standard procedure</a>. 
@@ -1556,37 +1612,39 @@ No special steps required beyond the standard preflight and upgrade.</p>
 </ul>
 </div>
 <div class="admonition danger">
-<p class="admonition-title">Breaking Change: <code>syncBinlog</code> type change</p>
-<p><code>syncBinlog</code> changed from <strong>boolean</strong> to <strong>integer</strong>.</p>
+<p class="admonition-title">Breaking Change: <code>syncBinlog</code> type change (Replication clusters)</p>
+<p><code>syncBinlog</code> changed from <strong>boolean</strong> to <strong>integer</strong>. This affects
+<strong>Primary/Replica (replication)</strong> clusters. Galera clusters without
+<code>replication</code> in their spec are not affected.</p>
 <p>If the existing MariaDB CR has <code>syncBinlog: true</code>, the new webhook will
 reject patches. Remove the webhook before patching:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>validatingwebhookconfiguration<span class="w"> </span>mariadb-operator-webhook
-<a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a>kubectl<span class="w"> </span>-n<span class="w"> </span>openstack<span class="w"> </span>patch<span class="w"> </span>mariadb<span class="w"> </span>mariadb-cluster<span class="w"> </span>--type<span class="w"> </span>merge<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;spec&quot;:{&quot;replication&quot;:{&quot;syncBinlog&quot;:1}}}&#39;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>validatingwebhookconfiguration<span class="w"> </span>mariadb-operator-webhook
+<a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a>kubectl<span class="w"> </span>-n<span class="w"> </span>openstack<span class="w"> </span>patch<span class="w"> </span>mariadb<span class="w"> </span>mariadb-cluster<span class="w"> </span>--type<span class="w"> </span>merge<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;spec&quot;:{&quot;replication&quot;:{&quot;syncBinlog&quot;:1}}}&#39;</span>
 </code></pre></div>
 <p>Then re-run the install script to restore the webhook.</p>
 </div>
 <div class="admonition danger">
 <p class="admonition-title">Breaking Change: Image configuration format</p>
 <p>Image configuration in Helm values changed from string to structured format:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Old Format</label><label for="__tabbed_3_2">New Format</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Old Format</label><label for="__tabbed_4_2">New Format</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="nt">config</span><span class="p">:</span>
-<a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a><span class="w">  </span><span class="nt">mariadbImageName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">repo/image:tag_version</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="nt">config</span><span class="p">:</span>
+<a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a><span class="w">  </span><span class="nt">mariadbImageName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">repo/image:tag_version</span>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="nt">config</span><span class="p">:</span>
-<a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="w">  </span><span class="nt">mariadbImage</span><span class="p">:</span>
-<a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a><span class="w">    </span><span class="nt">repository</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">repo/image</span>
-<a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a><span class="w">    </span><span class="nt">tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;version&gt;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="nt">config</span><span class="p">:</span>
+<a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a><span class="w">  </span><span class="nt">mariadbImage</span><span class="p">:</span>
+<a id="__codelineno-40-3" name="__codelineno-40-3" href="#__codelineno-40-3"></a><span class="w">    </span><span class="nt">repository</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">repo/image</span>
+<a id="__codelineno-40-4" name="__codelineno-40-4" href="#__codelineno-40-4"></a><span class="w">    </span><span class="nt">tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;version&gt;</span>
 </code></pre></div>
 </div>
 </div>
 </div>
 <p>Ensure <code>/etc/genestack/helm-configs/mariadb-operator/mariadb-operator-helm-overrides.yaml</code>
-uses the new format before upgrading to 26.3.0.</p>
+uses the new format for <code>maxscaleImage, exporterImage, exporterMaxscaleImage</code> image sections before upgrading to 26.3.0.</p>
 </div>
 <div class="admonition info">
 <p class="admonition-title">New CRD</p>
@@ -1597,18 +1655,18 @@ uses the new format before upgrading to 26.3.0.</p>
 <h3 id="webhook-blocks-patches-due-to-old-stored-values">Webhook blocks patches due to old stored values<a class="headerlink" href="#webhook-blocks-patches-due-to-old-stored-values" title="Permanent link">&para;</a></h3>
 <p>If the webhook rejects changes because the existing resource in etcd has
 old-format values (e.g. <code>syncBinlog: true</code>), temporarily remove the webhook:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a>kubectl<span class="w"> </span>scale<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator<span class="w"> </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span>--replicas<span class="o">=</span><span class="m">0</span>
-<a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a>kubectl<span class="w"> </span>scale<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span>--replicas<span class="o">=</span><span class="m">0</span>
-<a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>validatingwebhookconfiguration<span class="w"> </span>mariadb-operator-webhook
-<a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>mutatingwebhookconfiguration<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">true</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a>kubectl<span class="w"> </span>scale<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator<span class="w"> </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span>--replicas<span class="o">=</span><span class="m">0</span>
+<a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a>kubectl<span class="w"> </span>scale<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span>-n<span class="w"> </span>mariadb-system<span class="w"> </span>--replicas<span class="o">=</span><span class="m">0</span>
+<a id="__codelineno-41-3" name="__codelineno-41-3" href="#__codelineno-41-3"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>validatingwebhookconfiguration<span class="w"> </span>mariadb-operator-webhook
+<a id="__codelineno-41-4" name="__codelineno-41-4" href="#__codelineno-41-4"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>mutatingwebhookconfiguration<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">true</span>
 </code></pre></div>
 <p>Apply the fix, then re-run the install script to restore everything.</p>
 <h3 id="webhook-cert-validation-loop">Webhook cert validation loop<a class="headerlink" href="#webhook-cert-validation-loop" title="Permanent link">&para;</a></h3>
 <p>If operator pods are stuck in a <code>Validating certs</code> loop, delete the webhook
 cert secret and deployment, then re-run the install script:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>secret<span class="w"> </span>mariadb-operator-webhook-cert<span class="w"> </span>-n<span class="w"> </span>mariadb-system
-<a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span>-n<span class="w"> </span>mariadb-system
-<a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a>/opt/genestack/bin/install-mariadb-operator.sh
+<div class="highlight"><pre><span></span><code><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>secret<span class="w"> </span>mariadb-operator-webhook-cert<span class="w"> </span>-n<span class="w"> </span>mariadb-system
+<a id="__codelineno-42-2" name="__codelineno-42-2" href="#__codelineno-42-2"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>deployment<span class="w"> </span>mariadb-operator-webhook<span class="w"> </span>-n<span class="w"> </span>mariadb-system
+<a id="__codelineno-42-3" name="__codelineno-42-3" href="#__codelineno-42-3"></a>/opt/genestack/bin/install-mariadb-operator.sh
 </code></pre></div>
 
 
