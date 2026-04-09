@@ -12,6 +12,8 @@
         <link rel="prev" href="../openstack-magnum-deploy/">
       
       
+        <link rel="next" href="../ntu-msai-learning-plan/">
+      
       
         
       
@@ -416,6 +418,33 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ntu-msai-learning-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🎓 NTU MSAI Self-Paced Plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -520,7 +549,7 @@
 
 
 
-<h1 id="deploy-freezer">Deploy Freezer</h1>
+<h1 id="deploy-freezer">Deploy Freezer<a class="headerlink" href="#deploy-freezer" title="Permanent link">&para;</a></h1>
 <p>Freezer is a disaster recovery and backup-as-a-service component for OpenStack.
 It provides a way to back up various resources, such as virtual machine instances,
 databases, and file systems.</p>
@@ -532,9 +561,9 @@ of typical openstack services wherein only the freezer-api service resides and r
 in the openstack cluster and freezer-agent, freezer-scheduler run outside. The user
 has choice to deploy freezer-agent and scheduler on VM/Baremetal etc. making it act
 as a dedicated Freezer-Client.</p>
-<h2 id="installing-freezer-api">Installing Freezer API</h2>
+<h2 id="installing-freezer-api">Installing Freezer API<a class="headerlink" href="#installing-freezer-api" title="Permanent link">&para;</a></h2>
 <p>Login to your flex openstack cluster.</p>
-<h3 id="create-secrets">Create secrets</h3>
+<h3 id="create-secrets">Create secrets<a class="headerlink" href="#create-secrets" title="Permanent link">&para;</a></h3>
 <div class="admonition note">
 <p class="admonition-title">Information about the secrets used</p>
 <p>Manual secret generation is only required if you haven't run the
@@ -563,7 +592,7 @@ as a dedicated Freezer-Client.</p>
 </code></pre></div>
 </details>
 </div>
-<h3 id="run-the-package-deployment">Run the package deployment</h3>
+<h3 id="run-the-package-deployment">Run the package deployment<a class="headerlink" href="#run-the-package-deployment" title="Permanent link">&para;</a></h3>
 <div class="admonition example">
 <p class="admonition-title">Run the Freezer deployment Script <code>/opt/genestack/bin/install-freezer.sh</code></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>--8&lt;--<span class="w"> </span><span class="s2">&quot;bin/install-freezer.sh&quot;</span>
@@ -576,11 +605,11 @@ For a simple single region or lab deployment you can supply an additional
 overrides flag using the example found at
 <code>base-helm-configs/aio-example-openstack-overrides.yaml</code>.</p>
 </div>
-<h3 id="validate-functionality">Validate functionality</h3>
+<h3 id="validate-functionality">Validate functionality<a class="headerlink" href="#validate-functionality" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>kubectl<span class="w"> </span>--namespace<span class="w"> </span>openstack<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-ti<span class="w"> </span>openstack-admin-client<span class="w"> </span>--<span class="w"> </span>freezer<span class="w"> </span>host-list
 </code></pre></div>
 <hr />
-<h2 id="installing-freezer-agent-and-freezer-scheduler-on-freezer-client">Installing Freezer-Agent and Freezer-Scheduler on Freezer-Client</h2>
+<h2 id="installing-freezer-agent-and-freezer-scheduler-on-freezer-client">Installing Freezer-Agent and Freezer-Scheduler on Freezer-Client<a class="headerlink" href="#installing-freezer-agent-and-freezer-scheduler-on-freezer-client" title="Permanent link">&para;</a></h2>
 <p>In this case its assumed that your Freezer-Client is actually a VM which can talk to 
 the openstack api endpoints of your flex cluster.</p>
 <div class="admonition note">
@@ -690,8 +719,8 @@ Create client description <code>client_register_config.json</code></p>
 <a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a><span class="mi">2025-10-06</span><span class="w"> </span><span class="mi">15</span><span class="p">:</span><span class="mi">43</span><span class="p">:</span><span class="mf">25.809</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="err">INFO</span><span class="w"> </span><span class="kc">free</span><span class="err">zer_api.db.sqlalchemy.api</span><span class="w"> </span><span class="p">[</span><span class="err">req</span><span class="mi">-</span><span class="err">d</span><span class="mi">7</span><span class="kc">f</span><span class="mi">36415-4</span><span class="err">b</span><span class="mi">7</span><span class="kc">f</span><span class="mi">-4</span><span class="kc">f</span><span class="mi">8</span><span class="kc">f</span><span class="mi">-</span><span class="err">a</span><span class="mi">36</span><span class="err">c</span><span class="mi">-1917</span><span class="kc">f</span><span class="mi">117</span><span class="kc">f</span><span class="mi">6</span><span class="kc">f</span><span class="mi">4</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="mi">-</span><span class="w"> </span><span class="mi">-</span><span class="p">]</span><span class="w">  </span><span class="err">Clie</span><span class="kc">nt</span><span class="w"> </span><span class="err">regis</span><span class="kc">tere</span><span class="err">d</span><span class="p">,</span><span class="w"> </span><span class="err">clie</span><span class="kc">nt</span><span class="err">_id</span><span class="p">:</span><span class="w"> </span><span class="err">backup</span><span class="mi">-</span><span class="err">clie</span><span class="kc">nt</span><span class="mi">-</span><span class="err">vm</span>
 </code></pre></div>
 <hr />
-<h1 id="freezer-use-cases">Freezer Use Cases</h1>
-<h2 id="create-freezer-jobs">Create Freezer Jobs</h2>
+<h1 id="freezer-use-cases">Freezer Use Cases<a class="headerlink" href="#freezer-use-cases" title="Permanent link">&para;</a></h1>
+<h2 id="create-freezer-jobs">Create Freezer Jobs<a class="headerlink" href="#create-freezer-jobs" title="Permanent link">&para;</a></h2>
 <p>Similar to cronjobs, freezer jobs are an abstraction to schedule specific backups at a pre-defined time.</p>
 <p>Create job description <code>temp-job.json</code>:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">{</span>
@@ -812,9 +841,9 @@ Create client description <code>client_register_config.json</code></p>
 </div>
 </div>
 <hr />
-<h2 id="create-vm-backups">Create VM backups</h2>
+<h2 id="create-vm-backups">Create VM backups<a class="headerlink" href="#create-vm-backups" title="Permanent link">&para;</a></h2>
 <p>VM backups can be created locally (on same freezer-client VM storage) or remotely (in Swift object storage connected to Openstack Cluster)</p>
-<h3 id="backup-vm-to-local-storage">Backup VM to Local Storage</h3>
+<h3 id="backup-vm-to-local-storage">Backup VM to Local Storage<a class="headerlink" href="#backup-vm-to-local-storage" title="Permanent link">&para;</a></h3>
 <p>Backup destination local storage/VM disk. Make a note of the VM UUID which you would like to backup.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>freezer-agent<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">        </span>--action<span class="w"> </span>backup<span class="w"> </span><span class="se">\</span>
@@ -890,7 +919,7 @@ Create client description <code>client_register_config.json</code></p>
 </div>
 </div>
 </div>
-<h3 id="backup-qcow2-image-based-vms-to-swift">Backup QCOW2 image based VMs to Swift</h3>
+<h3 id="backup-qcow2-image-based-vms-to-swift">Backup QCOW2 image based VMs to Swift<a class="headerlink" href="#backup-qcow2-image-based-vms-to-swift" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>freezer-agent<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">        </span>--action<span class="w"> </span>backup<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">        </span>--nova-inst-id<span class="w"> </span>97dfb7df-1b9b-4848-a7d5-840467af5b66<span class="w"> </span><span class="se">\</span>
@@ -902,7 +931,7 @@ Create client description <code>client_register_config.json</code></p>
 <a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="w">        </span>--no-incremental<span class="w"> </span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="w">        </span>--log-file<span class="w"> </span>freezer-bkp-cirros.log
 </code></pre></div>
-<h3 id="restore-qcow2-image-based-vm-from-swift-to-openstack-cluster">Restore QCOW2 image based VM from Swift to Openstack Cluster</h3>
+<h3 id="restore-qcow2-image-based-vm-from-swift-to-openstack-cluster">Restore QCOW2 image based VM from Swift to Openstack Cluster<a class="headerlink" href="#restore-qcow2-image-based-vm-from-swift-to-openstack-cluster" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>freezer-agent<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">        </span>--action<span class="w"> </span>restore<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">        </span>--nova-inst-id<span class="w"> </span>97dfb7df-1b9b-4848-a7d5-840467af5b66<span class="w"> </span><span class="se">\</span>
@@ -915,7 +944,7 @@ Create client description <code>client_register_config.json</code></p>
 <a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a><span class="w">        </span>--log-file<span class="w"> </span>freezer-restore-cirros.log
 </code></pre></div>
 <hr />
-<h3 id="cinder-volume-backup-to-swift">Cinder Volume backup to Swift</h3>
+<h3 id="cinder-volume-backup-to-swift">Cinder Volume backup to Swift<a class="headerlink" href="#cinder-volume-backup-to-swift" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>freezer-agent<span class="w"> </span>
 <a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">        </span>--action<span class="w"> </span>backup<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="w">        </span>--cinder-vol-id<span class="w"> </span>2453735e-678a-4b4a-8604-b79b55c2cd21<span class="w"> </span><span class="se">\</span>
@@ -925,7 +954,7 @@ Create client description <code>client_register_config.json</code></p>
 <a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="w">        </span>--mode<span class="w"> </span>cinder<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a><span class="w">        </span>--log-file<span class="w"> </span>freezer-bkp-cinder.log
 </code></pre></div>
-<h3 id="cinder-volume-restore-from-swift-to-openstack-cluster">Cinder Volume restore from Swift to Openstack Cluster</h3>
+<h3 id="cinder-volume-restore-from-swift-to-openstack-cluster">Cinder Volume restore from Swift to Openstack Cluster<a class="headerlink" href="#cinder-volume-restore-from-swift-to-openstack-cluster" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>freezer-agent<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="w">        </span>--action<span class="w"> </span>restore<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="w">        </span>--mode<span class="w"> </span>cinder<span class="w"> </span><span class="se">\</span>
@@ -936,7 +965,7 @@ Create client description <code>client_register_config.json</code></p>
 <a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a><span class="w">        </span>--log-file<span class="w"> </span>freezer-restore-cinder.log
 </code></pre></div>
 <hr />
-<h2 id="mongodb-backup-to-swift">MongoDB backup to Swift</h2>
+<h2 id="mongodb-backup-to-swift">MongoDB backup to Swift<a class="headerlink" href="#mongodb-backup-to-swift" title="Permanent link">&para;</a></h2>
 <p>In this case, mongoDB's LVM (where mongoDB LVM volume is mounted) is backed up.</p>
 <div class="admonition warning">
 <p class="admonition-title">MYSQL DB operations</p>
@@ -966,7 +995,7 @@ Create client description <code>client_register_config.json</code></p>
 <a id="__codelineno-25-18" name="__codelineno-25-18" href="#__codelineno-25-18"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>mongod
 </code></pre></div>
 <hr />
-<h2 id="mongodb-restore-from-swift">MongoDB restore from Swift</h2>
+<h2 id="mongodb-restore-from-swift">MongoDB restore from Swift<a class="headerlink" href="#mongodb-restore-from-swift" title="Permanent link">&para;</a></h2>
 <p>Restore operation involves quiescing mongoDB operations by stopping the mongodb service momentarily and then restarting it once the backup is completed.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>mongod
 <a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>mongod
@@ -998,7 +1027,7 @@ Create client description <code>client_register_config.json</code></p>
 <a id="__codelineno-26-28" name="__codelineno-26-28" href="#__codelineno-26-28"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>mongod
 </code></pre></div>
 <hr />
-<h2 id="mysql-backup-to-swift">MYSQL Backup to Swift</h2>
+<h2 id="mysql-backup-to-swift">MYSQL Backup to Swift<a class="headerlink" href="#mysql-backup-to-swift" title="Permanent link">&para;</a></h2>
 <p>In this case MYSQL is first backed up locally in a temp location and then backup is uploaded to Swift.</p>
 <p>Backup operation involves quiescing mongoDB operations by stopping the mysql service momentarily and then restarting it once the backup is completed.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>mysql
@@ -1025,7 +1054,7 @@ Create client description <code>client_register_config.json</code></p>
 <a id="__codelineno-27-22" name="__codelineno-27-22" href="#__codelineno-27-22"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>mysql.service
 </code></pre></div>
 <hr />
-<h2 id="mysql-restore-from-swift">MYSQL Restore from Swift</h2>
+<h2 id="mysql-restore-from-swift">MYSQL Restore from Swift<a class="headerlink" href="#mysql-restore-from-swift" title="Permanent link">&para;</a></h2>
 <p>Restore operation involves quiescing mongoDB operations by stopping the mysql service momentarily and then restarting it once the backup is completed.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>mysql
 <a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>mysql
@@ -1061,7 +1090,7 @@ Create client description <code>client_register_config.json</code></p>
 <a id="__codelineno-29-20" name="__codelineno-29-20" href="#__codelineno-29-20"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>mysql.service
 </code></pre></div>
 <hr />
-<h2 id="filesystem-backup-to-swift">Filesystem Backup to Swift</h2>
+<h2 id="filesystem-backup-to-swift">Filesystem Backup to Swift<a class="headerlink" href="#filesystem-backup-to-swift" title="Permanent link">&para;</a></h2>
 <p>Local filesystem directory / files can be backed up to swift object store.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>mysql
 <a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>mysql
@@ -1083,10 +1112,10 @@ Create client description <code>client_register_config.json</code></p>
 <a id="__codelineno-30-18" name="__codelineno-30-18" href="#__codelineno-30-18"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>mysql
 </code></pre></div>
 <hr />
-<h2 id="creating-sessions">Creating Sessions</h2>
+<h2 id="creating-sessions">Creating Sessions<a class="headerlink" href="#creating-sessions" title="Permanent link">&para;</a></h2>
 <p>A session acts as a high-level container that groups related backup and restore actions. It provides a unique identifier and metadata that applies to all jobs executed within it.</p>
 <p>When you create a job (like the one in the Canvas), you typically want that job's executions to be tied to a specific session. This makes management easier, especially during recovery, as you can see all backup runs related to a single project or time period under one session ID.</p>
-<h3 id="create-a-session-config-file">Create a session config file:</h3>
+<h3 id="create-a-session-config-file">Create a session config file:<a class="headerlink" href="#create-a-session-config-file" title="Permanent link">&para;</a></h3>
 <p>Example: <code>session_file.json</code></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="p">{</span>
 <a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="w">    </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Local Storage VM Backup Session&quot;</span><span class="p">,</span>
