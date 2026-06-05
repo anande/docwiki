@@ -5,35 +5,51 @@
          <lastmod>2026-06-05</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/argocd-mcp-secure-jwt-tokens/</loc>
+         <loc>https://anande.github.io/docwiki/tags/</loc>
          <lastmod>2026-06-05</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/ceph-ansible-to-cephadm-migration/</loc>
+         <loc>https://anande.github.io/docwiki/blog/</loc>
          <lastmod>2026-06-05</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/how_kubespray_k3d_generate_kubeconfig/</loc>
+         <loc>https://anande.github.io/docwiki/blog/2026/06/04/secure-argocd-jwt-tokens-for-cursor-mcp/</loc>
          <lastmod>2026-06-05</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/ntu-msai-learning-plan/</loc>
+         <loc>https://anande.github.io/docwiki/blog/2026/05/20/ceph-ansible-to-cephadm-migration-lab/</loc>
          <lastmod>2026-06-05</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/openstack-freezer-backup-retention/</loc>
+         <loc>https://anande.github.io/docwiki/blog/2026/05/15/how-kubeconfig-is-generated-by-kubespray-and-k3d/</loc>
          <lastmod>2026-06-05</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/openstack-freezer/</loc>
+         <loc>https://anande.github.io/docwiki/blog/2026/04/15/mortar_board-self-paced-msai-learning-plan/</loc>
          <lastmod>2026-06-05</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/openstack-magnum-deploy/</loc>
+         <loc>https://anande.github.io/docwiki/blog/2026/05/12/freezer-backup-retention-policy/</loc>
          <lastmod>2026-06-05</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/openstack-mariadb-operator-upgrade/</loc>
+         <loc>https://anande.github.io/docwiki/blog/2026/05/10/deploy-freezer/</loc>
+         <lastmod>2026-06-05</lastmod>
+    </url>
+    <url>
+         <loc>https://anande.github.io/docwiki/blog/2026/05/25/magnum-enablement/</loc>
+         <lastmod>2026-06-05</lastmod>
+    </url>
+    <url>
+         <loc>https://anande.github.io/docwiki/blog/2026/05/28/mariadb-operator-upgrade-runbook/</loc>
+         <lastmod>2026-06-05</lastmod>
+    </url>
+    <url>
+         <loc>https://anande.github.io/docwiki/blog/archive/2026/</loc>
+         <lastmod>2026-06-05</lastmod>
+    </url>
+    <url>
+         <loc>https://anande.github.io/docwiki/blog/author/anande/</loc>
          <lastmod>2026-06-05</lastmod>
     </url>
 </urlset>
