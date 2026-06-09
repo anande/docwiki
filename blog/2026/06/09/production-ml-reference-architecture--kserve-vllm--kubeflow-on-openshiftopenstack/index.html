@@ -1,0 +1,2534 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Practical notes on Kubernetes, GitOps, AI infrastructure, and cloud native operations.">
+      
+      
+      
+        <link rel="canonical" href="https://anande.github.io/docwiki/blog/2026/06/09/production-ml-reference-architecture--kserve-vllm--kubeflow-on-openshiftopenstack/">
+      
+      
+        <link rel="prev" href="../vllm-architecture-deep-dive--from-kv-cache-bottleneck-to-production-inference/">
+      
+      
+        <link rel="next" href="../kserve-vs-vllm-vs-kubeflow--understanding-the-ml-serving-stack/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Production ML Reference Architecture — KServe, vLLM & Kubeflow on OpenShift/OpenStack - Cloud Native Field Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="black">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#production-ml-reference-architecture-kserve-vllm-kubeflow-on-openshiftopenstack" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../../.." title="Cloud Native Field Notes" class="md-header__button md-logo" aria-label="Cloud Native Field Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cloud Native Field Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Production ML Reference Architecture — KServe, vLLM &amp; Kubeflow on OpenShift/OpenStack
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="black"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="black"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anande/docwiki" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anande/docwiki
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" hidden>
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../.." title="Cloud Native Field Notes" class="md-nav__button md-logo" aria-label="Cloud Native Field Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Cloud Native Field Notes
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anande/docwiki" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anande/docwiki
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Blog
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Blog
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      <a href="../../../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Blog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Archive
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Archive
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../archive/2026/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2026
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authors
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Authors
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../author/anande/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Anande
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../tags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hardware-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hardware Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hardware Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#control-plane-openstack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Control Plane (OpenStack)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openshift-control-plane" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenShift Control Plane
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cpu-workers-pipelines-notebooks-preprocessing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CPU Workers (Pipelines, Notebooks, Preprocessing)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gpu-workers-training-inference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GPU Workers (Training + Inference)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nvidia-multi-instance-gpu-mig-for-inference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NVIDIA Multi-Instance GPU (MIG) for Inference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="NVIDIA Multi-Instance GPU (MIG) for Inference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-mig-for-production-inference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why MIG for Production Inference
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mig-profiles-h100-80gb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MIG Profiles (H100 80GB)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mig-configuration-on-openshift" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MIG Configuration on OpenShift
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#requesting-mig-instances-in-pods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requesting MIG Instances in Pods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mig-scheduling-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MIG Scheduling Strategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Network Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#network-segmentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network Segmentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#network-performance-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network Performance Tuning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Network Performance Tuning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enable-jumbo-frames-on-storage-and-gpu-networks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enable Jumbo Frames on Storage and GPU Networks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nccl-tuning-for-multi-gpu-communication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NCCL Tuning for Multi-GPU Communication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rocev2-lossless-ethernet-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RoCEv2 Lossless Ethernet Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#service-mesh-bypass-for-hot-inference-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service Mesh Bypass for Hot Inference Path
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#storage-architecture-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Storage Architecture &amp; Tuning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Storage Architecture &amp; Tuning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#storage-tiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Storage Tiers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model-loading-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model Loading Strategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ceph-performance-tuning-for-ml-workloads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ceph Performance Tuning for ML Workloads
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#storageclass-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StorageClass Definitions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compute-performance-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compute Performance Tuning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Compute Performance Tuning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vllm-engine-arguments-for-maximum-throughput" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        vLLM Engine Arguments for Maximum Throughput
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cpu-and-os-level-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CPU and OS-Level Tuning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#numa-aware-gpu-scheduling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NUMA-Aware GPU Scheduling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gpu-power-and-clock-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GPU Power and Clock Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#autoscaling-for-throughput" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Autoscaling for Throughput
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Autoscaling for Throughput">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom-metrics-hpa-vllm-aware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Metrics HPA (vLLM-Aware)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kueue-for-gpu-fair-share-scheduling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kueue for GPU Fair-Share Scheduling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observability-for-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observability for Performance
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Observability for Performance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-throughput-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Throughput Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prometheus-alerting-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prometheus Alerting Rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sizing-by-deployment-scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sizing by Deployment Scale
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sizing by Deployment Scale">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#small-poc-510-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Small (POC — 5–10 users)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#medium-team-2050-users-multiple-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medium (Team — 20–50 users, multiple models)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#large-enterprise-100-users-dozens-of-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Large (Enterprise — 100+ users, dozens of models)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-tuning-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Tuning Checklist
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Performance Tuning Checklist">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#compute" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compute
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#network" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Storage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resources-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resources &amp; References
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Resources &amp; References">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nvidia-gpu-mig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NVIDIA GPU &amp; MIG
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openshift-openstack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenShift &amp; OpenStack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kserve-vllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KServe &amp; vLLM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubeflow-scheduling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kubeflow &amp; Scheduling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#storage_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Storage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nccl-networking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NCCL &amp; Networking
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+  <div class="md-content md-content--post" data-md-component="content">
+    <div class="md-sidebar md-sidebar--post" data-md-component="sidebar" data-md-type="navigation">
+      <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner md-post">
+          <nav class="md-nav md-nav--primary">
+            <div class="md-post__back">
+              <div class="md-nav__title md-nav__container">
+                <a href="../../../../" class="md-nav__link">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+                  <span class="md-ellipsis">
+                    Back to index
+                  </span>
+                </a>
+              </div>
+            </div>
+            
+              <div class="md-post__authors md-typeset">
+                
+                  <div class="md-profile md-post__profile">
+                    <span class="md-author md-author--long">
+                      <img src="https://github.com/anande.png" alt="Anande">
+                    </span>
+                    <span class="md-profile__description">
+                      <strong>
+                        
+                          <a href="../../../../author/anande/">Anande</a>
+                        
+                      </strong>
+                      <br>
+                      Cloud Native Engineer
+                    </span>
+                  </div>
+                
+              </div>
+            
+            <ul class="md-post__meta md-nav__list">
+              <li class="md-nav__item md-nav__item--section">
+                <div class="md-post__title">
+                  <span class="md-ellipsis">
+                    Metadata
+                  </span>
+                </div>
+                <nav class="md-nav">
+                  <ul class="md-nav__list">
+                    <li class="md-nav__item">
+                      <div class="md-nav__link">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 19H5V8h14m-3-7v2H8V1H6v2H5c-1.11 0-2 .89-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-1V1m-1 11h-5v5h5z"/></svg>
+                        <time datetime="2026-06-09 00:00:00+00:00" class="md-ellipsis">June 9, 2026</time>
+                      </div>
+                    </li>
+                    
+                    
+                    
+                      
+                      <li class="md-nav__item">
+                        <div class="md-nav__link">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 20a8 8 0 0 0 8-8 8 8 0 0 0-8-8 8 8 0 0 0-8 8 8 8 0 0 0 8 8m0-18a10 10 0 0 1 10 10 10 10 0 0 1-10 10C6.47 22 2 17.5 2 12A10 10 0 0 1 12 2m.5 5v5.25l4.5 2.67-.75 1.23L11 13V7z"/></svg>
+                          <span class="md-ellipsis">
+                            
+                              11 min read
+                            
+                          </span>
+                        </div>
+                      </li>
+                    
+                  </ul>
+                </nav>
+              </li>
+            </ul>
+            
+          </nav>
+          
+        </div>
+      </div>
+    </div>
+    <article class="md-content__inner md-typeset">
+      
+        
+  
+
+
+  <nav class="md-tags" >
+    
+      
+      
+      
+      
+        <a href="../../../../../tags/#tag:ai" class="md-tag">AI</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../../tags/#tag:gpu" class="md-tag">GPU</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../../tags/#tag:infrastructure" class="md-tag">Infrastructure</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../../tags/#tag:kubernetes" class="md-tag">Kubernetes</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../../tags/#tag:mlops" class="md-tag">MLOps</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../../tags/#tag:machine-learning" class="md-tag">Machine Learning</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../../tags/#tag:networking" class="md-tag">Networking</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../../tags/#tag:openshift" class="md-tag">OpenShift</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../../tags/#tag:openstack" class="md-tag">OpenStack</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../../tags/#tag:storage" class="md-tag">Storage</a>
+      
+    
+  </nav>
+
+
+  
+    <a href="https://github.com/anande/docwiki/edit/main/docs/blog/posts/production-ml-reference-architecture.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="production-ml-reference-architecture-kserve-vllm-kubeflow-on-openshiftopenstack">Production ML Reference Architecture — KServe, vLLM &amp; Kubeflow on OpenShift/OpenStack<a class="headerlink" href="#production-ml-reference-architecture-kserve-vllm-kubeflow-on-openshiftopenstack" title="Permanent link">&para;</a></h1>
+<p>Planning infrastructure for a production-grade ML serving stack is non-trivial. This post is a reference architecture covering hardware sizing, GPU compute (including MIG), network design, storage tiers, and performance tuning for maximum inference throughput.</p>
+<!-- more -->
+
+<hr />
+<h2 id="architecture-overview">Architecture Overview<a class="headerlink" href="#architecture-overview" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>graph TB
+    subgraph External["External Access"]
+        Users[API Consumers]
+        LB[Load Balancer&lt;br/&gt;F5 / HAProxy / MetalLB]
+    end
+
+    subgraph OCP["OpenShift Container Platform"]
+        Mesh[Istio Service Mesh&lt;br/&gt;mTLS, Traffic Splitting]
+        subgraph ML["ML Platform Layer"]
+            KF[Kubeflow&lt;br/&gt;Pipelines, Notebooks, Training, Katib]
+            KS[KServe&lt;br/&gt;Autoscaler, Router, Canary]
+            VLLM[vLLM Pods&lt;br/&gt;PagedAttention, Continuous Batching]
+        end
+        subgraph Infra["Platform Services"]
+            Mon[Prometheus + Grafana + DCGM]
+            Reg[Quay Registry]
+            Git[ArgoCD GitOps]
+            Vault[Secrets Management]
+        end
+        subgraph Nodes["Node Pools"]
+            CP[Control Plane]
+            INF[Infra Nodes]
+            CPU[CPU Workers]
+            GPU[GPU Workers&lt;br/&gt;H100 / A100 + NVLink]
+        end
+    end
+
+    subgraph Stack["OpenStack IaaS"]
+        Nova[Nova + Ironic&lt;br/&gt;Compute / Bare Metal]
+        Neutron[Neutron&lt;br/&gt;SDN]
+        Storage[Cinder + Manila + Swift&lt;br/&gt;Block + Shared FS + Object]
+        Ceph[Ceph Cluster&lt;br/&gt;NVMe OSDs]
+    end
+
+    Users --&gt; LB --&gt; Mesh --&gt; KS --&gt; VLLM
+    KF --&gt; KS
+    ML --&gt; Nodes
+    OCP --&gt; Stack</code></pre>
+<hr />
+<h2 id="hardware-requirements">Hardware Requirements<a class="headerlink" href="#hardware-requirements" title="Permanent link">&para;</a></h2>
+<h3 id="control-plane-openstack">Control Plane (OpenStack)<a class="headerlink" href="#control-plane-openstack" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Specification</th>
+<th>Quantity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU</td>
+<td>2× Intel Xeon Gold 6348 (28C) or AMD EPYC 7543 (32C)</td>
+<td>3 nodes (HA)</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>256 GB DDR4 ECC</td>
+<td>per node</td>
+</tr>
+<tr>
+<td>Storage (OS)</td>
+<td>2× 480GB SSD (RAID 1)</td>
+<td>per node</td>
+</tr>
+<tr>
+<td>Storage (Ceph OSD)</td>
+<td>4× 3.84TB NVMe SSD</td>
+<td>per node (converged)</td>
+</tr>
+<tr>
+<td>NIC</td>
+<td>2× 25GbE (mgmt) + 2× 25GbE (storage)</td>
+<td>per node</td>
+</tr>
+</tbody>
+</table>
+<h3 id="openshift-control-plane">OpenShift Control Plane<a class="headerlink" href="#openshift-control-plane" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Specification</th>
+<th>Quantity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vCPU</td>
+<td>8 vCPUs</td>
+<td>3 nodes (HA)</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>32 GB</td>
+<td>per node</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>120GB NVMe (fast etcd)</td>
+<td>per node</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cpu-workers-pipelines-notebooks-preprocessing">CPU Workers (Pipelines, Notebooks, Preprocessing)<a class="headerlink" href="#cpu-workers-pipelines-notebooks-preprocessing" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Specification</th>
+<th>Quantity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vCPU</td>
+<td>32–64 vCPUs</td>
+<td>3–6 nodes</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>128–256 GB</td>
+<td>per node</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>1TB NVMe (ephemeral)</td>
+<td>per node</td>
+</tr>
+</tbody>
+</table>
+<h3 id="gpu-workers-training-inference">GPU Workers (Training + Inference)<a class="headerlink" href="#gpu-workers-training-inference" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Specification</th>
+<th>Quantity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU</td>
+<td>2× AMD EPYC 9454 (48C) or Intel Xeon w9-3495X</td>
+<td>per node</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>512 GB – 1 TB DDR5 ECC</td>
+<td>per node</td>
+</tr>
+<tr>
+<td>GPU</td>
+<td>4× or 8× NVIDIA H100 80GB SXM5</td>
+<td>per node</td>
+</tr>
+<tr>
+<td>GPU Interconnect</td>
+<td>NVLink 4.0 (900 GB/s) + NVSwitch</td>
+<td>intra-node</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>2× 3.84TB NVMe Gen4 (model cache)</td>
+<td>per node</td>
+</tr>
+<tr>
+<td>Network (Data)</td>
+<td>2× 100GbE (bonded) or 1× 400GbE</td>
+<td>per node</td>
+</tr>
+<tr>
+<td>Network (GPU)</td>
+<td>InfiniBand NDR 400Gb/s or RoCEv2</td>
+<td>per node</td>
+</tr>
+<tr>
+<td>Power</td>
+<td>~10kW per 8-GPU node</td>
+<td>per node</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="nvidia-multi-instance-gpu-mig-for-inference">NVIDIA Multi-Instance GPU (MIG) for Inference<a class="headerlink" href="#nvidia-multi-instance-gpu-mig-for-inference" title="Permanent link">&para;</a></h2>
+<p>MIG allows a single physical GPU to be partitioned into isolated instances, each with dedicated compute, memory, and cache resources. This is transformative for multi-tenant inference.</p>
+<h3 id="why-mig-for-production-inference">Why MIG for Production Inference<a class="headerlink" href="#why-mig-for-production-inference" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Hardware isolation</strong> — each MIG instance has dedicated SM (Streaming Multiprocessor) slices, memory bandwidth, and L2 cache</li>
+<li><strong>QoS guarantees</strong> — noisy neighbor problem eliminated; one model can't starve another</li>
+<li><strong>Cost efficiency</strong> — serve multiple small models on one H100 instead of dedicating an entire 80GB GPU to a 7B model using 14GB</li>
+<li><strong>Fault isolation</strong> — an OOM in one instance doesn't crash others</li>
+</ul>
+<h3 id="mig-profiles-h100-80gb">MIG Profiles (H100 80GB)<a class="headerlink" href="#mig-profiles-h100-80gb" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Profile</th>
+<th>Memory</th>
+<th>Compute (SMs)</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1g.10gb</td>
+<td>10 GB</td>
+<td>1/7 (16 SMs)</td>
+<td>7B INT4/INT8 quantized models</td>
+</tr>
+<tr>
+<td>2g.20gb</td>
+<td>20 GB</td>
+<td>2/7 (32 SMs)</td>
+<td>7B FP16, small embedding models</td>
+</tr>
+<tr>
+<td>3g.40gb</td>
+<td>40 GB</td>
+<td>3/7 (48 SMs)</td>
+<td>13B FP16 or 70B AWQ/GPTQ</td>
+</tr>
+<tr>
+<td>4g.40gb</td>
+<td>40 GB</td>
+<td>4/7 (64 SMs)</td>
+<td>13B with large batch sizes</td>
+</tr>
+<tr>
+<td>7g.80gb</td>
+<td>80 GB</td>
+<td>7/7 (132 SMs)</td>
+<td>70B FP16, full GPU for one model</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mig-configuration-on-openshift">MIG Configuration on OpenShift<a class="headerlink" href="#mig-configuration-on-openshift" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nvidia.com/v1</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterPolicy</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nt">metadata</span><span class="p">:</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpu-cluster-policy</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">operator</span><span class="p">:</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="nt">defaultRuntime</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">crio</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="nt">driver</span><span class="p">:</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span><span class="nt">devicePlugin</span><span class="p">:</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">  </span><span class="nt">migManager</span><span class="p">:</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">    </span><span class="nt">config</span><span class="p">:</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mig-config</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">  </span><span class="nt">dcgmExporter</span><span class="p">:</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">  </span><span class="nt">gfd</span><span class="p">:</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="nn">---</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ConfigMap</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="nt">metadata</span><span class="p">:</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mig-config</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nvidia-gpu-operator</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="nt">data</span><span class="p">:</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="w">  </span><span class="nt">config.yaml</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="w">    </span><span class="no">version: v1</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="w">    </span><span class="no">mig-configs:</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="w">      </span><span class="no"># Inference-optimized: 2× large + 4× small instances per GPU</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="w">      </span><span class="no">inference-mixed:</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="w">        </span><span class="no">- devices: [0, 1]</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a><span class="w">          </span><span class="no">mig-enabled: true</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a><span class="w">          </span><span class="no">mig-devices:</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a><span class="w">            </span><span class="no">&quot;3g.40gb&quot;: 2    # Two 40GB slices → 13B models each</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a><span class="w">        </span><span class="no">- devices: [2, 3]</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a><span class="w">          </span><span class="no">mig-enabled: true</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a><span class="w">          </span><span class="no">mig-devices:</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a><span class="w">            </span><span class="no">&quot;1g.10gb&quot;: 7    # Seven 10GB slices → 7B quantized models</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a><span class="w">        </span><span class="no">- devices: [4, 5, 6, 7]</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a><span class="w">          </span><span class="no">mig-enabled: false  # Full GPUs for TP across 4 GPUs (70B model)</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a><span class="w">      </span><span class="no"># Training: all GPUs full (no MIG)</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a><span class="w">      </span><span class="no">training-full:</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a><span class="w">        </span><span class="no">- devices: all</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a><span class="w">          </span><span class="no">mig-enabled: false</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a><span class="w">      </span><span class="no"># Multi-tenant small models</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a><span class="w">      </span><span class="no">multi-tenant-small:</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a><span class="w">        </span><span class="no">- devices: all</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a><span class="w">          </span><span class="no">mig-enabled: true</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a><span class="w">          </span><span class="no">mig-devices:</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a><span class="w">            </span><span class="no">&quot;2g.20gb&quot;: 3    # Three 20GB slices per GPU = 24 instances on 8 GPUs</span>
+</code></pre></div>
+<h3 id="requesting-mig-instances-in-pods">Requesting MIG Instances in Pods<a class="headerlink" href="#requesting-mig-instances-in-pods" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pod</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nt">metadata</span><span class="p">:</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-7b-mig</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="nt">containers</span><span class="p">:</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">      </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm/vllm-openai:latest</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">      </span><span class="nt">args</span><span class="p">:</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--model=/mnt/models/mistral-7b-instruct-v0.3</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--dtype=float16</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--max-model-len=4096</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--gpu-memory-utilization=0.90</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">      </span><span class="nt">resources</span><span class="p">:</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">        </span><span class="nt">limits</span><span class="p">:</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">          </span><span class="nt">nvidia.com/mig-3g.40gb</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">    </span><span class="c1"># Request one 3g.40gb MIG slice</span>
+</code></pre></div>
+<h3 id="mig-scheduling-strategy">MIG Scheduling Strategy<a class="headerlink" href="#mig-scheduling-strategy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>8× H100 SXM5 node — mixed MIG configuration:
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>┌─────────────────────────────────────────────────────────────────┐
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>│ GPU 0-1: MIG 3g.40gb × 2 each = 4 instances                    │
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>│   → 4× 13B model replicas (one per MIG instance)               │
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>│                                                                  │
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>│ GPU 2-3: MIG 1g.10gb × 7 each = 14 instances                   │
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>│   → 14× 7B-INT4 model replicas (embeddings, classifiers, etc.) │
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>│                                                                  │
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>│ GPU 4-7: Full GPUs, tensor-parallel group                       │
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>│   → 1× 70B model with TP=4                                     │
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>└─────────────────────────────────────────────────────────────────┘
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>Total on single node: 1× 70B + 4× 13B + 14× 7B = 19 model instances
+</code></pre></div>
+<hr />
+<h2 id="network-architecture">Network Architecture<a class="headerlink" href="#network-architecture" title="Permanent link">&para;</a></h2>
+<h3 id="network-segmentation">Network Segmentation<a class="headerlink" href="#network-segmentation" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Network</th>
+<th>CIDR</th>
+<th>VLAN</th>
+<th>MTU</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Management</td>
+<td>10.0.0.0/24</td>
+<td>100</td>
+<td>1500</td>
+<td>BMC/IPMI, provisioning, OpenStack APIs</td>
+</tr>
+<tr>
+<td>Tenant/Pod (OVN)</td>
+<td>10.128.0.0/14</td>
+<td>—</td>
+<td>8950</td>
+<td>Pod-to-pod, service mesh, inference endpoints</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>172.16.0.0/24</td>
+<td>300</td>
+<td>9000</td>
+<td>Ceph public + cluster, model transfers</td>
+</tr>
+<tr>
+<td>GPU Fabric</td>
+<td>192.168.100.0/24</td>
+<td>400</td>
+<td>9000</td>
+<td>NCCL, InfiniBand/RoCEv2, distributed training</td>
+</tr>
+<tr>
+<td>External/API</td>
+<td>Corporate CIDR</td>
+<td>—</td>
+<td>1500</td>
+<td>User-facing ingress, TLS termination</td>
+</tr>
+</tbody>
+</table>
+<h3 id="network-performance-tuning">Network Performance Tuning<a class="headerlink" href="#network-performance-tuning" title="Permanent link">&para;</a></h3>
+<h4 id="enable-jumbo-frames-on-storage-and-gpu-networks">Enable Jumbo Frames on Storage and GPU Networks<a class="headerlink" href="#enable-jumbo-frames-on-storage-and-gpu-networks" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># On each GPU/storage node (via MachineConfig on OpenShift)</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>ip<span class="w"> </span>link<span class="w"> </span><span class="nb">set</span><span class="w"> </span>eth1<span class="w"> </span>mtu<span class="w"> </span><span class="m">9000</span><span class="w">    </span><span class="c1"># Storage interface</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>ip<span class="w"> </span>link<span class="w"> </span><span class="nb">set</span><span class="w"> </span>eth2<span class="w"> </span>mtu<span class="w"> </span><span class="m">9000</span><span class="w">    </span><span class="c1"># GPU fabric interface</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># OpenShift MachineConfig for jumbo frames</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">machineconfiguration.openshift.io/v1</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MachineConfig</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="nt">metadata</span><span class="p">:</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">99-gpu-worker-jumbo-frames</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="nt">labels</span><span class="p">:</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="nt">machineconfiguration.openshift.io/role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpu-worker</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">  </span><span class="nt">config</span><span class="p">:</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">    </span><span class="nt">ignition</span><span class="p">:</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">      </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3.2.0</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">    </span><span class="nt">storage</span><span class="p">:</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">      </span><span class="nt">files</span><span class="p">:</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/NetworkManager/dispatcher.d/99-jumbo-frames.sh</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">          </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0755</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">          </span><span class="nt">contents</span><span class="p">:</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">            </span><span class="nt">inline</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">              </span><span class="no">#!/bin/bash</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">              </span><span class="no">if [[ &quot;$1&quot; == &quot;eth1&quot; || &quot;$1&quot; == &quot;eth2&quot; ]]; then</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">                </span><span class="no">ip link set &quot;$1&quot; mtu 9000</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="w">              </span><span class="no">fi</span>
+</code></pre></div>
+<h4 id="nccl-tuning-for-multi-gpu-communication">NCCL Tuning for Multi-GPU Communication<a class="headerlink" href="#nccl-tuning-for-multi-gpu-communication" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">env</span><span class="p">:</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="c1"># Use InfiniBand for NCCL (multi-node training)</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NCCL_IB_DISABLE</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0&quot;</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NCCL_IB_HCA</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;mlx5_0,mlx5_1,mlx5_2,mlx5_3&quot;</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NCCL_IB_GID_INDEX</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;3&quot;</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">  </span><span class="c1"># Use NVLink for intra-node (tensor parallelism)</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NCCL_P2P_LEVEL</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;NVL&quot;</span><span class="w">           </span><span class="c1"># Force NVLink for peer-to-peer</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NCCL_NET_GDR_LEVEL</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;PIX&quot;</span><span class="w">           </span><span class="c1"># GPU Direct RDMA level</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">  </span><span class="c1"># Buffering and threading</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NCCL_BUFFSIZE</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;8388608&quot;</span><span class="w">       </span><span class="c1"># 8MB buffers (default 4MB)</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NCCL_NTHREADS</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;512&quot;</span><span class="w">           </span><span class="c1"># Max threads per NCCL operation</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NCCL_SOCKET_IFNAME</span>
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eth2&quot;</span><span class="w">          </span><span class="c1"># GPU fabric interface</span>
+<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="w">  </span><span class="c1"># Topology detection</span>
+<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NCCL_TOPO_DUMP_FILE</span>
+<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/tmp/nccl_topo.xml&quot;</span>
+</code></pre></div>
+<h4 id="rocev2-lossless-ethernet-configuration">RoCEv2 Lossless Ethernet Configuration<a class="headerlink" href="#rocev2-lossless-ethernet-configuration" title="Permanent link">&para;</a></h4>
+<p>If using RoCEv2 instead of InfiniBand:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Enable Priority Flow Control (PFC) on switch ports</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="c1"># (switch-specific — example for Mellanox/NVIDIA Spectrum)</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>interface<span class="w"> </span>ethernet<span class="w"> </span><span class="m">1</span>/1-1/32
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span>dcb<span class="w"> </span>priority-flow-control<span class="w"> </span>mode<span class="w"> </span>on
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span>dcb<span class="w"> </span>priority-flow-control<span class="w"> </span>priority<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="nb">enable</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span>dcb<span class="w"> </span>ets<span class="w"> </span>traffic-class<span class="w"> </span><span class="m">3</span><span class="w"> </span>bandwidth<span class="w"> </span><span class="m">80</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="c1"># Enable ECN on the host</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>sysctl<span class="w"> </span>-w<span class="w"> </span>net.ipv4.tcp_ecn<span class="o">=</span><span class="m">1</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>mlnx_qos<span class="w"> </span>-i<span class="w"> </span>eth2<span class="w"> </span>--pfc<span class="w"> </span><span class="m">0</span>,0,0,1,0,0,0,0<span class="w">    </span><span class="c1"># PFC on priority 3</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>cma_roce_tos<span class="w"> </span>-d<span class="w"> </span>mlx5_0<span class="w"> </span>-t<span class="w"> </span><span class="m">106</span><span class="w">               </span><span class="c1"># DSCP for RoCE traffic</span>
+</code></pre></div>
+<h4 id="service-mesh-bypass-for-hot-inference-path">Service Mesh Bypass for Hot Inference Path<a class="headerlink" href="#service-mesh-bypass-for-hot-inference-path" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">networking.istio.io/v1beta1</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PeerAuthentication</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="nt">metadata</span><span class="p">:</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-bypass-mtls</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">model-serving</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">  </span><span class="nt">selector</span><span class="p">:</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">    </span><span class="nt">matchLabels</span><span class="p">:</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">      </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-inference</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">  </span><span class="nt">mtls</span><span class="p">:</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PERMISSIVE</span><span class="w">    </span><span class="c1"># Don&#39;t enforce mTLS on GPU-to-GPU inference path</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="nn">---</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="c1"># Sidecar resource limits (don&#39;t starve the GPU pod)</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">networking.istio.io/v1beta1</span>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Sidecar</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="nt">metadata</span><span class="p">:</span>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-sidecar-config</span>
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">model-serving</span>
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="w">  </span><span class="nt">workloadSelector</span><span class="p">:</span>
+<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span class="w">    </span><span class="nt">labels</span><span class="p">:</span>
+<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="w">      </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-inference</span>
+<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span class="w">  </span><span class="nt">ingress</span><span class="p">:</span>
+<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">port</span><span class="p">:</span>
+<a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a><span class="w">        </span><span class="nt">number</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span>
+<a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a><span class="w">        </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HTTP</span>
+<a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a><span class="w">      </span><span class="nt">defaultEndpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1:8000</span>
+<a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a><span class="w">  </span><span class="nt">outboundTrafficPolicy</span><span class="p">:</span>
+<a id="__codelineno-7-29" name="__codelineno-7-29" href="#__codelineno-7-29"></a><span class="w">    </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ALLOW_ANY</span>
+</code></pre></div>
+<hr />
+<h2 id="storage-architecture-tuning">Storage Architecture &amp; Tuning<a class="headerlink" href="#storage-architecture-tuning" title="Permanent link">&para;</a></h2>
+<h3 id="storage-tiers">Storage Tiers<a class="headerlink" href="#storage-tiers" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Backend</th>
+<th>Use Case</th>
+<th>Throughput</th>
+<th>Latency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hot</td>
+<td>Local NVMe (node-local)</td>
+<td>Model weight cache, active inference</td>
+<td>6–7 GB/s</td>
+<td>&lt;100μs</td>
+</tr>
+<tr>
+<td>Warm</td>
+<td>CephFS on NVMe (Manila)</td>
+<td>Shared model store, training checkpoints</td>
+<td>3–10 GB/s</td>
+<td>1–5ms</td>
+</tr>
+<tr>
+<td>Cold</td>
+<td>Ceph RGW / Swift (S3)</td>
+<td>Datasets, archived models, pipeline artifacts</td>
+<td>1–3 GB/s</td>
+<td>5–50ms</td>
+</tr>
+</tbody>
+</table>
+<h3 id="model-loading-strategy">Model Loading Strategy<a class="headerlink" href="#model-loading-strategy" title="Permanent link">&para;</a></h3>
+<p>Models are large (7B = 14GB, 70B = 140GB FP16). Loading speed directly impacts pod startup time and autoscaler responsiveness.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>┌──────────────────────────────────────────────────────────────┐
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>│  Model Loading Pipeline                                       │
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>│                                                               │
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>│  S3 (source of truth)  ──→  CephFS (shared warm cache)       │
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>│         │                          │                          │
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>│         │  (first pull)            │  (fast local cache)      │
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>│         ▼                          ▼                          │
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>│  ┌─────────────┐          ┌─────────────────────┐            │
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>│  │  Init Container│        │  hostPath NVMe       │            │
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>│  │  (model pull)  │──────→│  /mnt/model-cache    │            │
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>│  └─────────────┘          └──────────┬──────────┘            │
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>│                                       │                       │
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>│                                       ▼                       │
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>│                            ┌─────────────────────┐            │
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>│                            │  vLLM loads from     │            │
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>│                            │  local NVMe (6GB/s)  │            │
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>│                            └─────────────────────┘            │
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>└──────────────────────────────────────────────────────────────┘
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Storage Path</th>
+<th>Load Time (140GB model)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S3 over 25GbE</td>
+<td>~56 seconds</td>
+</tr>
+<tr>
+<td>CephFS over 100GbE</td>
+<td>~14 seconds</td>
+</tr>
+<tr>
+<td>Local NVMe (pre-cached)</td>
+<td>~20 seconds</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ceph-performance-tuning-for-ml-workloads">Ceph Performance Tuning for ML Workloads<a class="headerlink" href="#ceph-performance-tuning-for-ml-workloads" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># ceph.conf tuning for large sequential reads (model loading)</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="k">[osd]</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="na">osd_op_num_threads_per_shard_hdd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="na">osd_op_num_threads_per_shard_ssd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="na">bluestore_cache_size_ssd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">8G</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="na">bluestore_prefer_deferred_size_ssd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="na">osd_recovery_max_active</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span><span class="w">        </span><span class="c1"># Don&#39;t disrupt inference during recovery</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="na">osd_max_backfills</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="k">[client]</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="na">rbd_cache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">true</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="na">rbd_cache_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">128M</span>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="na">rbd_readahead_max_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">4M</span><span class="w">       </span><span class="c1"># Large readahead for sequential model loads</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="na">rbd_readahead_trigger_requests</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1</span>
+</code></pre></div>
+<h3 id="storageclass-definitions">StorageClass Definitions<a class="headerlink" href="#storageclass-definitions" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">storage.k8s.io/v1</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">StorageClass</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="nt">metadata</span><span class="p">:</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cephfs-model-store</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">  </span><span class="nt">annotations</span><span class="p">:</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">    </span><span class="nt">storageclass.kubernetes.io/is-default-class</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;false&quot;</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="nt">provisioner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openshift-storage.cephfs.csi.ceph.com</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="nt">parameters</span><span class="p">:</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">  </span><span class="nt">clusterID</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openshift-storage</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">  </span><span class="nt">fsName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ocs-storagecluster-cephfilesystem</span>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="w">  </span><span class="nt">pool</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ocs-storagecluster-cephfilesystem-data-nvme</span>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="nt">reclaimPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Retain</span>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="nt">allowVolumeExpansion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="nt">mountOptions</span><span class="p">:</span>
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">noatime</span>
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nodiratime</span>
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="nn">---</span>
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">storage.k8s.io/v1</span>
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">StorageClass</span>
+<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a><span class="nt">metadata</span><span class="p">:</span>
+<a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local-nvme-model-cache</span>
+<a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span class="nt">provisioner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernetes.io/no-provisioner</span>
+<a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a><span class="nt">volumeBindingMode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">WaitForFirstConsumer</span>
+</code></pre></div>
+<hr />
+<h2 id="compute-performance-tuning">Compute Performance Tuning<a class="headerlink" href="#compute-performance-tuning" title="Permanent link">&para;</a></h2>
+<h3 id="vllm-engine-arguments-for-maximum-throughput">vLLM Engine Arguments for Maximum Throughput<a class="headerlink" href="#vllm-engine-arguments-for-maximum-throughput" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>vllm<span class="w"> </span>serve<span class="w"> </span>meta-llama/Llama-3.1-70B-Instruct-AWQ<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span>--tensor-parallel-size<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span>--dtype<span class="w"> </span>float16<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span>--quantization<span class="w"> </span>awq<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">  </span>--max-model-len<span class="w"> </span><span class="m">8192</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">  </span>--max-num-seqs<span class="w"> </span><span class="m">256</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">  </span>--max-num-batched-tokens<span class="w"> </span><span class="m">65536</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">  </span>--gpu-memory-utilization<span class="w"> </span><span class="m">0</span>.93<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">  </span>--enable-chunked-prefill<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">  </span>--max-num-partial-prefills<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">  </span>--enable-prefix-caching<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">  </span>--swap-space<span class="w"> </span><span class="m">32</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">  </span>--block-size<span class="w"> </span><span class="m">32</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">  </span>--num-scheduler-steps<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="w">  </span>--use-v2-block-manager<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="w">  </span>--disable-log-requests
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Effect</th>
+<th>Tuning Guidance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--gpu-memory-utilization</code></td>
+<td>Fraction of VRAM for KV cache</td>
+<td>0.90–0.95 (leave headroom for activations)</td>
+</tr>
+<tr>
+<td><code>--max-num-seqs</code></td>
+<td>Max concurrent sequences</td>
+<td>Higher = more throughput, more memory</td>
+</tr>
+<tr>
+<td><code>--max-num-batched-tokens</code></td>
+<td>Tokens per iteration</td>
+<td>Limited by GPU compute; 32K–65K for H100</td>
+</tr>
+<tr>
+<td><code>--enable-chunked-prefill</code></td>
+<td>Interleave prefill with decode</td>
+<td>Reduces latency spikes for decode users</td>
+</tr>
+<tr>
+<td><code>--enable-prefix-caching</code></td>
+<td>Cache common prefixes (system prompts)</td>
+<td>Massive speedup for chat applications</td>
+</tr>
+<tr>
+<td><code>--block-size</code></td>
+<td>Tokens per KV cache block</td>
+<td>16 (default) or 32 (less block table overhead)</td>
+</tr>
+<tr>
+<td><code>--swap-space</code></td>
+<td>GB of CPU memory for swapped KV</td>
+<td>Safety net for burst traffic</td>
+</tr>
+<tr>
+<td><code>--num-scheduler-steps</code></td>
+<td>Multi-step scheduling</td>
+<td>Reduces scheduling overhead</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cpu-and-os-level-tuning">CPU and OS-Level Tuning<a class="headerlink" href="#cpu-and-os-level-tuning" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># OpenShift Performance Profile for GPU nodes</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">performance.openshift.io/v2</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PerformanceProfile</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="nt">metadata</span><span class="p">:</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpu-worker-performance</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">  </span><span class="nt">cpu</span><span class="p">:</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">    </span><span class="nt">isolated</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;4-95&quot;</span><span class="w">          </span><span class="c1"># Reserve cores 4-95 for workloads</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">    </span><span class="nt">reserved</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0-3&quot;</span><span class="w">           </span><span class="c1"># Cores 0-3 for OS/kubelet</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="w">  </span><span class="nt">hugepages</span><span class="p">:</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="w">    </span><span class="nt">defaultHugepagesSize</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1G</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="w">    </span><span class="nt">pages</span><span class="p">:</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1G</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="w">        </span><span class="nt">count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">64</span><span class="w">             </span><span class="c1"># 64GB hugepages for VRAM-mapped ops</span>
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="w">  </span><span class="nt">machineConfigPoolSelector</span><span class="p">:</span>
+<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a><span class="w">    </span><span class="nt">matchLabels</span><span class="p">:</span>
+<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a><span class="w">      </span><span class="nt">machineconfiguration.openshift.io/role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpu-worker</span>
+<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a><span class="w">  </span><span class="nt">nodeSelector</span><span class="p">:</span>
+<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a><span class="w">    </span><span class="nt">node-role.kubernetes.io/gpu-worker</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a><span class="w">  </span><span class="nt">realTimeKernel</span><span class="p">:</span>
+<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a><span class="w">  </span><span class="nt">numa</span><span class="p">:</span>
+<a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a><span class="w">    </span><span class="nt">topologyPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">single-numa-node</span><span class="w">    </span><span class="c1"># Pin GPU pods to single NUMA</span>
+<a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a><span class="w">  </span><span class="nt">net</span><span class="p">:</span>
+<a id="__codelineno-12-25" name="__codelineno-12-25" href="#__codelineno-12-25"></a><span class="w">    </span><span class="nt">userLevelNetworking</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">           </span><span class="c1"># SR-IOV / DPDK capable</span>
+</code></pre></div>
+<h3 id="numa-aware-gpu-scheduling">NUMA-Aware GPU Scheduling<a class="headerlink" href="#numa-aware-gpu-scheduling" title="Permanent link">&para;</a></h3>
+<p>GPUs are physically connected to specific CPU NUMA nodes. Cross-NUMA access adds latency:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># Topology Manager configuration (kubelet)</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">machineconfiguration.openshift.io/v1</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">KubeletConfig</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="nt">metadata</span><span class="p">:</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpu-topology-aware</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">  </span><span class="nt">machineConfigPoolSelector</span><span class="p">:</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">    </span><span class="nt">matchLabels</span><span class="p">:</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="w">      </span><span class="nt">machineconfiguration.openshift.io/role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpu-worker</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="w">  </span><span class="nt">kubeletConfig</span><span class="p">:</span>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="w">    </span><span class="nt">topologyManagerPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">single-numa-node</span>
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="w">    </span><span class="nt">topologyManagerScope</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pod</span>
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="w">    </span><span class="nt">cpuManagerPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">static</span>
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="w">    </span><span class="nt">reservedSystemCPUs</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0-3&quot;</span>
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="w">    </span><span class="nt">memoryManagerPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Static</span>
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="w">    </span><span class="nt">evictionHard</span><span class="p">:</span>
+<a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a><span class="w">      </span><span class="nt">memory.available</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2Gi&quot;</span>
+</code></pre></div>
+<h3 id="gpu-power-and-clock-management">GPU Power and Clock Management<a class="headerlink" href="#gpu-power-and-clock-management" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Lock GPU clocks to maximum for consistent performance</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>nvidia-smi<span class="w"> </span>-pm<span class="w"> </span><span class="m">1</span><span class="w">                           </span><span class="c1"># Persistence mode</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>nvidia-smi<span class="w"> </span>-ac<span class="w"> </span><span class="m">2619</span>,1980<span class="w">                   </span><span class="c1"># Memory clock, Graphics clock (H100)</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>nvidia-smi<span class="w"> </span>--power-limit<span class="o">=</span><span class="m">700</span><span class="w">               </span><span class="c1"># Max TDP for H100 SXM5</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="c1"># Verify GPU topology</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>nvidia-smi<span class="w"> </span>topo<span class="w"> </span>-m
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="c1">#        GPU0  GPU1  GPU2  GPU3  GPU4  GPU5  GPU6  GPU7</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="c1"># GPU0    X    NV18  NV18  NV18  NV18  NV18  NV18  NV18    ← All NVSwitch connected</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="c1"># GPU1   NV18   X    NV18  NV18  NV18  NV18  NV18  NV18</span>
+</code></pre></div>
+<hr />
+<h2 id="autoscaling-for-throughput">Autoscaling for Throughput<a class="headerlink" href="#autoscaling-for-throughput" title="Permanent link">&para;</a></h2>
+<h3 id="custom-metrics-hpa-vllm-aware">Custom Metrics HPA (vLLM-Aware)<a class="headerlink" href="#custom-metrics-hpa-vllm-aware" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">autoscaling/v2</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HorizontalPodAutoscaler</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="nt">metadata</span><span class="p">:</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llama-70b-throughput-hpa</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">model-serving</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">  </span><span class="nt">scaleTargetRef</span><span class="p">:</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">    </span><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apps/v1</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">    </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deployment</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llama-70b-predictor</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="w">  </span><span class="nt">minReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="w">  </span><span class="nt">maxReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8</span>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="w">  </span><span class="nt">behavior</span><span class="p">:</span>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="w">    </span><span class="nt">scaleUp</span><span class="p">:</span>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a><span class="w">      </span><span class="nt">stabilizationWindowSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a><span class="w">      </span><span class="nt">policies</span><span class="p">:</span>
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pods</span>
+<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a><span class="w">          </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a><span class="w">          </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span><span class="w">    </span><span class="c1"># GPU pods take 2-3 min to start</span>
+<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a><span class="w">    </span><span class="nt">scaleDown</span><span class="p">:</span>
+<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a><span class="w">      </span><span class="nt">stabilizationWindowSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">600</span>
+<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a><span class="w">      </span><span class="nt">policies</span><span class="p">:</span>
+<a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pods</span>
+<a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a><span class="w">          </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a><span class="w">          </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300</span>
+<a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a><span class="w">  </span><span class="nt">metrics</span><span class="p">:</span>
+<a id="__codelineno-15-27" name="__codelineno-15-27" href="#__codelineno-15-27"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pods</span>
+<a id="__codelineno-15-28" name="__codelineno-15-28" href="#__codelineno-15-28"></a><span class="w">      </span><span class="nt">pods</span><span class="p">:</span>
+<a id="__codelineno-15-29" name="__codelineno-15-29" href="#__codelineno-15-29"></a><span class="w">        </span><span class="nt">metric</span><span class="p">:</span>
+<a id="__codelineno-15-30" name="__codelineno-15-30" href="#__codelineno-15-30"></a><span class="w">          </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm_num_requests_waiting</span>
+<a id="__codelineno-15-31" name="__codelineno-15-31" href="#__codelineno-15-31"></a><span class="w">        </span><span class="nt">target</span><span class="p">:</span>
+<a id="__codelineno-15-32" name="__codelineno-15-32" href="#__codelineno-15-32"></a><span class="w">          </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AverageValue</span>
+<a id="__codelineno-15-33" name="__codelineno-15-33" href="#__codelineno-15-33"></a><span class="w">          </span><span class="nt">averageValue</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;10&quot;</span><span class="w">     </span><span class="c1"># Scale up when queue depth &gt; 10</span>
+<a id="__codelineno-15-34" name="__codelineno-15-34" href="#__codelineno-15-34"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pods</span>
+<a id="__codelineno-15-35" name="__codelineno-15-35" href="#__codelineno-15-35"></a><span class="w">      </span><span class="nt">pods</span><span class="p">:</span>
+<a id="__codelineno-15-36" name="__codelineno-15-36" href="#__codelineno-15-36"></a><span class="w">        </span><span class="nt">metric</span><span class="p">:</span>
+<a id="__codelineno-15-37" name="__codelineno-15-37" href="#__codelineno-15-37"></a><span class="w">          </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm_gpu_cache_usage_perc</span>
+<a id="__codelineno-15-38" name="__codelineno-15-38" href="#__codelineno-15-38"></a><span class="w">        </span><span class="nt">target</span><span class="p">:</span>
+<a id="__codelineno-15-39" name="__codelineno-15-39" href="#__codelineno-15-39"></a><span class="w">          </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AverageValue</span>
+<a id="__codelineno-15-40" name="__codelineno-15-40" href="#__codelineno-15-40"></a><span class="w">          </span><span class="nt">averageValue</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;80&quot;</span><span class="w">    </span><span class="c1"># Scale up when KV cache &gt; 80% full</span>
+</code></pre></div>
+<h3 id="kueue-for-gpu-fair-share-scheduling">Kueue for GPU Fair-Share Scheduling<a class="headerlink" href="#kueue-for-gpu-fair-share-scheduling" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kueue.x-k8s.io/v1beta1</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ResourceFlavor</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="nt">metadata</span><span class="p">:</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">h100-full</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">  </span><span class="nt">nodeLabels</span><span class="p">:</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="w">    </span><span class="nt">nvidia.com/gpu.product</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NVIDIA-H100-SXM5-80GB</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="w">    </span><span class="nt">nvidia.com/mig.strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">none</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="nn">---</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kueue.x-k8s.io/v1beta1</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ResourceFlavor</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="nt">metadata</span><span class="p">:</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">h100-mig-3g40gb</span>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="w">  </span><span class="nt">nodeLabels</span><span class="p">:</span>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a><span class="w">    </span><span class="nt">nvidia.com/mig-3g.40gb.present</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a><span class="nn">---</span>
+<a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kueue.x-k8s.io/v1beta1</span>
+<a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterQueue</span>
+<a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a><span class="nt">metadata</span><span class="p">:</span>
+<a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">inference-queue</span>
+<a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-16-23" name="__codelineno-16-23" href="#__codelineno-16-23"></a><span class="w">  </span><span class="nt">resourceGroups</span><span class="p">:</span>
+<a id="__codelineno-16-24" name="__codelineno-16-24" href="#__codelineno-16-24"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">coveredResources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;nvidia.com/gpu&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;nvidia.com/mig-3g.40gb&quot;</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-16-25" name="__codelineno-16-25" href="#__codelineno-16-25"></a><span class="w">      </span><span class="nt">flavors</span><span class="p">:</span>
+<a id="__codelineno-16-26" name="__codelineno-16-26" href="#__codelineno-16-26"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">h100-full</span>
+<a id="__codelineno-16-27" name="__codelineno-16-27" href="#__codelineno-16-27"></a><span class="w">          </span><span class="nt">resources</span><span class="p">:</span>
+<a id="__codelineno-16-28" name="__codelineno-16-28" href="#__codelineno-16-28"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nvidia.com/gpu</span>
+<a id="__codelineno-16-29" name="__codelineno-16-29" href="#__codelineno-16-29"></a><span class="w">              </span><span class="nt">nominalQuota</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32</span>
+<a id="__codelineno-16-30" name="__codelineno-16-30" href="#__codelineno-16-30"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">h100-mig-3g40gb</span>
+<a id="__codelineno-16-31" name="__codelineno-16-31" href="#__codelineno-16-31"></a><span class="w">          </span><span class="nt">resources</span><span class="p">:</span>
+<a id="__codelineno-16-32" name="__codelineno-16-32" href="#__codelineno-16-32"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nvidia.com/mig-3g.40gb</span>
+<a id="__codelineno-16-33" name="__codelineno-16-33" href="#__codelineno-16-33"></a><span class="w">              </span><span class="nt">nominalQuota</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span>
+</code></pre></div>
+<hr />
+<h2 id="observability-for-performance">Observability for Performance<a class="headerlink" href="#observability-for-performance" title="Permanent link">&para;</a></h2>
+<h3 id="key-throughput-metrics">Key Throughput Metrics<a class="headerlink" href="#key-throughput-metrics" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Target</th>
+<th>Alert If</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>vllm_avg_generation_throughput_toks_per_s</code></td>
+<td>&gt;2000 tok/s per pod (70B)</td>
+<td>&lt;1500 tok/s sustained</td>
+</tr>
+<tr>
+<td><code>vllm_gpu_cache_usage_perc</code></td>
+<td>60–85%</td>
+<td>&gt;90% (risk of preemption)</td>
+</tr>
+<tr>
+<td><code>vllm_num_requests_waiting</code></td>
+<td>&lt;5</td>
+<td>&gt;20 sustained</td>
+</tr>
+<tr>
+<td><code>vllm_e2e_request_latency_seconds</code> (p99)</td>
+<td>&lt;3s</td>
+<td>&gt;5s</td>
+</tr>
+<tr>
+<td><code>DCGM_FI_DEV_GPU_UTIL</code></td>
+<td>70–90%</td>
+<td>&lt;30% (underutilized)</td>
+</tr>
+<tr>
+<td><code>DCGM_FI_DEV_MEM_COPY_UTIL</code></td>
+<td>&lt;80%</td>
+<td>&gt;90% (bandwidth saturated)</td>
+</tr>
+<tr>
+<td><code>DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL</code></td>
+<td>Baseline dependent</td>
+<td>Drop &gt;20% from baseline</td>
+</tr>
+<tr>
+<td><code>DCGM_FI_DEV_GPU_TEMP</code></td>
+<td>&lt;80°C</td>
+<td>&gt;83°C (throttling imminent)</td>
+</tr>
+<tr>
+<td><code>DCGM_FI_DEV_POWER_USAGE</code></td>
+<td>&lt;TDP</td>
+<td>At TDP limit (clock throttle)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="prometheus-alerting-rules">Prometheus Alerting Rules<a class="headerlink" href="#prometheus-alerting-rules" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">monitoring.coreos.com/v1</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PrometheusRule</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="nt">metadata</span><span class="p">:</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-performance-alerts</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">model-serving</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="w">  </span><span class="nt">groups</span><span class="p">:</span>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-throughput</span>
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="w">      </span><span class="nt">rules</span><span class="p">:</span>
+<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">VLLMHighQueueDepth</span>
+<a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a><span class="w">          </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">avg(vllm_num_requests_waiting) &gt; 20</span>
+<a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a><span class="w">          </span><span class="nt">for</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2m</span>
+<a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a><span class="w">          </span><span class="nt">labels</span><span class="p">:</span>
+<a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a><span class="w">            </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">warning</span>
+<a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a><span class="w">          </span><span class="nt">annotations</span><span class="p">:</span>
+<a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a><span class="w">            </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;vLLM</span><span class="nv"> </span><span class="s">request</span><span class="nv"> </span><span class="s">queue</span><span class="nv"> </span><span class="s">backing</span><span class="nv"> </span><span class="s">up&quot;</span>
+<a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a><span class="w">            </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Average</span><span class="nv"> </span><span class="s">queue</span><span class="nv"> </span><span class="s">depth</span><span class="nv"> </span><span class="s">{{</span><span class="nv"> </span><span class="s">$value</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">—</span><span class="nv"> </span><span class="s">consider</span><span class="nv"> </span><span class="s">scaling</span><span class="nv"> </span><span class="s">up&quot;</span>
+<a id="__codelineno-17-18" name="__codelineno-17-18" href="#__codelineno-17-18"></a>
+<a id="__codelineno-17-19" name="__codelineno-17-19" href="#__codelineno-17-19"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">VLLMKVCacheSaturation</span>
+<a id="__codelineno-17-20" name="__codelineno-17-20" href="#__codelineno-17-20"></a><span class="w">          </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">avg(vllm_gpu_cache_usage_perc) &gt; 90</span>
+<a id="__codelineno-17-21" name="__codelineno-17-21" href="#__codelineno-17-21"></a><span class="w">          </span><span class="nt">for</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1m</span>
+<a id="__codelineno-17-22" name="__codelineno-17-22" href="#__codelineno-17-22"></a><span class="w">          </span><span class="nt">labels</span><span class="p">:</span>
+<a id="__codelineno-17-23" name="__codelineno-17-23" href="#__codelineno-17-23"></a><span class="w">            </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">critical</span>
+<a id="__codelineno-17-24" name="__codelineno-17-24" href="#__codelineno-17-24"></a><span class="w">          </span><span class="nt">annotations</span><span class="p">:</span>
+<a id="__codelineno-17-25" name="__codelineno-17-25" href="#__codelineno-17-25"></a><span class="w">            </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;KV</span><span class="nv"> </span><span class="s">cache</span><span class="nv"> </span><span class="s">near</span><span class="nv"> </span><span class="s">saturation</span><span class="nv"> </span><span class="s">—</span><span class="nv"> </span><span class="s">requests</span><span class="nv"> </span><span class="s">will</span><span class="nv"> </span><span class="s">be</span><span class="nv"> </span><span class="s">preempted&quot;</span>
+<a id="__codelineno-17-26" name="__codelineno-17-26" href="#__codelineno-17-26"></a>
+<a id="__codelineno-17-27" name="__codelineno-17-27" href="#__codelineno-17-27"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GPUThermalThrottle</span>
+<a id="__codelineno-17-28" name="__codelineno-17-28" href="#__codelineno-17-28"></a><span class="w">          </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DCGM_FI_DEV_GPU_TEMP &gt; 83</span>
+<a id="__codelineno-17-29" name="__codelineno-17-29" href="#__codelineno-17-29"></a><span class="w">          </span><span class="nt">for</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
+<a id="__codelineno-17-30" name="__codelineno-17-30" href="#__codelineno-17-30"></a><span class="w">          </span><span class="nt">labels</span><span class="p">:</span>
+<a id="__codelineno-17-31" name="__codelineno-17-31" href="#__codelineno-17-31"></a><span class="w">            </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">critical</span>
+<a id="__codelineno-17-32" name="__codelineno-17-32" href="#__codelineno-17-32"></a><span class="w">          </span><span class="nt">annotations</span><span class="p">:</span>
+<a id="__codelineno-17-33" name="__codelineno-17-33" href="#__codelineno-17-33"></a><span class="w">            </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;GPU</span><span class="nv"> </span><span class="s">{{</span><span class="nv"> </span><span class="s">$labels.gpu</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">at</span><span class="nv"> </span><span class="s">{{</span><span class="nv"> </span><span class="s">$value</span><span class="nv"> </span><span class="s">}}°C</span><span class="nv"> </span><span class="s">—</span><span class="nv"> </span><span class="s">throttling&quot;</span>
+</code></pre></div>
+<hr />
+<h2 id="sizing-by-deployment-scale">Sizing by Deployment Scale<a class="headerlink" href="#sizing-by-deployment-scale" title="Permanent link">&para;</a></h2>
+<h3 id="small-poc-510-users">Small (POC — 5–10 users)<a class="headerlink" href="#small-poc-510-users" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Specification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPU nodes</td>
+<td>1–2 nodes, 4× A100 80GB each</td>
+</tr>
+<tr>
+<td>MIG usage</td>
+<td>Not needed (few models)</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>30TB Ceph</td>
+</tr>
+<tr>
+<td>Network</td>
+<td>25GbE all paths</td>
+</tr>
+<tr>
+<td>Total GPUs</td>
+<td>4–8</td>
+</tr>
+</tbody>
+</table>
+<h3 id="medium-team-2050-users-multiple-models">Medium (Team — 20–50 users, multiple models)<a class="headerlink" href="#medium-team-2050-users-multiple-models" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Specification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPU nodes</td>
+<td>4–8 nodes, 4–8× H100 each</td>
+</tr>
+<tr>
+<td>MIG usage</td>
+<td>2 nodes MIG-partitioned for small models</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>100TB Ceph + local NVMe cache</td>
+</tr>
+<tr>
+<td>Network</td>
+<td>100GbE storage, InfiniBand for training</td>
+</tr>
+<tr>
+<td>Total GPUs</td>
+<td>16–64</td>
+</tr>
+</tbody>
+</table>
+<h3 id="large-enterprise-100-users-dozens-of-models">Large (Enterprise — 100+ users, dozens of models)<a class="headerlink" href="#large-enterprise-100-users-dozens-of-models" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Specification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPU nodes</td>
+<td>10–30+ nodes, 8× H100 each</td>
+</tr>
+<tr>
+<td>MIG usage</td>
+<td>Dedicated MIG tier for multi-tenant serving</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>500TB+ Ceph + distributed NVMe cache</td>
+</tr>
+<tr>
+<td>Network</td>
+<td>400GbE + InfiniBand NDR fat-tree</td>
+</tr>
+<tr>
+<td>Total GPUs</td>
+<td>80–240+</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="performance-tuning-checklist">Performance Tuning Checklist<a class="headerlink" href="#performance-tuning-checklist" title="Permanent link">&para;</a></h2>
+<h3 id="compute">Compute<a class="headerlink" href="#compute" title="Permanent link">&para;</a></h3>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Lock GPU clocks to max (<code>nvidia-smi -ac</code>)</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Enable persistence mode (<code>nvidia-smi -pm 1</code>)</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Use <code>single-numa-node</code> topology policy</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Pin CPU cores with <code>cpuManagerPolicy: static</code></li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Allocate hugepages (1G pages)</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Set <code>gpu-memory-utilization</code> to 0.90–0.95</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Enable chunked prefill and prefix caching</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Use quantization (AWQ/FP8) where latency allows</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Configure MIG for multi-model nodes</li>
+</ul>
+<h3 id="network">Network<a class="headerlink" href="#network" title="Permanent link">&para;</a></h3>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Jumbo frames (MTU 9000) on storage and GPU networks</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> NCCL tuned for NVLink intra-node, IB/RoCE inter-node</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> PFC + ECN enabled for RoCEv2 lossless Ethernet</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Istio mTLS bypassed or set to PERMISSIVE for inference hot path</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Dedicated VLAN for GPU fabric traffic</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> GPU Direct RDMA enabled (<code>NCCL_NET_GDR_LEVEL</code>)</li>
+</ul>
+<h3 id="storage">Storage<a class="headerlink" href="#storage" title="Permanent link">&para;</a></h3>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Two-tier model loading (S3 → local NVMe cache)</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> CephFS with NVMe OSDs for shared model store</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <code>noatime</code> + <code>nodiratime</code> mount options</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Large readahead (<code>rbd_readahead_max_bytes = 4M</code>)</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Separate Ceph pools for model data vs. pipeline artifacts</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <code>reclaimPolicy: Retain</code> on model StorageClasses</li>
+</ul>
+<hr />
+<h2 id="resources-references">Resources &amp; References<a class="headerlink" href="#resources-references" title="Permanent link">&para;</a></h2>
+<h3 id="nvidia-gpu-mig">NVIDIA GPU &amp; MIG<a class="headerlink" href="#nvidia-gpu-mig" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://docs.nvidia.com/datacenter/tesla/mig-user-guide/">NVIDIA MIG User Guide</a></li>
+<li><a href="https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/index.html">NVIDIA GPU Operator Documentation</a></li>
+<li><a href="https://github.com/NVIDIA/dcgm-exporter">DCGM Exporter for Prometheus</a></li>
+<li><a href="https://docs.nvidia.com/networking/display/cokan10/network+operator">NVIDIA Network Operator (RDMA/RoCE)</a></li>
+<li><a href="https://docs.nvidia.com/cuda/gpudirect-rdma/">GPU Direct RDMA</a></li>
+</ul>
+<h3 id="openshift-openstack">OpenShift &amp; OpenStack<a class="headerlink" href="#openshift-openstack" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://docs.openshift.com/container-platform/latest/installing/installing_openstack/preparing-to-install-on-openstack.html">OpenShift on OpenStack (IPI)</a></li>
+<li><a href="https://docs.openshift.com/container-platform/latest/scalability_and_performance/using-node-tuning-operator.html">OpenShift Performance Tuning (Node Tuning Operator)</a></li>
+<li><a href="https://docs.nvidia.com/datacenter/cloud-native/openshift/latest/index.html">OpenShift with NVIDIA GPUs</a></li>
+<li><a href="https://docs.openstack.org/ironic/latest/">OpenStack Ironic (Bare Metal)</a></li>
+<li><a href="https://docs.openstack.org/nova/latest/admin/pci-passthrough.html">OpenStack GPU Passthrough</a></li>
+</ul>
+<h3 id="kserve-vllm">KServe &amp; vLLM<a class="headerlink" href="#kserve-vllm" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://kserve.github.io/website/">KServe Documentation</a></li>
+<li><a href="https://kserve.github.io/website/latest/modelserving/v1beta1/llm/vllm/">KServe vLLM Runtime</a></li>
+<li><a href="https://docs.vllm.ai/en/latest/">vLLM Documentation</a></li>
+<li><a href="https://docs.vllm.ai/en/latest/serving/deploying_with_docker.html">vLLM Production Deployment Guide</a></li>
+<li><a href="https://docs.vllm.ai/en/latest/performance/benchmarks.html">vLLM Performance Benchmarks</a></li>
+</ul>
+<h3 id="kubeflow-scheduling">Kubeflow &amp; Scheduling<a class="headerlink" href="#kubeflow-scheduling" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://www.kubeflow.org/docs/">Kubeflow Documentation</a></li>
+<li><a href="https://kueue.sigs.k8s.io/">Kueue (GPU Fair-Share Scheduling)</a></li>
+<li><a href="https://volcano.sh/">Volcano Scheduler (Batch GPU Jobs)</a></li>
+</ul>
+<h3 id="storage_1">Storage<a class="headerlink" href="#storage_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://access.redhat.com/documentation/en-us/red_hat_openshift_data_foundation/">Red Hat OpenShift Data Foundation</a></li>
+<li><a href="https://docs.ceph.com/en/latest/rados/configuration/osd-config-ref/">Ceph Performance Tuning</a></li>
+<li><a href="https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/manila-csi-plugin/using-manila-csi-plugin.md">Manila CSI for Kubernetes</a></li>
+</ul>
+<h3 id="nccl-networking">NCCL &amp; Networking<a class="headerlink" href="#nccl-networking" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/">NCCL Documentation</a></li>
+<li><a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html">NCCL Environment Variables</a></li>
+<li><a href="https://enterprise-support.nvidia.com/s/article/recommended-network-configuration-examples-for-roce-deployment">RoCEv2 Configuration Guide (Mellanox)</a></li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+  
+
+
+
+      
+    </article>
+  </div>
+
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../../../../javascripts/extra.js"></script>
+      
+    
+  </body>
+</html>

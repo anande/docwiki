@@ -49,6 +49,10 @@
          <lastmod>2026-06-09</lastmod>
     </url>
     <url>
+         <loc>https://anande.github.io/docwiki/blog/2026/06/09/production-ml-reference-architecture--kserve-vllm--kubeflow-on-openshiftopenstack/</loc>
+         <lastmod>2026-06-09</lastmod>
+    </url>
+    <url>
          <loc>https://anande.github.io/docwiki/blog/2026/06/09/vllm-architecture-deep-dive--from-kv-cache-bottleneck-to-production-inference/</loc>
          <lastmod>2026-06-09</lastmod>
     </url>
@@ -58,6 +62,18 @@
     </url>
     <url>
          <loc>https://anande.github.io/docwiki/blog/author/anande/</loc>
+         <lastmod>2026-06-09</lastmod>
+    </url>
+    <url>
+         <loc>https://anande.github.io/docwiki/blog/page/2/</loc>
+         <lastmod>2026-06-09</lastmod>
+    </url>
+    <url>
+         <loc>https://anande.github.io/docwiki/blog/archive/2026/page/2/</loc>
+         <lastmod>2026-06-09</lastmod>
+    </url>
+    <url>
+         <loc>https://anande.github.io/docwiki/blog/author/anande/page/2/</loc>
          <lastmod>2026-06-09</lastmod>
     </url>
 </urlset>
