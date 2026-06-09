@@ -672,6 +672,50 @@
     <div class="md-post__meta md-meta">
       <ul class="md-meta__list">
         <li class="md-meta__item">
+          <time datetime="2026-06-09 00:00:00+00:00">June 9, 2026</time></li>
+        
+        
+          
+          <li class="md-meta__item">
+            
+              8 min read
+            
+          </li>
+        
+        
+      </ul>
+      
+    </div>
+  </header>
+  <div class="md-post__content md-typeset">
+    <h2 id="vllm-architecture-deep-dive-from-kv-cache-bottleneck-to-production-inference"><a class="toclink" href="../../2026/06/09/vllm-architecture-deep-dive--from-kv-cache-bottleneck-to-production-inference/">vLLM Architecture Deep Dive — From KV Cache Bottleneck to Production Inference</a></h2>
+<p>Stepping into the production side of large language model deployment is an exciting milestone. To understand why <strong>vLLM</strong> (Versatile LLM) has become the gold standard for open-source model serving, we first need to examine the massive bottleneck it was built to solve: <strong>GPU memory</strong>. Every autoregressive generation step stores intermediate attention state in a <strong>KV cache</strong> — and how that cache is allocated determines whether your GPU serves ten concurrent users or a hundred.</p>
+
+    
+      <nav class="md-post__action">
+        <a href="../../2026/06/09/vllm-architecture-deep-dive--from-kv-cache-bottleneck-to-production-inference/">
+          Continue reading
+        </a>
+      </nav>
+    
+    
+  </div>
+</article>
+      
+        <article class="md-post md-post--excerpt">
+  <header class="md-post__header">
+    
+      <nav class="md-post__authors md-typeset">
+        
+          <span class="md-author">
+            <img src="https://github.com/anande.png" alt="Anande">
+          </span>
+        
+      </nav>
+    
+    <div class="md-post__meta md-meta">
+      <ul class="md-meta__list">
+        <li class="md-meta__item">
           <time datetime="2026-06-04 00:00:00+00:00">June 4, 2026</time></li>
         
         
