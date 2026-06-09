@@ -642,6 +642,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#installation-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation &amp; configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -681,6 +692,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#installation-configuration_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation &amp; configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -714,6 +736,17 @@
     <span class="md-ellipsis">
       
         A typical Kubeflow LLM workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installation-configuration_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation &amp; configuration
       
     </span>
   </a>
@@ -1004,6 +1037,15 @@
 <p class="admonition-title">Competitors</p>
 <p>TGI (HuggingFace), SGLang, TensorRT-LLM, llama.cpp, Ollama</p>
 </div>
+<h3 id="installation-configuration">Installation &amp; configuration<a class="headerlink" href="#installation-configuration" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://docs.vllm.ai/en/latest/">vLLM Documentation</a></li>
+<li><a href="https://docs.vllm.ai/en/latest/getting_started/installation.html">Installation Guide</a></li>
+<li><a href="https://docs.vllm.ai/en/latest/models/supported_models.html">Supported Models</a></li>
+<li><a href="https://docs.vllm.ai/en/latest/serving/engine_args.html">Engine Arguments Reference</a></li>
+<li><a href="https://docs.vllm.ai/en/latest/serving/deploying_with_docker.html">Deploying with Docker</a></li>
+<li><a href="https://github.com/vllm-project/vllm">GitHub Repository</a></li>
+</ul>
 <hr />
 <h2 id="kserve-the-model-serving-platform">KServe — The model serving platform<a class="headerlink" href="#kserve-the-model-serving-platform" title="Permanent link">&para;</a></h2>
 <p>KServe is a <strong>Kubernetes-native model serving framework</strong>. It handles the infrastructure concerns around deploying, scaling, and managing inference workloads. It's the <strong>fleet management system</strong> that decides how many cars to deploy and routes passengers to them.</p>
@@ -1038,6 +1080,16 @@
 <p class="admonition-title">Competitors</p>
 <p>Seldon Core, Triton Inference Server, Ray Serve, BentoML</p>
 </div>
+<h3 id="installation-configuration_1">Installation &amp; configuration<a class="headerlink" href="#installation-configuration_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://kserve.github.io/website/">KServe Documentation</a></li>
+<li><a href="https://kserve.github.io/website/latest/get_started/">Installation Guide (Quickstart)</a></li>
+<li><a href="https://kserve.github.io/website/latest/admin/serverless/serverless/">Serverless Installation with Knative</a></li>
+<li><a href="https://kserve.github.io/website/latest/admin/kubernetes_deployment/">Raw Deployment Mode (without Knative)</a></li>
+<li><a href="https://kserve.github.io/website/latest/modelserving/storage/storagecontainers/">Storage Configuration (S3, GCS, Azure)</a></li>
+<li><a href="https://kserve.github.io/website/latest/modelserving/v1beta1/llm/vllm/">vLLM Runtime Configuration</a></li>
+<li><a href="https://github.com/kserve/kserve">GitHub Repository</a></li>
+</ul>
 <hr />
 <h2 id="kubeflow-the-full-ml-platform">Kubeflow — The full ML platform<a class="headerlink" href="#kubeflow-the-full-ml-platform" title="Permanent link">&para;</a></h2>
 <p>Kubeflow operates at the <strong>highest layer</strong>. It's the entire ML factory — from notebook experimentation to production serving. KServe is actually a component <em>within</em> Kubeflow.</p>
@@ -1089,6 +1141,17 @@
 <p class="admonition-title">When to use Kubeflow</p>
 <p>You have a team of ML engineers who need shared infrastructure for the full lifecycle — experimentation, training, tuning, versioning, AND serving.</p>
 </div>
+<h3 id="installation-configuration_2">Installation &amp; configuration<a class="headerlink" href="#installation-configuration_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://www.kubeflow.org/docs/">Kubeflow Documentation</a></li>
+<li><a href="https://www.kubeflow.org/docs/started/installing-kubeflow/">Installation Guide</a></li>
+<li><a href="https://github.com/kubeflow/manifests">Manifests (Kustomize-based deploy)</a></li>
+<li><a href="https://www.kubeflow.org/docs/components/pipelines/">Kubeflow Pipelines</a></li>
+<li><a href="https://www.kubeflow.org/docs/components/training/">Training Operator</a></li>
+<li><a href="https://www.kubeflow.org/docs/components/katib/">Katib (Hyperparameter Tuning)</a></li>
+<li><a href="https://www.kubeflow.org/docs/components/notebooks/">Kubeflow Notebooks</a></li>
+<li><a href="https://github.com/kubeflow/kubeflow">GitHub Repository</a></li>
+</ul>
 <hr />
 <h2 id="comparison">Comparison<a class="headerlink" href="#comparison" title="Permanent link">&para;</a></h2>
 <h3 id="kserve-vs-vllm">KServe vs vLLM<a class="headerlink" href="#kserve-vs-vllm" title="Permanent link">&para;</a></h3>
