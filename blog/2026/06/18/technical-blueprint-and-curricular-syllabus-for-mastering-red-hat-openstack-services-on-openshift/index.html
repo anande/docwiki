@@ -1,0 +1,1476 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Practical notes on Kubernetes, GitOps, AI infrastructure, and cloud native operations.">
+      
+      
+      
+        <link rel="canonical" href="https://anande.github.io/docwiki/blog/2026/06/18/technical-blueprint-and-curricular-syllabus-for-mastering-red-hat-openstack-services-on-openshift/">
+      
+      
+        <link rel="prev" href="../../09/kserve-vs-vllm-vs-kubeflow--understanding-the-ml-serving-stack/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Technical Blueprint and Curricular Syllabus for Mastering Red Hat OpenStack Services on OpenShift - Cloud Native Field Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="black">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#technical-blueprint-and-curricular-syllabus-for-mastering-red-hat-openstack-services-on-openshift" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../../.." title="Cloud Native Field Notes" class="md-header__button md-logo" aria-label="Cloud Native Field Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cloud Native Field Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Technical Blueprint and Curricular Syllabus for Mastering Red Hat OpenStack Services on OpenShift
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="black"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="black"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anande/docwiki" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anande/docwiki
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" hidden>
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../.." title="Cloud Native Field Notes" class="md-nav__button md-logo" aria-label="Cloud Native Field Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Cloud Native Field Notes
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anande/docwiki" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anande/docwiki
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Blog
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Blog
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      <a href="../../../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Blog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Archive
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Archive
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../archive/2026/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2026
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authors
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Authors
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../author/anande/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Anande
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../tags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#architectural-taxonomy-of-rhoso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architectural Taxonomy of RHOSO
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technical-mastery-domain-1-compute-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical Mastery Domain 1: Compute Infrastructure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Technical Mastery Domain 1: Compute Infrastructure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-compute-core-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Compute Core Concepts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compute-learning-curricula-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compute Learning Curricula &amp; Resources
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technical-mastery-domain-2-advanced-networking-and-software-defined-infrastructures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical Mastery Domain 2: Advanced Networking and Software-Defined Infrastructures
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Technical Mastery Domain 2: Advanced Networking and Software-Defined Infrastructures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-networking-core-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Networking Core Concepts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#networking-learning-curricula-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Networking Learning Curricula &amp; Resources
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technical-mastery-domain-3-storage-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical Mastery Domain 3: Storage Integration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Technical Mastery Domain 3: Storage Integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-storage-core-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Storage Core Concepts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#storage-learning-curricula-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Storage Learning Curricula &amp; Resources
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operational-troubleshooting-and-diagnostic-blueprint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operational Troubleshooting and Diagnostic Blueprint
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Operational Troubleshooting and Diagnostic Blueprint">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-control-plane-operator-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Control Plane &amp; Operator Diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-namespace-webhooks-validation-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Namespace Webhooks &amp; Validation Constraints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-nmstate-network-infrastructure-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. NMState &amp; Network Infrastructure Diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-edpm-data-plane-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. EDPM &amp; Data Plane Diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references-citations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References &amp; Citations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References &amp; Citations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#documentation-hub" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation Hub
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#training-courses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Training Courses
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+  <div class="md-content md-content--post" data-md-component="content">
+    <div class="md-sidebar md-sidebar--post" data-md-component="sidebar" data-md-type="navigation">
+      <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner md-post">
+          <nav class="md-nav md-nav--primary">
+            <div class="md-post__back">
+              <div class="md-nav__title md-nav__container">
+                <a href="../../../../" class="md-nav__link">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+                  <span class="md-ellipsis">
+                    Back to index
+                  </span>
+                </a>
+              </div>
+            </div>
+            
+              <div class="md-post__authors md-typeset">
+                
+                  <div class="md-profile md-post__profile">
+                    <span class="md-author md-author--long">
+                      <img src="https://github.com/anande.png" alt="Anande">
+                    </span>
+                    <span class="md-profile__description">
+                      <strong>
+                        
+                          <a href="../../../../author/anande/">Anande</a>
+                        
+                      </strong>
+                      <br>
+                      Cloud Native Engineer
+                    </span>
+                  </div>
+                
+              </div>
+            
+            <ul class="md-post__meta md-nav__list">
+              <li class="md-nav__item md-nav__item--section">
+                <div class="md-post__title">
+                  <span class="md-ellipsis">
+                    Metadata
+                  </span>
+                </div>
+                <nav class="md-nav">
+                  <ul class="md-nav__list">
+                    <li class="md-nav__item">
+                      <div class="md-nav__link">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 19H5V8h14m-3-7v2H8V1H6v2H5c-1.11 0-2 .89-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-1V1m-1 11h-5v5h5z"/></svg>
+                        <time datetime="2026-06-18 00:00:00+00:00" class="md-ellipsis">June 18, 2026</time>
+                      </div>
+                    </li>
+                    
+                    
+                    
+                      
+                      <li class="md-nav__item">
+                        <div class="md-nav__link">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 20a8 8 0 0 0 8-8 8 8 0 0 0-8-8 8 8 0 0 0-8 8 8 8 0 0 0 8 8m0-18a10 10 0 0 1 10 10 10 10 0 0 1-10 10C6.47 22 2 17.5 2 12A10 10 0 0 1 12 2m.5 5v5.25l4.5 2.67-.75 1.23L11 13V7z"/></svg>
+                          <span class="md-ellipsis">
+                            
+                              9 min read
+                            
+                          </span>
+                        </div>
+                      </li>
+                    
+                  </ul>
+                </nav>
+              </li>
+            </ul>
+            
+          </nav>
+          
+        </div>
+      </div>
+    </div>
+    <article class="md-content__inner md-typeset">
+      
+        
+  
+
+
+  <nav class="md-tags" >
+    
+      
+      
+      
+      
+        <a href="../../../../../tags/#tag:ansible" class="md-tag">Ansible</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../../tags/#tag:ceph" class="md-tag">Ceph</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../../tags/#tag:certifications" class="md-tag">Certifications</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../../tags/#tag:kubernetes" class="md-tag">Kubernetes</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../../tags/#tag:openshift" class="md-tag">OpenShift</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../../tags/#tag:openstack" class="md-tag">OpenStack</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../../tags/#tag:rhoso" class="md-tag">RHOSO</a>
+      
+    
+  </nav>
+
+
+  
+    <a href="https://github.com/anande/docwiki/edit/main/docs/blog/posts/rhoso-mastery-blueprint-syllabus.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="technical-blueprint-and-curricular-syllabus-for-mastering-red-hat-openstack-services-on-openshift">Technical Blueprint and Curricular Syllabus for Mastering Red Hat OpenStack Services on OpenShift<a class="headerlink" href="#technical-blueprint-and-curricular-syllabus-for-mastering-red-hat-openstack-services-on-openshift" title="Permanent link">&para;</a></h1>
+<p>Red Hat OpenStack Services on OpenShift (RHOSO) represents a fundamental shift in how enterprise Infrastructure-as-a-Service (IaaS) is designed, deployed, and managed. By migrating the traditional OpenStack control plane from legacy TripleO-directed bare-metal deployments into a podified, container-native architecture hosted on Red Hat OpenShift Container Platform (RHOCP), RHOSO delivers an efficient, declarative control plane while maintaining a highly performant, distributed data plane on bare-metal Red Hat Enterprise Linux (RHEL) nodes.</p>
+<!-- more -->
+
+<p>This paradigm shift requires platform administrators and systems engineers to develop new technical competencies. Mastering RHOSO demands proficiency across three foundational pillars—Compute, Networking, and Storage—alongside structured learning paths and advanced operational troubleshooting methodologies.</p>
+<hr />
+<h2 id="architectural-taxonomy-of-rhoso">Architectural Taxonomy of RHOSO<a class="headerlink" href="#architectural-taxonomy-of-rhoso" title="Permanent link">&para;</a></h2>
+<p>In a container-native environment, the administrative control plane is decoupled from the user-workload data plane. The control plane components execute as Kubernetes-native workloads managed by custom operators inside the RHOCP cluster, whereas the data plane consists of external bare-metal RHEL hosts managed via the External Data Plane Management (EDPM) automation engine.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>+---------------------------------------------------------------------------------+
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>|               RED HAT OPENSHIFT CONTAINER PLATFORM (RHOCP) CLUSTER              |
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>|                                                                                 |
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>|   +-------------------------------------------------------------------------+   |
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>|   |                      RHOSO PODIFIED CONTROL PLANE                       |   |
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>|   |                                                                         |   |
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>|   |  +------------------+  +-------------------+  +-------------------+     |   |
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>|   |  | keystone-api-pod |  | neutron-api-pod   |  | nova-api-pod      |     |   |
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>|   |  +------------------+  +-------------------+  +-------------------+     |   |
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>|   |  +------------------+  +-------------------+  +-------------------+     |   |
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>|   |  | cinder-api-pod   |  | glance-api-pod    |  | octavia-api-pod   |     |   |
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>|   |  +------------------+  +-------------------+  +-------------------+     |   |
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>|   +------------------------------------+------------------------------------+   |
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>|                                        |                                        |
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>|   +------------------------------------+------------------------------------+   |
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>|   |                       INFRASTRUCTURE MANAGEMENT                         |   |
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>|   |                                                                         |   |
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>|   |  +------------------+  +-------------------+  +-------------------+     |   |
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>|   |  | NMState Operator |  | MetalLB Operator  |  | Cert-Manager Pods |     |   |
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>|   |  +------------------+  +-------------------+  +-------------------+     |   |
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>|   +-------------------------------------------------------------------------+   |
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>+----------------------------------------+----------------------------------------+
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>                                         |
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>                                         | SSH / Control Plane Network (EDPM)
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>                                         |
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>+----------------------------------------v----------------------------------------+
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>|                                 RHOSO DATA PLANE                                |
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>|                                                                                 |
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>|   +-------------------------------------------------------------------------+   |
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>|   |                     EXTERNAL RHEL BARE-METAL HOSTS                      |   |
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>|   |                                                                         |   |
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>|   |  +---------------------------------+  +------------------------------+  |   |
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>|   |  |          COMPUTE NODES          |  |       NETWORKER CHASSIS      |  |   |
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>|   |  |                                 |  |                              |  |   |
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>|   |  |  - Nova Compute Service         |  |  - OVN Gateway Services      |  |   |
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>|   |  |  - OVN Controller Daemon        |  |  - Octavia Amphora Driver    |  |   |
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>|   |  |  - Libvirt Virtualization Agent |  |  - Bare Metal Routing        |  |   |
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>|   |  +---------------------------------+  +------------------------------+  |   |
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>|   +-------------------------------------------------------------------------+   |
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>+---------------------------------------------------------------------------------+
+</code></pre></div>
+<hr />
+<h2 id="technical-mastery-domain-1-compute-infrastructure">Technical Mastery Domain 1: Compute Infrastructure<a class="headerlink" href="#technical-mastery-domain-1-compute-infrastructure" title="Permanent link">&para;</a></h2>
+<p>The compute tier in RHOSO shifts virtualization management from manual host-level scripting to a declarative framework driven by Kubernetes Custom Resource Definitions (CRDs). The platform uses the EDPM engine to execute containerized Ansible runners, enabling parallelized operations and establishing robust micro-failure domains across compute node sets.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>+---------------------------------------------------------------------------------+
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>|                       COMPUTE NODE DECLARATIVE DEPLOYMENT                       |
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>|                                                                                 |
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>|   +-------------------------------------------------------------------------+   |
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>|   |                     OpenStackDataPlaneNodeSet CRD                       |   |
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>|   |   Defines structural parameters, SSH credentials, and role templates    |   |
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>|   +------------------------------------+------------------------------------+   |
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>|                                        |                                        |
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>|                                        v                                        |
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>|   +-------------------------------------------------------------------------+   |
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>|   |                       OpenStackDataPlaneService                         |   |
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>|   |  Determines the precise software stack and initialization configurations|   |
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>|   +------------------------------------+------------------------------------+   |
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>|                                        |                                        |
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>|                                        v                                        |
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>|   +-------------------------------------------------------------------------+   |
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>|   |                      Containerized Ansible Runner                       |   |
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>|   |     Deploys target configuration across RHEL hosts in parallel          |   |
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>|   +------------------------------------+------------------------------------+   |
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>|                                        |                                        |
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>|                                        v                                        |
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>|   +-------------------------------------------------------------------------+   |
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>|   |                     Initialized Compute Node Status                     |   |
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>|   |       Monitored continuously for drift and performance anomalies        |   |
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>|   +-------------------------------------------------------------------------+   |
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>+---------------------------------------------------------------------------------+
+</code></pre></div>
+<h3 id="key-compute-core-concepts">Key Compute Core Concepts<a class="headerlink" href="#key-compute-core-concepts" title="Permanent link">&para;</a></h3>
+<p>To master compute orchestration within a podified cloud ecosystem, architects must gain competency in several core areas:</p>
+<p><strong>Declarative Machine Ingestion:</strong> Deploying compute nodes via declarative CRDs. This involves using the Bare Metal Operator (BMO) and configuring <code>BareMetalHost</code> and <code>OpenStackDataPlaneNodeSet</code> resources to automate OS installations and platform registration.</p>
+<p><strong>Image-Based Deployments:</strong> Preparing, customizing, and scaling target infrastructure nodes using containerized bootc (Image Mode) operating system images.</p>
+<p><strong>High Availability and Evacuation:</strong> Standardizing failure recovery using Instance High Availability (Instance HA) to automate the evacuation and recreation of virtual machines on healthy hosts when a physical compute failure is detected.</p>
+<p><strong>Distributed Edge Topologies:</strong> Implementing Distributed Compute Nodes (DCN) backed by local Red Hat Ceph Storage endpoints to support low-latency requirements.</p>
+<p><strong>Database and MQ Cell Architectures:</strong> Configuring and validating multi-cell environments to isolate database transactions and message queues, which mitigates scalability bottlenecks in large installations.</p>
+<h3 id="compute-learning-curricula-resources">Compute Learning Curricula &amp; Resources<a class="headerlink" href="#compute-learning-curricula-resources" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Structured Learning Topic</th>
+<th>Target Objectives &amp; Technical Focus</th>
+<th>Primary Resources</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enterprise Automation and Linux Foundations<sup id="fnref:3"><a class="footnote-ref" href="#fn:3">1</a></sup><sup id="fnref:9"><a class="footnote-ref" href="#fn:9">2</a></sup></td>
+<td>Advanced automation with Ansible, managing storage disks, system performance tuning, and fundamental containerized application architectures in RHEL.</td>
+<td><a href="https://www.redhat.com/en/services/training-and-certification/futureskillsprime/RH294">Red Hat Enterprise Linux Automation with Ansible (RH294 / AU294)</a></td>
+</tr>
+<tr>
+<td>Data Plane Operations and Machine Ingestion<sup id="fnref2:3"><a class="footnote-ref" href="#fn:3">1</a></sup></td>
+<td>Configuring host networks, provisioning RHEL hypervisors using EDPM, scaling node sets, and debugging failed node deployments.</td>
+<td><a href="https://www.globalknowledge.com/us-en/course/202972/openstack-administration-ii-deploy-control-plane-services-and-manage-data-plane-nodes-cl270/">OpenStack Administration II: Deploy Control Plane Services and Manage Data Plane Nodes (CL270)</a></td>
+</tr>
+<tr>
+<td>Declarative Scaling &amp; Customization<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">3</a></sup><sup id="fnref:6"><a class="footnote-ref" href="#fn:6">4</a></sup></td>
+<td>Constructing custom <code>OpenStackDataPlaneNodeSet</code> configurations, adjusting node tolerances, and implementing bootc image-based host provisioning.</td>
+<td><a href="https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/customizing_the_red_hat_openstack_services_on_openshift_deployment">Customizing the RHOSO deployment</a></td>
+</tr>
+<tr>
+<td>Scale and Performance Optimization<sup id="fnref2:1"><a class="footnote-ref" href="#fn:1">3</a></sup><sup id="fnref:7"><a class="footnote-ref" href="#fn:7">5</a></sup></td>
+<td>Tuning cell structures, isolating messaging networks, and configuring cell mappings to scale to hundreds of compute nodes.</td>
+<td><a href="https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/planning_a_large-scale_rhoso_deployment">Planning a large-scale RHOSO deployment</a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="technical-mastery-domain-2-advanced-networking-and-software-defined-infrastructures">Technical Mastery Domain 2: Advanced Networking and Software-Defined Infrastructures<a class="headerlink" href="#technical-mastery-domain-2-advanced-networking-and-software-defined-infrastructures" title="Permanent link">&para;</a></h2>
+<p>In RHOSO, networking transitions from legacy Neutron agents on bare-metal to an orchestrator-managed hierarchy. This design integrates the Kubernetes NMState operator for node network policies, Multus for multi-interface pods, and OVN-Kubernetes as the core SDN engine.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>                +-------------------------------------------------+
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>                |        KUBERNETES NMSTATE OPERATOR IN OCP       |
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>                |  Validates physical interface configurations,   |
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>                |  bonds, and bridge states across cluster hosts. |
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>                +------------------------+------------------------+
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>                                         |
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>                                         v
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>                +-------------------------------------------------+
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>                |     NODE NETWORK CONFIGURATION POLICY (NNCP)    |
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>                |  Applies VLAN configurations, sets MTU values,  |
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>                |  and binds external networks like MachineNet.   |
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>                +------------------------+------------------------+
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>                                         |
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>                                         v
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>                +-------------------------------------------------+
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>                |              MULTUS CNI INTEGRATION             |
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>                |  Injects dedicated interfaces (NADs) directly   |
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>                |  into the control plane pods.                   |
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>                +------------------------+------------------------+
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>                                         |
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>                                         v
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>         +-------------------------------+-------------------------------+
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>         |                               |                               |
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>         v                               v                               v
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>+------------------+           +------------------+             +------------------+
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>|   INTERNAL API   |           | STORAGE NETWORK  |             |  TENANT NETWORK  |
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>|  Exposes service |           | Direct high-     |             |  Isolated VM-to- |
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>|  endpoints       |           | throughput path  |             |  VM data transit |
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>+------------------+           +------------------+             +------------------+
+</code></pre></div>
+<h3 id="key-networking-core-concepts">Key Networking Core Concepts<a class="headerlink" href="#key-networking-core-concepts" title="Permanent link">&para;</a></h3>
+<p>Mastering this network virtualization topology requires addressing several integration challenges:</p>
+<p><strong>Host Network State Management:</strong> Writing declarative states via NMState to control interface bonds, VLAN interfaces, and MTU settings across OpenShift and data plane nodes.</p>
+<p><strong>Virtual IP Allocation and Announcement:</strong> Managing MetalLB configuration pools and Layer 2 or BGP announcements to ensure high availability for API service VIPs.</p>
+<p><strong>Dynamic Spine-Leaf Routing:</strong> Deploying dynamic routing on the data plane using Free Range Routing (FRR) and BGP, which requires Distributed Virtual Routing (DVR) to scale external traffic routing.</p>
+<p><strong>Load Balancing Resiliency:</strong> Configuring dynamic flow resumption in Octavia to automatically reassign active load-balancing tasks to surviving controllers during an outage.</p>
+<p><strong>Automated DNS Infrastructures:</strong> Deploying and managing Designate to provide multitenant, automated DNS-as-a-Service, integrated with the control plane's DNSmasq hierarchy and upstream enterprise DNS resolvers.</p>
+<h3 id="networking-learning-curricula-resources">Networking Learning Curricula &amp; Resources<a class="headerlink" href="#networking-learning-curricula-resources" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Structured Learning Topic</th>
+<th>Target Objectives &amp; Technical Focus</th>
+<th>Primary Resources</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Container Native Networking &amp; Multus<sup id="fnref3:1"><a class="footnote-ref" href="#fn:1">3</a></sup><sup id="fnref:4"><a class="footnote-ref" href="#fn:4">6</a></sup></td>
+<td>Configuring OCP network topologies, managing ingress routes, and establishing isolated pod-native Multus attachment definitions.</td>
+<td><a href="https://www.redhat.com/en/services/training/red-hat-openshift-administration-ii-configuring-a-production-cluster">Red Hat OpenShift Administration II: Configuring a Production Cluster (DO280)</a> · <a href="https://www.globalknowledge.com/us-en/course/163868/red-hat-openshift-administration-i-operating-a-production-cluster-do180/">DO180</a></td>
+</tr>
+<tr>
+<td>Control Plane Network Integrity<sup id="fnref3:3"><a class="footnote-ref" href="#fn:3">1</a></sup><sup id="fnref2:4"><a class="footnote-ref" href="#fn:4">6</a></sup></td>
+<td>Verifying API connectivity, validating certificate-based encryption, and assessing multi-network path health.</td>
+<td><a href="https://www.redhat.com/en/services/training/cl170-openstack-administration-control-plane-management">OpenStack Administration: Control Plane Management (CL170)</a></td>
+</tr>
+<tr>
+<td>Dynamic Routing &amp; Spine-Leaf Implementation<sup id="fnref4:1"><a class="footnote-ref" href="#fn:1">3</a></sup><sup id="fnref:5"><a class="footnote-ref" href="#fn:5">7</a></sup></td>
+<td>Developing routed spine-leaf physical configurations, setting up BGP speaker interfaces, and configuring VRFs.</td>
+<td><a href="https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/deploying_a_rhoso_environment_with_a_routed_spine-leaf_network_topology">Deploying a RHOSO environment with a routed spine-leaf network topology</a></td>
+</tr>
+<tr>
+<td>Project SDN Customization<sup id="fnref5:1"><a class="footnote-ref" href="#fn:1">3</a></sup><sup id="fnref:10"><a class="footnote-ref" href="#fn:10">8</a></sup></td>
+<td>Configuring tenant SDN services, setting flat, VLAN, or GENEVE network types, and deploying OVN gateway chassis.</td>
+<td><a href="https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/configuring_networking_services">Configuring networking services</a> · <a href="https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/customizing_the_red_hat_openstack_services_on_openshift_deployment/assembly_customizing-rhoso-networks">Customizing RHOSO networks</a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="technical-mastery-domain-3-storage-integration">Technical Mastery Domain 3: Storage Integration<a class="headerlink" href="#technical-mastery-domain-3-storage-integration" title="Permanent link">&para;</a></h2>
+<p>The RHOSO storage framework manages two distinct storage pathways: persistent storage for control plane service states (e.g., databases) using Container Storage Interface (CSI) drivers, and scalable backends for virtual machines on the data plane.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>+---------------------------------------------------------------------------------+
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>|                         UNIFIED STORAGE PATHWAY ANALYSIS                        |
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>|                                                                                 |
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>|   +------------------------------------+------------------------------------+   |
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>|   |        CONTROL PLANE PVCs          |          DATA PLANE VOLUMES        |   |
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>|   |  - Managed via high-perf CSI       |  - Direct block/file drivers       |   |
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>|   |  - Targets transactional DB state  |  - Backed by Ceph, SAN, or NAS     |   |
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>|   +----------------+-------------------+----------------+-------------------+   |
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>|                    |                                    |                       |
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>|                    | OCP MachineNet                     | Physical Storage Net  |
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>|                    v                                    v                       |
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>|   +------------------------------------+------------------------------------+   |
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>|   |        Portworx Storage /          |         Red Hat Ceph Storage       |   |
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>|   |        LVM Container Volumes       |         Pure FA / Dell PowerFlex   |   |
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>|   +------------------------------------+------------------------------------+   |
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>+---------------------------------------------------------------------------------+
+</code></pre></div>
+<h3 id="key-storage-core-concepts">Key Storage Core Concepts<a class="headerlink" href="#key-storage-core-concepts" title="Permanent link">&para;</a></h3>
+<p>Mastering storage integration requires an understanding of persistent storage architectures:</p>
+<p><strong>Control Plane CSI Orchestration:</strong> Managing high-performance CSI storage engines like Portworx to handle persistent volumes for database and caching pods.</p>
+<p><strong>External Ceph Integration:</strong> Connecting Glance (image), Cinder (block), and Manila (file) services to external Red Hat Ceph Storage clusters.</p>
+<p><strong>Distributed Object Storage:</strong> Deploying Swift on external data plane nodes to improve horizontal scalability and performance for large object repositories.</p>
+<p><strong>Enterprise Multi-Backend Configuration:</strong> Integrating specialized drivers like the Pure Storage FlashArray volume driver or Dell PowerFlex SDC (Storage Data Client) to support multi-backend Cinder configurations.</p>
+<p><strong>Storage Bus Notifications:</strong> Enabling event notifications in Cinder and Manila by configuring <code>notificationsBusInstance</code> to output metrics to a RabbitMQ bus.</p>
+<h3 id="storage-learning-curricula-resources">Storage Learning Curricula &amp; Resources<a class="headerlink" href="#storage-learning-curricula-resources" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Structured Learning Topic</th>
+<th>Target Objectives &amp; Technical Focus</th>
+<th>Primary Resources</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ceph Storage Architecture &amp; Management<sup id="fnref2:9"><a class="footnote-ref" href="#fn:9">2</a></sup></td>
+<td>Deploying RADOS block devices, configuring replication, and tuning storage node system requirements.</td>
+<td><a href="https://www.redhat.com/en/services/training/cloud-storage-red-hat-ceph-storage-cl260">Cloud Storage with Red Hat Ceph Storage (CL260)</a></td>
+</tr>
+<tr>
+<td>Control Plane Persistent Volumes<sup id="fnref4:3"><a class="footnote-ref" href="#fn:3">1</a></sup><sup id="fnref3:4"><a class="footnote-ref" href="#fn:4">6</a></sup></td>
+<td>Verifying control plane PVC bindings, assessing storage operator health, and troubleshooting Cinder and Manila pod mounts.</td>
+<td><a href="https://www.redhat.com/en/services/training/cl170-openstack-administration-control-plane-management">OpenStack Administration: Control Plane Management (CL170)</a></td>
+</tr>
+<tr>
+<td>Enterprise SAN/NAS Multi-Backend Configurations<sup id="fnref6:1"><a class="footnote-ref" href="#fn:1">3</a></sup><sup id="fnref:12"><a class="footnote-ref" href="#fn:12">9</a></sup></td>
+<td>Building storage driver partner containers, injecting custom configurations, and implementing secure storage communication pathways.</td>
+<td><a href="https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/integrating_partner_content">Integrating partner content</a></td>
+</tr>
+<tr>
+<td>Advanced Block Storage and Backup Customization<sup id="fnref7:1"><a class="footnote-ref" href="#fn:1">3</a></sup><sup id="fnref2:10"><a class="footnote-ref" href="#fn:10">8</a></sup></td>
+<td>Configuring backup services, tuning storage limits, and optimizing Glance image caches.</td>
+<td><a href="https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/configuring_persistent_storage">Configuring persistent storage</a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="operational-troubleshooting-and-diagnostic-blueprint">Operational Troubleshooting and Diagnostic Blueprint<a class="headerlink" href="#operational-troubleshooting-and-diagnostic-blueprint" title="Permanent link">&para;</a></h2>
+<p>Diagnosing issues in a container-native, operator-driven control plane requires a structured troubleshooting methodology. Because failures can occur across container runtimes, Kubernetes operators, physical host nodes, or network configurations, administrators must systematically check components to identify the root cause.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>  Control Plane / Podified Layer Diagnostics
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>                      |
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>                      v
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>     +----------------------------------+
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>     |   Verify OCP Operator Health     | &lt;--- &quot;oc get co&quot; &amp; &quot;oc get clusterversion&quot;
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>     +----------------+-----------------+
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>                      |
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>                      v
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>     +----------------------------------+
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>     | Inspect Pod Event Timelines      | &lt;--- &quot;oc get events -n openstack&quot;
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>     +----------------+-----------------+
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>                      |
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>                      v
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>     +----------------------------------+
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>     | Validate Webhook Configuration   | &lt;--- Check for webhook registration blockers
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>     +----------------------------------+
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>                      |
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>                      +---------------------------------------+
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>                      |                                       |
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>                      v                                       v
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>  Bare-Metal Host / NMState Diagnostics        EDPM Deployment Troubleshooting
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>                      |                                       |
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>                      v                                       v
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>     +----------------------------------+            +----------------------------------+
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>     |   Inspect NNCE Error Reports     |            | Run Specialized Diagnostic Tools |
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>     |   Check logs of NMState handler  |            | Execute &quot;openstack-must-gather&quot;  |
+<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>     +----------------------------------+            +----------------------------------+
+</code></pre></div>
+<h3 id="1-control-plane-operator-diagnostics">1. Control Plane &amp; Operator Diagnostics<a class="headerlink" href="#1-control-plane-operator-diagnostics" title="Permanent link">&para;</a></h3>
+<p>When debugging control plane operators, administrators should first verify the overall health of the OpenShift operators and core cluster resources.</p>
+<p><strong>Operator Health Assessment:</strong> Run commands to check that the core operators are responding and healthy:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>oc<span class="w"> </span>get<span class="w"> </span>co
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>oc<span class="w"> </span>get<span class="w"> </span>clusterversion
+</code></pre></div>
+<p><strong>Pod Timeline Audit:</strong> Review the timeline of events within the <code>openstack</code> namespace to identify crashes, rescheduling loops, or provisioning delays:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>oc<span class="w"> </span>get<span class="w"> </span>events<span class="w"> </span>-n<span class="w"> </span>openstack<span class="w"> </span>--sort-by<span class="o">=</span>.lastTimestamp
+</code></pre></div>
+<p><strong>Resource Pressure Evaluation:</strong> Check for memory or CPU contention on the host OpenShift nodes, which can cause pod eviction or database replication timeouts:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>oc<span class="w"> </span>describe<span class="w"> </span>nodes<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-E<span class="w"> </span><span class="s2">&quot;CPU|Memory|Disk&quot;</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>kubectl<span class="w"> </span>top<span class="w"> </span>node
+</code></pre></div>
+<h3 id="2-namespace-webhooks-validation-constraints">2. Namespace Webhooks &amp; Validation Constraints<a class="headerlink" href="#2-namespace-webhooks-validation-constraints" title="Permanent link">&para;</a></h3>
+<p>A common issue during installation or upgrade is when custom resources fail to reconcile because API webhooks are blocked.</p>
+<p><strong>Namespace Validation:</strong> Verify that the target namespace is configured to allow privileged pod creation. If the Security Context Constraint (SCC) is set incorrectly, webhook execution will fail and prevent resource instantiation:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>oc<span class="w"> </span>get<span class="w"> </span>namespace<span class="w"> </span>openstack<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.metadata.labels}&#39;</span>
+</code></pre></div>
+<p><strong>Namespace Label Configuration:</strong> Ensure the appropriate security context flags are applied to the namespace:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>oc<span class="w"> </span>label<span class="w"> </span>ns<span class="w"> </span>openstack<span class="w"> </span>security.openshift.io/scc.podSecurityLabelSync<span class="o">=</span><span class="nb">false</span><span class="w"> </span>--overwrite
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>oc<span class="w"> </span>label<span class="w"> </span>ns<span class="w"> </span>openstack<span class="w"> </span>pod-security.kubernetes.io/enforce<span class="o">=</span>privileged<span class="w"> </span>--overwrite
+</code></pre></div>
+<p><strong>Custom Resource Name Verification:</strong> Ensure that custom resource definitions do not exceed the 63-character limit. Long names can trigger silent webhook validation errors or cause truncation issues during deployment.</p>
+<h3 id="3-nmstate-network-infrastructure-diagnostics">3. NMState &amp; Network Infrastructure Diagnostics<a class="headerlink" href="#3-nmstate-network-infrastructure-diagnostics" title="Permanent link">&para;</a></h3>
+<p>If host-level physical configurations are misconfigured, network isolation or interface routing can fail.</p>
+<p><strong>Network Policy Failures:</strong> When a <code>NodeNetworkConfigurationPolicy</code> (NNCP) fails to apply, check the generated <code>NodeNetworkConfigurationEnactment</code> (NNCE) objects for the target node to locate the configuration error:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>oc<span class="w"> </span>get<span class="w"> </span>nnce<span class="w"> </span>-o<span class="w"> </span>yaml
+</code></pre></div>
+<p><strong>Handler Log Extraction:</strong> Extract logs directly from the NMState handler daemon running on the failing physical host:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>oc<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </span>openshift-nmstate<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>kubernetes-nmstate-handler<span class="w"> </span>--tail<span class="o">=</span><span class="m">100</span>
+</code></pre></div>
+<p><strong>ARP and Speaker Alignment Check:</strong> If MetalLB is failing to announce virtual VIP addresses, check if the Speaker pods are running on nodes that lack the physical OpenStack interfaces, which will prevent them from answering ARP queries.</p>
+<h3 id="4-edpm-data-plane-diagnostics">4. EDPM &amp; Data Plane Diagnostics<a class="headerlink" href="#4-edpm-data-plane-diagnostics" title="Permanent link">&para;</a></h3>
+<p>If a compute or networker node set fails to deploy or scale, administrators can use several diagnostics to isolate the issue.</p>
+<p><strong>Job Condition Verification:</strong> Inspect the validation status and message history of the failed job object within the targeted node set:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>oc<span class="w"> </span>describe<span class="w"> </span>openstackdataplanenodeset<span class="w"> </span>&lt;nodeset_name&gt;<span class="w"> </span>-n<span class="w"> </span>openstack
+</code></pre></div>
+<p><strong>Ansible Runner Log Analysis:</strong> Because EDPM runs via containerized Ansible environments, review the log stream of the active runner pod to identify the step where the execution failed:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>oc<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </span>openstack<span class="w"> </span>jobs/openstack-ansible-runner-&lt;task-suffix&gt;
+</code></pre></div>
+<p><strong>Data Plane Target Verification:</strong> Check the SSH authorization configurations and verify that the target bare-metal hosts contain the private keys specified in the corresponding credential secret:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>oc<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>dataplane-adoption-secret<span class="w"> </span>-n<span class="w"> </span>openstack<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.ssh-privatekey}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d
+</code></pre></div>
+<p><strong>Comprehensive Data Gathering:</strong> Avoid generic OpenShift debugging commands. Instead, run the specialized OpenStack utility to capture full configuration states and logs across both the control and data planes:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>oc<span class="w"> </span>adm<span class="w"> </span>must-gather<span class="w"> </span>--image<span class="o">=</span>registry.redhat.io/rhoso/openstack-must-gather-rhel9:latest
+</code></pre></div>
+<hr />
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
+<p>RHOSO demands a cross-domain skill set spanning Kubernetes operators, declarative CRDs, bare-metal automation, and traditional OpenStack service expertise. The three mastery domains—Compute, Networking, and Storage—each have distinct architectural patterns but share a common operational model: define intent in YAML, reconcile via operators, and troubleshoot across both the podified control plane and the EDPM-managed data plane.</p>
+<p>Use the structured curricula above as a progressive learning path: establish Linux and Ansible foundations, deepen OpenShift and OpenStack administration skills through official training, then specialize using the RHOSO 18.0 documentation for deployment customization, scale planning, and partner integrations.</p>
+<hr />
+<h2 id="references-citations">References &amp; Citations<a class="headerlink" href="#references-citations" title="Permanent link">&para;</a></h2>
+<h3 id="documentation-hub">Documentation Hub<a class="headerlink" href="#documentation-hub" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0">Red Hat OpenStack Services on OpenShift 18.0 Documentation</a></li>
+<li><a href="https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/planning_your_deployment">Planning your deployment</a></li>
+<li><a href="https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/deploying_a_distributed_compute_node_dcn_architecture">Deploying a Distributed Compute Node (DCN) architecture</a></li>
+<li><a href="https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/configuring_high_availability_for_instances">Configuring high availability for instances</a></li>
+<li><a href="https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/validating_and_troubleshooting_the_deployed_cloud">Validating and troubleshooting the deployed cloud</a></li>
+<li><a href="https://www.redhat.com/en/blog/modernized-deployment-mechanism-red-hat-openstack-services-openshift">A Modernized Deployment Mechanism for RHOSO (Red Hat Blog)</a></li>
+</ul>
+<h3 id="training-courses">Training Courses<a class="headerlink" href="#training-courses" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Course</th>
+<th>Title</th>
+<th>Link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CL170</td>
+<td>OpenStack Administration: Control Plane Management</td>
+<td><a href="https://www.redhat.com/en/services/training/cl170-openstack-administration-control-plane-management">redhat.com</a></td>
+</tr>
+<tr>
+<td>CL270</td>
+<td>OpenStack Administration II: Deploy Control Plane &amp; Manage Data Plane</td>
+<td><a href="https://www.globalknowledge.com/us-en/course/202972/openstack-administration-ii-deploy-control-plane-services-and-manage-data-plane-nodes-cl270/">globalknowledge.com</a></td>
+</tr>
+<tr>
+<td>CL260</td>
+<td>Cloud Storage with Red Hat Ceph Storage</td>
+<td><a href="https://www.redhat.com/en/services/training/cloud-storage-red-hat-ceph-storage-cl260">redhat.com</a></td>
+</tr>
+<tr>
+<td>DO180</td>
+<td>OpenShift Administration I: Operating a Production Cluster</td>
+<td><a href="https://www.globalknowledge.com/us-en/course/163868/red-hat-openshift-administration-i-operating-a-production-cluster-do180/">globalknowledge.com</a></td>
+</tr>
+<tr>
+<td>DO280</td>
+<td>OpenShift Administration II: Configuring a Production Cluster</td>
+<td><a href="https://www.redhat.com/en/services/training/red-hat-openshift-administration-ii-configuring-a-production-cluster">redhat.com</a></td>
+</tr>
+<tr>
+<td>RH294</td>
+<td>Red Hat Enterprise Linux Automation with Ansible</td>
+<td><a href="https://www.redhat.com/en/services/training-and-certification/futureskillsprime/RH294">redhat.com</a></td>
+</tr>
+</tbody>
+</table>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:3">
+<p>Red Hat Training — <a href="https://www.globalknowledge.com/us-en/course/202972/openstack-administration-ii-deploy-control-plane-services-and-manage-data-plane-nodes-cl270/">OpenStack Administration II: Deploy Control Plane Services and Manage Data Plane Nodes (CL270)</a> · <a href="https://www.redhat.com/en/services/training/cl170-openstack-administration-control-plane-management">OpenStack Administration: Control Plane Management (CL170)</a>&#160;<a class="footnote-backref" href="#fnref:3" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:3" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref3:3" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref4:3" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:9">
+<p>Red Hat Training — <a href="https://www.redhat.com/en/services/training/cloud-storage-red-hat-ceph-storage-cl260">Cloud Storage with Red Hat Ceph Storage (CL260)</a> · <a href="https://www.redhat.com/en/services/training-and-certification/futureskillsprime/RH294">Red Hat Enterprise Linux Automation with Ansible (RH294 / AU294)</a>&#160;<a class="footnote-backref" href="#fnref:9" title="Jump back to footnote 2 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:9" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn:1">
+<p>Red Hat OpenStack Services on OpenShift 18.0 — <a href="https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/customizing_the_red_hat_openstack_services_on_openshift_deployment">Customizing the Red Hat OpenStack Services on OpenShift deployment</a>&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 3 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:1" title="Jump back to footnote 3 in the text">&#8617;</a><a class="footnote-backref" href="#fnref3:1" title="Jump back to footnote 3 in the text">&#8617;</a><a class="footnote-backref" href="#fnref4:1" title="Jump back to footnote 3 in the text">&#8617;</a><a class="footnote-backref" href="#fnref5:1" title="Jump back to footnote 3 in the text">&#8617;</a><a class="footnote-backref" href="#fnref6:1" title="Jump back to footnote 3 in the text">&#8617;</a><a class="footnote-backref" href="#fnref7:1" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+<li id="fn:6">
+<p>Red Hat Documentation — <a href="https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/customizing_the_red_hat_openstack_services_on_openshift_deployment/assembly_customizing-rhoso-networks">Customizing networks for RHOSO</a> (OpenStackDataPlaneNodeSet, bootc image provisioning)&#160;<a class="footnote-backref" href="#fnref:6" title="Jump back to footnote 4 in the text">&#8617;</a></p>
+</li>
+<li id="fn:7">
+<p>Red Hat Documentation — <a href="https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/planning_a_large-scale_rhoso_deployment">Planning a large-scale RHOSO deployment</a>&#160;<a class="footnote-backref" href="#fnref:7" title="Jump back to footnote 5 in the text">&#8617;</a></p>
+</li>
+<li id="fn:4">
+<p>Red Hat Training — <a href="https://www.redhat.com/en/services/training/red-hat-openshift-administration-ii-configuring-a-production-cluster">Red Hat OpenShift Administration II: Configuring a Production Cluster (DO280)</a> · <a href="https://www.globalknowledge.com/us-en/course/163868/red-hat-openshift-administration-i-operating-a-production-cluster-do180/">Red Hat OpenShift Administration I: Operating a Production Cluster (DO180)</a>&#160;<a class="footnote-backref" href="#fnref:4" title="Jump back to footnote 6 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:4" title="Jump back to footnote 6 in the text">&#8617;</a><a class="footnote-backref" href="#fnref3:4" title="Jump back to footnote 6 in the text">&#8617;</a></p>
+</li>
+<li id="fn:5">
+<p>Red Hat Documentation — <a href="https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/deploying_a_rhoso_environment_with_a_routed_spine-leaf_network_topology">Deploying a RHOSO environment with a routed spine-leaf network topology</a>&#160;<a class="footnote-backref" href="#fnref:5" title="Jump back to footnote 7 in the text">&#8617;</a></p>
+</li>
+<li id="fn:10">
+<p>Red Hat Documentation — <a href="https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/configuring_networking_services">Configuring networking services</a> · <a href="https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/configuring_persistent_storage">Configuring persistent storage</a>&#160;<a class="footnote-backref" href="#fnref:10" title="Jump back to footnote 8 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:10" title="Jump back to footnote 8 in the text">&#8617;</a></p>
+</li>
+<li id="fn:12">
+<p>Red Hat Documentation — <a href="https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/integrating_partner_content">Integrating partner content</a>&#160;<a class="footnote-backref" href="#fnref:12" title="Jump back to footnote 9 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+  
+
+
+
+      
+    </article>
+  </div>
+
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../../../../javascripts/extra.js"></script>
+      
+    
+  </body>
+</html>
