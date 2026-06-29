@@ -785,6 +785,72 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#gitops-cicd-multi-cluster-4-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitOps, CI/CD &amp; Multi-Cluster (4 flows)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-networking-3-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Networking (3 flows)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#observability-compliance-3-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observability &amp; Compliance (3 flows)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security-backup-secrets-2-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security, Backup &amp; Secrets (2 flows)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aiml-gpu-2-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI/ML &amp; GPU (2 flows)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hybrid-virtualization-2-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hybrid Virtualization (2 flows)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -930,7 +996,7 @@
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 20a8 8 0 0 0 8-8 8 8 0 0 0-8-8 8 8 0 0 0-8 8 8 8 0 0 0 8 8m0-18a10 10 0 0 1 10 10 10 10 0 0 1-10 10C6.47 22 2 17.5 2 12A10 10 0 0 1 12 2m.5 5v5.25l4.5 2.67-.75 1.23L11 13V7z"/></svg>
                           <span class="md-ellipsis">
                             
-                              7 min read
+                              8 min read
                             
                           </span>
                         </div>
@@ -958,6 +1024,13 @@
       
       
       
+        <a href="../../../../../tags/#tag:aiml" class="md-tag">AI/ML</a>
+      
+    
+      
+      
+      
+      
         <a href="../../../../../tags/#tag:ceph" class="md-tag">Ceph</a>
       
     
@@ -973,6 +1046,13 @@
       
       
         <a href="../../../../../tags/#tag:devops" class="md-tag">DevOps</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../../tags/#tag:gitops" class="md-tag">GitOps</a>
       
     
       
@@ -1002,7 +1082,7 @@
 
 
 <h1 id="rhoso-180-architecture-interactive-flowstory-visualizer">RHOSO 18.0 Architecture — Interactive FlowStory Visualizer<a class="headerlink" href="#rhoso-180-architecture-interactive-flowstory-visualizer" title="Permanent link">&para;</a></h1>
-<p>An interactive, animated architecture diagram for Red Hat OpenStack Services on OpenShift (RHOSO) 18.0, built with <a href="https://github.com/noyitz/flowstory">FlowStory</a>. A single self-contained HTML file that visualizes 57 operational flows with 916 animated steps across the podified control plane, EDPM data plane, Rook-Ceph storage, and disaster recovery sites.</p>
+<p>An interactive, animated architecture diagram for Red Hat OpenStack Services on OpenShift (RHOSO) 18.0, built with <a href="https://github.com/noyitz/flowstory">FlowStory</a>. A single self-contained HTML file that visualizes 73 operational flows with 1144 animated steps across the podified control plane, EDPM data plane, Rook-Ceph storage, GitOps/CI-CD, multi-cluster management, and disaster recovery sites.</p>
 <!-- more -->
 
 <hr />
@@ -1545,6 +1625,180 @@
 </tr>
 </tbody>
 </table>
+<h3 id="gitops-cicd-multi-cluster-4-flows">GitOps, CI/CD &amp; Multi-Cluster (4 flows)<a class="headerlink" href="#gitops-cicd-multi-cluster-4-flows" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Flow</th>
+<th>Steps</th>
+<th>What It Shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>58</td>
+<td>ArgoCD GitOps RHOSO Deployment</td>
+<td>14</td>
+<td>Git push → ArgoCD sync → OpenStackControlPlane CR applied → drift detection → auto-revert</td>
+</tr>
+<tr>
+<td>59</td>
+<td>Tekton Pipeline: EDPM Image Build</td>
+<td>14</td>
+<td>Git webhook → Tekton PipelineRun → build EDPM image → push → update DataPlaneNodeSet</td>
+</tr>
+<tr>
+<td>60</td>
+<td>ACM Multi-Cluster RHOSO Deploy</td>
+<td>16</td>
+<td>ACM Hub Policy → PlacementRule → spoke clusters → RHOSO deployed → fleet status aggregation</td>
+</tr>
+<tr>
+<td>61</td>
+<td>AAP Workflow: Tenant Onboarding</td>
+<td>14</td>
+<td>AAP Workflow → Keystone project → network → SG → volume → VM → FIP → DNS → complete</td>
+</tr>
+</tbody>
+</table>
+<h3 id="advanced-networking-3-flows">Advanced Networking (3 flows)<a class="headerlink" href="#advanced-networking-3-flows" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Flow</th>
+<th>Steps</th>
+<th>What It Shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>62</td>
+<td>SR-IOV NIC Passthrough to Nova VM</td>
+<td>16</td>
+<td>SriovNetworkNodePolicy → VF creation → device-plugin → vnic_type=direct → PCI passthrough → line-rate</td>
+</tr>
+<tr>
+<td>63</td>
+<td>Multus Multi-Network for RHOSO Pods</td>
+<td>12</td>
+<td>NetworkAttachmentDefinition → Multus injects 4+ interfaces → Whereabouts IPAM → network isolation</td>
+</tr>
+<tr>
+<td>64</td>
+<td>Manila CephFS Share for VMs</td>
+<td>14</td>
+<td>Manila API → CephFS subvolume → NFS-Ganesha export → VM NFS mount → POSIX I/O</td>
+</tr>
+</tbody>
+</table>
+<h3 id="observability-compliance-3-flows">Observability &amp; Compliance (3 flows)<a class="headerlink" href="#observability-compliance-3-flows" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Flow</th>
+<th>Steps</th>
+<th>What It Shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>65</td>
+<td>Centralized Logging (Loki + Vector)</td>
+<td>14</td>
+<td>Vector collects pod + syslog → Loki → Grafana LogQL → Jaeger trace correlation</td>
+</tr>
+<tr>
+<td>66</td>
+<td>Compliance Scan + Remediation</td>
+<td>14</td>
+<td>ScanSettingBinding → OpenSCAP → ComplianceRemediation → MachineConfig → EDPM SCAP via Ansible</td>
+</tr>
+<tr>
+<td>67</td>
+<td>K8s Audit + RHOSO Change Tracking</td>
+<td>12</td>
+<td>K8s audit webhook → SIEM → Keystone auth audit → Loki → change→effect→resolution chain</td>
+</tr>
+</tbody>
+</table>
+<h3 id="security-backup-secrets-2-flows">Security, Backup &amp; Secrets (2 flows)<a class="headerlink" href="#security-backup-secrets-2-flows" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Flow</th>
+<th>Steps</th>
+<th>What It Shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>68</td>
+<td>External Secrets + Vault Rotation</td>
+<td>14</td>
+<td>ClusterSecretStore → Vault → ExternalSecret sync → K8s Secret → rolling restart → zero-downtime</td>
+</tr>
+<tr>
+<td>69</td>
+<td>OADP Backup + DR Restore</td>
+<td>16</td>
+<td>Velero + S3 (Ceph RGW) → scheduled CRs/Galera/PVC backup → new cluster restore → operational</td>
+</tr>
+</tbody>
+</table>
+<h3 id="aiml-gpu-2-flows">AI/ML &amp; GPU (2 flows)<a class="headerlink" href="#aiml-gpu-2-flows" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Flow</th>
+<th>Steps</th>
+<th>What It Shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>70</td>
+<td>NVIDIA GPU Passthrough to Nova VM</td>
+<td>16</td>
+<td>NFD discovers GPU → GPU Operator → device-plugin → Nova PCI alias → VM gets vGPU → AI/ML workload</td>
+</tr>
+<tr>
+<td>71</td>
+<td>Node Feature Discovery + Trait Sync</td>
+<td>12</td>
+<td>NFD labels (CPU, GPU, NVMe) → Nova Placement traits → intelligent scheduling</td>
+</tr>
+</tbody>
+</table>
+<h3 id="hybrid-virtualization-2-flows">Hybrid Virtualization (2 flows)<a class="headerlink" href="#hybrid-virtualization-2-flows" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Flow</th>
+<th>Steps</th>
+<th>What It Shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>72</td>
+<td>KubeVirt VM Import + Nova Migration</td>
+<td>16</td>
+<td>MTV imports VMware VM → KubeVirt VirtualMachine → RBD volume → Nova boot from volume</td>
+</tr>
+<tr>
+<td>73</td>
+<td>KubeVirt + Nova Hybrid Scheduling</td>
+<td>14</td>
+<td>Node partitioning → KubeVirt VMs + Nova VMs coexist → shared Ceph + OVN → unified monitoring</td>
+</tr>
+</tbody>
+</table>
 <h2 id="architecture-layout">Architecture Layout<a class="headerlink" href="#architecture-layout" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌─────────────────────────────────────────────────────────────┐
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│  Red Hat OpenShift Container Platform (RHOCP)               │
@@ -1554,24 +1808,26 @@
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│  │  Ironic · Designate · OVN NB/SB · Galera · RabbitMQ   │  │
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│  ├───────────────────────────────────────────────────────┤  │
 <a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│  │ Operators: OpenStack · NMState · MetalLB · Cert-Mgr   │  │
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│  │            ODF · Rook-Ceph Operator                    │  │
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│  ├───────────────────────────────────────────────────────┤  │
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│  │ EDPM: DataPlaneNodeSet · DataPlaneService · Ansible   │  │
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│  └───────────────────────────────────────────────────────┘  │
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│  Prometheus + Grafana                                       │
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>└─────────────────────────────────────────────────────────────┘
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>         │ SSH                              │ cephx / CSI RBD
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>┌────────▼──────────────────────────────┐  ┌──────────────────────┐
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│ Data Plane (Bare-Metal RHEL 9)        │  │ Ceph Storage (Rook)  │
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│  Compute-0 ◄──Geneve──► Compute-1     │  │ MON·MGR·OSD·MDS·RGW  │
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│  (nova,ovn,libvirt,ovs)               │  │ RBD Mirror · CephFS   │
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│  CSI RBD Plugin · CSI CephFS Plugin   │  ├──────────────────────┤
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│  BMC (Redfish) ◄── Ironic Conductor   │  │ Arbiter MON (Site 3) │
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>└───────────────────────────────────────┘  └──────────────────────┘
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>                                            ┌──────────────────────┐
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>                                            │ Secondary Site (DR)  │
-<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>                                            │ RGW Zone · RBD Mirror│
-<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>                                            └──────────────────────┘
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│  │   ArgoCD · Tekton · ESO · Compliance · OADP · Loki    │  │
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│  │   GPU Op · NFD · CNV (KubeVirt) · SR-IOV · Multus     │  │
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│  │   ODF · Rook-Ceph Operator                             │  │
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│  ├───────────────────────────────────────────────────────┤  │
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│  │ EDPM: DataPlaneNodeSet · DataPlaneService · Ansible   │  │
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│  └───────────────────────────────────────────────────────┘  │
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│  Prometheus + Grafana                                       │
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>└─────────────────────────────────────────────────────────────┘
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>         │ SSH                              │ cephx / CSI RBD
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>┌────────▼──────────────────────────────┐  ┌──────────────────────┐
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│ Data Plane (Bare-Metal RHEL 9)        │  │ Ceph Storage (Rook)  │
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│  Compute-0 ◄──Geneve──► Compute-1     │  │ MON·MGR·OSD·MDS·RGW  │
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│  (nova,ovn,libvirt,ovs)               │  │ RBD Mirror · CephFS   │
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│  CSI RBD Plugin · CSI CephFS Plugin   │  ├──────────────────────┤
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│  BMC (Redfish) ◄── Ironic Conductor   │  │ Arbiter MON (Site 3) │
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>└───────────────────────────────────────┘  └──────────────────────┘
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>                                            ┌──────────────────────┐
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>                                            │ Secondary Site (DR)  │
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>                                            │ RGW Zone · RBD Mirror│
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>                                            └──────────────────────┘
 </code></pre></div>
 <h2 id="how-it-was-built">How It Was Built<a class="headerlink" href="#how-it-was-built" title="Permanent link">&para;</a></h2>
 <p>The visualizer is a single <code>flow.html</code> file using the <a href="https://github.com/noyitz/flowstory">FlowStory</a> framework:</p>
@@ -1590,7 +1846,7 @@
 </ul>
 <div class="admonition info">
 <p class="admonition-title">Self-Contained</p>
-<p>The entire diagram — 52 component tooltips, 57 flows with 916 steps, and full inspector mutations — lives in a single ~655KB HTML file with zero build tooling required. Just open it in a browser.</p>
+<p>The entire diagram — 70 component tooltips, 73 flows with 1144 steps, and full inspector mutations — lives in a single ~807KB HTML file with zero build tooling required. Just open it in a browser.</p>
 </div>
 <h2 id="key-highlights">Key Highlights<a class="headerlink" href="#key-highlights" title="Permanent link">&para;</a></h2>
 <h3 id="redfish-bmc-ironic-flow">Redfish BMC + Ironic Flow<a class="headerlink" href="#redfish-bmc-ironic-flow" title="Permanent link">&para;</a></h3>
