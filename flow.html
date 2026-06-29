@@ -16,6 +16,10 @@ canvas#fs-canvas {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
+/* Allow scrolling when canvas is zoomed beyond viewport */
+body {
+  overflow: auto !important;
+}
 /* Overlay tooltip styles (required for click-to-view component details) */
 #fs-overlay {
   display: none;
@@ -23400,31 +23404,119 @@ const viz = new FlowStory(document.getElementById('fs-canvas'), {
 
 window.__flowstory = viz;
 
-// High-DPI canvas fix: patch engine resize for sharp text on Retina
-(function fixHiDPI() {
-  const dpr = window.devicePixelRatio || 1;
-  if (dpr <= 1) return;
+// Dynamic zoom: resizes canvas and re-renders at native resolution (no pixelation)
+(function setupZoom() {
   const engine = viz._engine;
   if (!engine) return;
-  const origResize = engine.resize.bind(engine);
-  engine.resize = function() {
-    const w = innerWidth - engine.panelWidth;
-    const h = innerHeight;
-    // Set canvas buffer to DPR-scaled resolution
-    engine.canvas.width = Math.round(w * dpr);
-    engine.canvas.height = Math.round(h * dpr);
-    engine.canvas.style.width = w + 'px';
-    engine.canvas.style.height = h + 'px';
-    // Keep logical dimensions for FlowStory's coordinate system
+
+  let zoomLevel = 1.0;
+  const ZOOM_STEP = 0.15;
+  const MIN_ZOOM = 0.5;
+  const MAX_ZOOM = 3.0;
+  const canvas = engine.canvas;
+
+  function render() {
+    const dpr = window.devicePixelRatio || 1;
+    const baseW = innerWidth - engine.panelWidth;
+    const baseH = innerHeight;
+    const w = Math.round(baseW * zoomLevel);
+    const h = Math.round(baseH * zoomLevel);
+
+    // Resize canvas buffer to zoomed dimensions * DPR
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    // Set CSS size to zoomed dimensions (physically larger canvas)
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    canvas.style.transform = 'none';
+
     engine.W = w;
     engine.H = h;
     engine._sc = Math.min(w / engine.logicalWidth, h / engine.logicalHeight) * 0.98;
     engine._ox = (w - engine.logicalWidth * engine._sc) / 2;
     engine._oy = (h - engine.logicalHeight * engine._sc) * 0.04;
-    // Scale context so all draw calls render at high resolution
     engine.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  engine.resize = render;
+  render();
+
+  function applyZoom() {
+    render();
+    document.getElementById('fs-zoom-label').textContent = Math.round(zoomLevel * 100) + '%';
+  }
+
+  // Create zoom control UI
+  const zoomBar = document.createElement('div');
+  zoomBar.id = 'fs-zoom-bar';
+  zoomBar.innerHTML = `
+    <button id="fs-zoom-out" title="Zoom Out (Ctrl -)">−</button>
+    <span id="fs-zoom-label">100%</span>
+    <button id="fs-zoom-in" title="Zoom In (Ctrl +)">+</button>
+    <button id="fs-zoom-reset" title="Reset Zoom">⟲</button>
+  `;
+  zoomBar.style.cssText = `
+    position: fixed; bottom: 16px; left: 16px; z-index: 300;
+    display: flex; align-items: center; gap: 6px;
+    background: var(--fs-bg-surface, #161b22);
+    border: 1px solid var(--fs-border, #30363d);
+    border-radius: 8px; padding: 6px 12px;
+    font-size: 13px; color: var(--fs-text, #c9d1d9);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  `;
+  document.body.appendChild(zoomBar);
+
+  const btnStyle = `
+    background: none; border: 1px solid var(--fs-border, #30363d);
+    border-radius: 4px; color: var(--fs-text, #c9d1d9);
+    width: 28px; height: 28px; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  `;
+  document.getElementById('fs-zoom-out').style.cssText = btnStyle;
+  document.getElementById('fs-zoom-in').style.cssText = btnStyle;
+  document.getElementById('fs-zoom-reset').style.cssText = btnStyle;
+
+  document.getElementById('fs-zoom-in').onclick = () => {
+    zoomLevel = Math.min(MAX_ZOOM, zoomLevel + ZOOM_STEP);
+    applyZoom();
   };
-  engine.resize();
+  document.getElementById('fs-zoom-out').onclick = () => {
+    zoomLevel = Math.max(MIN_ZOOM, zoomLevel - ZOOM_STEP);
+    applyZoom();
+  };
+  document.getElementById('fs-zoom-reset').onclick = () => {
+    zoomLevel = 1.0;
+    applyZoom();
+  };
+
+  // Keyboard: Ctrl+/- and Ctrl+0
+  document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === '=' || e.key === '+') {
+        e.preventDefault();
+        zoomLevel = Math.min(MAX_ZOOM, zoomLevel + ZOOM_STEP);
+        applyZoom();
+      } else if (e.key === '-') {
+        e.preventDefault();
+        zoomLevel = Math.max(MIN_ZOOM, zoomLevel - ZOOM_STEP);
+        applyZoom();
+      } else if (e.key === '0') {
+        e.preventDefault();
+        zoomLevel = 1.0;
+        applyZoom();
+      }
+    }
+  });
+
+  // Mouse wheel with Ctrl (pinch-to-zoom on trackpad)
+  canvas.addEventListener('wheel', (e) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+      zoomLevel = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoomLevel + delta));
+      applyZoom();
+    }
+  }, { passive: false });
 })();
 
 try {
