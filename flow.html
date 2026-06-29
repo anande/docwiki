@@ -841,6 +841,20 @@ const diagram = {
           "DB",
           "nova_api DB (cell mappings) + per-cell nova DB"
         ]
+      ],
+      "links": [
+        [
+          "RHOSO Nova Config",
+          "https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/configuring_the_compute_service"
+        ],
+        [
+          "Nova API Ref",
+          "https://docs.openstack.org/nova/latest/"
+        ],
+        [
+          "nova-operator (GitHub)",
+          "https://github.com/openstack-k8s-operators/nova-operator"
+        ]
       ]
     },
     "nova_conductor": {
@@ -866,6 +880,16 @@ const diagram = {
         [
           "Scaling",
           "Multiple replicas for HA and throughput"
+        ]
+      ],
+      "links": [
+        [
+          "Nova Conductor Docs",
+          "https://docs.openstack.org/nova/latest/cli/nova-conductor.html"
+        ],
+        [
+          "nova-operator (GitHub)",
+          "https://github.com/openstack-k8s-operators/nova-operator"
         ]
       ]
     },
@@ -893,6 +917,16 @@ const diagram = {
           "Output",
           "Selected host + claim allocation in Placement"
         ]
+      ],
+      "links": [
+        [
+          "Nova Scheduler Filters",
+          "https://docs.openstack.org/nova/latest/admin/scheduling.html"
+        ],
+        [
+          "nova-operator (GitHub)",
+          "https://github.com/openstack-k8s-operators/nova-operator"
+        ]
       ]
     },
     "placement": {
@@ -918,6 +952,16 @@ const diagram = {
         [
           "Allocation",
           "Atomic claim prevents double-booking"
+        ]
+      ],
+      "links": [
+        [
+          "Placement API Docs",
+          "https://docs.openstack.org/placement/latest/"
+        ],
+        [
+          "placement-operator (GitHub)",
+          "https://github.com/openstack-k8s-operators/placement-operator"
         ]
       ]
     },
@@ -949,6 +993,20 @@ const diagram = {
           "DHCP",
           "Native OVN DHCP (no neutron-dhcp-agent)"
         ]
+      ],
+      "links": [
+        [
+          "RHOSO Networking Config",
+          "https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/configuring_networking_services"
+        ],
+        [
+          "Neutron ML2/OVN Docs",
+          "https://docs.openstack.org/neutron/latest/admin/ovn/refarch/refarch.html"
+        ],
+        [
+          "neutron-operator (GitHub)",
+          "https://github.com/openstack-k8s-operators/neutron-operator"
+        ]
       ]
     },
     "ovn_nb": {
@@ -975,6 +1033,16 @@ const diagram = {
           "HA",
           "Raft consensus (3 replicas)"
         ]
+      ],
+      "links": [
+        [
+          "OVN NB Schema",
+          "https://www.ovn.org/support/dist-docs/ovn-nb.5.html"
+        ],
+        [
+          "OVN Architecture",
+          "https://docs.ovn.org/en/latest/ref/ovn-architecture.7.html"
+        ]
       ]
     },
     "ovn_sb": {
@@ -1000,6 +1068,16 @@ const diagram = {
         [
           "Binding",
           "Port → Chassis mapping (VM location)"
+        ]
+      ],
+      "links": [
+        [
+          "OVN SB Schema",
+          "https://www.ovn.org/support/dist-docs/ovn-sb.5.html"
+        ],
+        [
+          "OVN Architecture",
+          "https://docs.ovn.org/en/latest/ref/ovn-architecture.7.html"
         ]
       ]
     },
@@ -1031,6 +1109,20 @@ const diagram = {
           "Replication",
           "Ceph mirroring or vendor-native replication"
         ]
+      ],
+      "links": [
+        [
+          "RHOSO Storage Config",
+          "https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/configuring_persistent_storage"
+        ],
+        [
+          "Cinder Docs",
+          "https://docs.openstack.org/cinder/latest/"
+        ],
+        [
+          "cinder-operator (GitHub)",
+          "https://github.com/openstack-k8s-operators/cinder-operator"
+        ]
       ]
     },
     "galera_db": {
@@ -1056,6 +1148,16 @@ const diagram = {
         [
           "Backup",
           "Periodic mysqldump to PVC or S3"
+        ]
+      ],
+      "links": [
+        [
+          "MariaDB Galera Cluster",
+          "https://mariadb.com/kb/en/galera-cluster/"
+        ],
+        [
+          "mariadb-operator (GitHub)",
+          "https://github.com/openstack-k8s-operators/mariadb-operator"
         ]
       ]
     },
@@ -1087,6 +1189,16 @@ const diagram = {
           "TLS",
           "Cert-Manager issued certificates"
         ]
+      ],
+      "links": [
+        [
+          "RabbitMQ Clustering",
+          "https://www.rabbitmq.com/docs/clustering"
+        ],
+        [
+          "infra-operator (GitHub)",
+          "https://github.com/openstack-k8s-operators/infra-operator"
+        ]
       ]
     },
     "os_operator": {
@@ -1117,6 +1229,20 @@ const diagram = {
           "Reconcile Loop",
           "Watch CRs → Diff → Apply → Report Status"
         ]
+      ],
+      "links": [
+        [
+          "RHOSO Deploying",
+          "https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/deploying_red_hat_openstack_services_on_openshift"
+        ],
+        [
+          "OpenStackControlPlane CRD",
+          "https://github.com/openstack-k8s-operators/openstack-operator/blob/main/apis/core/v1beta1/openstackcontrolplane_types.go"
+        ],
+        [
+          "openstack-operator (GitHub)",
+          "https://github.com/openstack-k8s-operators/openstack-operator"
+        ]
       ]
     },
     "nmstate": {
@@ -1143,6 +1269,16 @@ const diagram = {
           "Validation",
           "Rollback on failure (timeout-based)"
         ]
+      ],
+      "links": [
+        [
+          "NMState Operator Docs",
+          "https://docs.openshift.com/container-platform/4.16/networking/k8s_nmstate/k8s-nmstate-about-the-k8s-nmstate-operator.html"
+        ],
+        [
+          "NNCP CRD Reference",
+          "https://nmstate.io/kubernetes-nmstate/user-guide/policy.html"
+        ]
       ]
     },
     "metallb": {
@@ -1168,6 +1304,16 @@ const diagram = {
         [
           "Interface",
           "Must match NNCP-configured bridge/bond"
+        ]
+      ],
+      "links": [
+        [
+          "MetalLB on OCP",
+          "https://docs.openshift.com/container-platform/4.16/networking/metallb/about-metallb.html"
+        ],
+        [
+          "IPAddressPool CRD",
+          "https://metallb.universe.tf/configuration/_advanced_ipaddresspool_configuration/"
         ]
       ]
     },
@@ -1199,6 +1345,20 @@ const diagram = {
           "Pre-provisioned",
           "Nodes must have RHEL 9 + SSH access"
         ]
+      ],
+      "links": [
+        [
+          "RHOSO EDPM Docs",
+          "https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/deploying_red_hat_openstack_services_on_openshift/assembly_creating-the-data-plane"
+        ],
+        [
+          "DataPlaneNodeSet CRD",
+          "https://github.com/openstack-k8s-operators/dataplane-operator/blob/main/api/v1beta1/openstackdataplanenodeset_types.go"
+        ],
+        [
+          "dataplane-operator (GitHub)",
+          "https://github.com/openstack-k8s-operators/dataplane-operator"
+        ]
       ]
     },
     "ansible_runner": {
@@ -1228,6 +1388,16 @@ const diagram = {
         [
           "Logs",
           "oc logs job/dataplane-deployment-*"
+        ]
+      ],
+      "links": [
+        [
+          "RHOSO EDPM Services",
+          "https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/deploying_red_hat_openstack_services_on_openshift/assembly_creating-the-data-plane"
+        ],
+        [
+          "openstack-ansibleee-runner (GitHub)",
+          "https://github.com/openstack-k8s-operators/openstack-ansibleee-operator"
         ]
       ]
     },
@@ -1259,6 +1429,16 @@ const diagram = {
           "Ceph Client",
           "Direct RBD access for ephemeral/volume disks"
         ]
+      ],
+      "links": [
+        [
+          "Nova Compute Docs",
+          "https://docs.openstack.org/nova/latest/admin/configuration/hypervisor-kvm.html"
+        ],
+        [
+          "RHOSO EDPM Config",
+          "https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/customizing_the_red_hat_openstack_services_on_openshift_deployment"
+        ]
       ]
     },
     "nova_compute_b": {
@@ -1284,6 +1464,16 @@ const diagram = {
         [
           "Post-migration",
           "Source libvirt cleans up domain"
+        ]
+      ],
+      "links": [
+        [
+          "Nova Live Migration",
+          "https://docs.openstack.org/nova/latest/admin/live-migration-usage.html"
+        ],
+        [
+          "RHOSO EDPM Config",
+          "https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/customizing_the_red_hat_openstack_services_on_openshift_deployment"
         ]
       ]
     },
@@ -1315,6 +1505,16 @@ const diagram = {
           "Encapsulation",
           "Geneve tunnels to other chassis"
         ]
+      ],
+      "links": [
+        [
+          "OVN Controller Docs",
+          "https://docs.ovn.org/en/latest/ref/ovn-controller.8.html"
+        ],
+        [
+          "RHOSO Networking",
+          "https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/configuring_networking_services"
+        ]
       ]
     },
     "ovn_gw": {
@@ -1345,6 +1545,16 @@ const diagram = {
           "FRR/BGP",
           "Dynamic routing for external connectivity"
         ]
+      ],
+      "links": [
+        [
+          "OVN Gateway Chassis",
+          "https://docs.ovn.org/en/latest/ref/ovn-architecture.7.html"
+        ],
+        [
+          "RHOSO Networking",
+          "https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/configuring_networking_services"
+        ]
       ]
     },
     "ceph_mon": {
@@ -1370,6 +1580,16 @@ const diagram = {
         [
           "Health",
           "HEALTH_OK / HEALTH_WARN / HEALTH_ERR"
+        ]
+      ],
+      "links": [
+        [
+          "Ceph Monitor Docs",
+          "https://docs.ceph.com/en/latest/rados/configuration/mon-config-ref/"
+        ],
+        [
+          "RHOSO Ceph Storage",
+          "https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/configuring_persistent_storage"
         ]
       ]
     },
@@ -1401,6 +1621,16 @@ const diagram = {
           "Network",
           "Dedicated storage network (MTU 9000)"
         ]
+      ],
+      "links": [
+        [
+          "Ceph OSD Docs",
+          "https://docs.ceph.com/en/latest/rados/configuration/osd-config-ref/"
+        ],
+        [
+          "RBD (RADOS Block Device)",
+          "https://docs.ceph.com/en/latest/rbd/"
+        ]
       ]
     },
     "galera_backup": {
@@ -1430,6 +1660,16 @@ const diagram = {
         [
           "GTID",
           "Global Transaction ID for point-in-time restore"
+        ]
+      ],
+      "links": [
+        [
+          "mariabackup Docs",
+          "https://mariadb.com/kb/en/mariabackup-overview/"
+        ],
+        [
+          "mariadb-operator (GitHub)",
+          "https://github.com/openstack-k8s-operators/mariadb-operator"
         ]
       ]
     },
@@ -1468,6 +1708,16 @@ const diagram = {
         [
           "Frame Format",
           "| Outer Eth | Outer IP | UDP:6081 | Geneve(VNI) | Inner L2 Frame |"
+        ]
+      ],
+      "links": [
+        [
+          "Geneve RFC 8926",
+          "https://www.rfc-editor.org/rfc/rfc8926"
+        ],
+        [
+          "OVN Tunnel Encapsulation",
+          "https://docs.ovn.org/en/latest/ref/ovn-architecture.7.html"
         ]
       ]
     },
@@ -1615,6 +1865,16 @@ const diagram = {
           "  GARP",
           "Gratuitous ARP sent to update MAC tables"
         ]
+      ],
+      "links": [
+        [
+          "OVS Commands",
+          "https://docs.openvswitch.org/en/latest/ref/ovs-vsctl.1/"
+        ],
+        [
+          "OVN Architecture",
+          "https://docs.ovn.org/en/latest/ref/ovn-architecture.7.html"
+        ]
       ]
     },
     "ext_network": {
@@ -1681,6 +1941,16 @@ const diagram = {
           "  Switch Routing",
           "Physical infra handles L3 (not OVN)"
         ]
+      ],
+      "links": [
+        [
+          "OVS Provider Network Deploy",
+          "https://docs.openstack.org/neutron/latest/admin/deploy-ovs-provider.html"
+        ],
+        [
+          "RHOSO Network Config",
+          "https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/configuring_networking_services"
+        ]
       ]
     },
     "libvirt_a": {
@@ -1743,6 +2013,16 @@ const diagram = {
           "  MTU",
           "1442 (1500 - Geneve overhead) or 1500 (provider)"
         ]
+      ],
+      "links": [
+        [
+          "Libvirt Domain XML",
+          "https://libvirt.org/formatdomain.html"
+        ],
+        [
+          "Nova + Libvirt",
+          "https://docs.openstack.org/nova/latest/admin/configuration/hypervisor-kvm.html"
+        ]
       ]
     },
     "libvirt_b": {
@@ -1784,6 +2064,16 @@ const diagram = {
         [
           "  <model type='virtio'/>",
           "Virtio NIC driver"
+        ]
+      ],
+      "links": [
+        [
+          "Libvirt Migration API",
+          "https://libvirt.org/migration.html"
+        ],
+        [
+          "Nova Live Migration",
+          "https://docs.openstack.org/nova/latest/admin/live-migration-usage.html"
         ]
       ]
     },
@@ -1851,6 +2141,16 @@ const diagram = {
           "  Addresses",
           "fa:16:3e:aa:aa:aa 10.0.0.5"
         ]
+      ],
+      "links": [
+        [
+          "Virtio-Net Docs",
+          "https://www.linux-kvm.org/page/Virtio"
+        ],
+        [
+          "Nova Instance Actions",
+          "https://docs.openstack.org/nova/latest/reference/api-microversion-history.html"
+        ]
       ]
     },
     "vm_b": {
@@ -1904,6 +2204,16 @@ const diagram = {
         [
           "  ARP Responder",
           "OVN knows MAC without flooding"
+        ]
+      ],
+      "links": [
+        [
+          "Geneve Encap (OVN)",
+          "https://docs.ovn.org/en/latest/ref/ovn-architecture.7.html"
+        ],
+        [
+          "QEMU Guest Agent",
+          "https://www.qemu.org/docs/master/interop/qemu-ga.html"
         ]
       ]
     },
@@ -1994,6 +2304,20 @@ const diagram = {
         [
           "Reconcile",
           "Watches BareMetalHost CRs → calls Ironic API → updates status"
+        ]
+      ],
+      "links": [
+        [
+          "BareMetalHost CRD",
+          "https://github.com/metal3-io/baremetal-operator/blob/main/apis/metal3.io/v1alpha1/baremetalhost_types.go"
+        ],
+        [
+          "Metal3 Docs",
+          "https://book.metal3.io/"
+        ],
+        [
+          "BMO on OpenShift",
+          "https://docs.openshift.com/container-platform/4.16/machine_management/user_infra/adding-bare-metal-compute-user-infra.html"
         ]
       ]
     },
@@ -2109,6 +2433,16 @@ const diagram = {
           "  Conductor",
           "Assigned via hash ring (different conductor may manage)"
         ]
+      ],
+      "links": [
+        [
+          "DMTF Redfish",
+          "https://www.dmtf.org/standards/redfish"
+        ],
+        [
+          "Ironic Redfish Driver",
+          "https://docs.openstack.org/ironic/latest/admin/drivers/redfish.html"
+        ]
       ]
     },
     "ipa_ramdisk": {
@@ -2179,6 +2513,20 @@ const diagram = {
           "  Image URL",
           "http://glance-api:9292 or http://httpd-prov/images/rhel9.qcow2"
         ]
+      ],
+      "links": [
+        [
+          "IPA Docs",
+          "https://docs.openstack.org/ironic-python-agent/latest/"
+        ],
+        [
+          "IPA Builder",
+          "https://docs.openstack.org/ironic-python-agent-builder/latest/"
+        ],
+        [
+          "Ironic Deploy Process",
+          "https://docs.openstack.org/ironic/latest/user/deploy.html"
+        ]
       ]
     },
     "barbican": {
@@ -2205,6 +2553,20 @@ const diagram = {
           "Integration",
           "Nova retrieves keys at VM boot for encrypted volumes"
         ]
+      ],
+      "links": [
+        [
+          "Barbican Docs",
+          "https://docs.openstack.org/barbican/latest/"
+        ],
+        [
+          "barbican-operator (GitHub)",
+          "https://github.com/openstack-k8s-operators/barbican-operator"
+        ],
+        [
+          "RHOSO Key Manager",
+          "https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/managing_secrets_with_the_key_manager_service"
+        ]
       ]
     },
     "ext_idp": {
@@ -2227,6 +2589,20 @@ const diagram = {
           "Group Mapping",
           "IdP groups → Keystone groups → project roles"
         ]
+      ],
+      "links": [
+        [
+          "Keystone Federation",
+          "https://docs.openstack.org/keystone/latest/admin/federation/federated_identity.html"
+        ],
+        [
+          "Keystone OIDC Setup",
+          "https://docs.openstack.org/keystone/latest/admin/federation/configure_federation.html"
+        ],
+        [
+          "RHOSO Identity Config",
+          "https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/configuring_the_identity_service"
+        ]
       ]
     },
     "jaeger": {
@@ -2248,6 +2624,20 @@ const diagram = {
         [
           "Storage",
           "Elasticsearch or Cassandra backend for trace data"
+        ]
+      ],
+      "links": [
+        [
+          "Jaeger Documentation",
+          "https://www.jaegertracing.io/docs/latest/"
+        ],
+        [
+          "OSProfiler Docs",
+          "https://docs.openstack.org/osprofiler/latest/"
+        ],
+        [
+          "OpenTelemetry Collector",
+          "https://opentelemetry.io/docs/collector/"
         ]
       ]
     }
