@@ -114,7 +114,7 @@ const diagram = {
   },
   "canvas": {
     "width": 1500,
-    "height": 1500
+    "height": 1900
   },
   "nodes": {
     "cloud_user": {
@@ -720,7 +720,7 @@ const diagram = {
       "x": 1070,
       "y": 150,
       "w": 400,
-      "h": 550,
+      "h": 1050,
       "type": "boundary",
       "label": "External Red Hat Ceph Storage 7",
       "labelColor": "#d2a8ff"
@@ -773,6 +773,137 @@ const diagram = {
       "label": "Ceph RGW (S3/Swift)",
       "sublabel": "Object Storage Gateway",
       "color": "#d2a8ff",
+      "fontSize": 13
+    },
+    "rook_operator": {
+      "x": 760,
+      "y": 465,
+      "w": 220,
+      "h": 40,
+      "label": "Rook-Ceph Operator",
+      "sublabel": "Watches CephCluster CRs",
+      "color": "#d2a8ff",
+      "fontSize": 12,
+      "parent": "infra_mgmt"
+    },
+    "ceph_mgr": {
+      "x": 1100,
+      "y": 680,
+      "w": 340,
+      "h": 48,
+      "label": "Ceph Manager (MGR)",
+      "sublabel": "Dashboard + Prometheus + Balancer",
+      "color": "#d2a8ff",
+      "fontSize": 13
+    },
+    "ceph_mds": {
+      "x": 1100,
+      "y": 770,
+      "w": 340,
+      "h": 48,
+      "label": "Ceph MDS (Metadata Server)",
+      "sublabel": "CephFS Namespace + Inodes",
+      "color": "#d2a8ff",
+      "fontSize": 13
+    },
+    "rbd_mirror": {
+      "x": 1100,
+      "y": 860,
+      "w": 340,
+      "h": 48,
+      "label": "RBD Mirror Daemon",
+      "sublabel": "Async Journal/Snapshot Replication",
+      "color": "#d2a8ff",
+      "fontSize": 13
+    },
+    "csi_rbdplugin": {
+      "x": 140,
+      "y": 1120,
+      "w": 280,
+      "h": 48,
+      "label": "CSI RBD Plugin (DaemonSet)",
+      "sublabel": "rbd map/unmap on nodes",
+      "color": "#d2a8ff",
+      "fontSize": 12
+    },
+    "csi_cephfsplugin": {
+      "x": 450,
+      "y": 1120,
+      "w": 280,
+      "h": 48,
+      "label": "CSI CephFS Plugin (DaemonSet)",
+      "sublabel": "ceph-fuse / kernel mount",
+      "color": "#d2a8ff",
+      "fontSize": 12
+    },
+    "secondary_site": {
+      "x": 1070,
+      "y": 1250,
+      "w": 400,
+      "h": 250,
+      "type": "boundary",
+      "label": "Secondary Site (DR)",
+      "labelColor": "#f85149"
+    },
+    "rgw_secondary": {
+      "x": 1100,
+      "y": 1300,
+      "w": 340,
+      "h": 48,
+      "label": "RGW — Secondary Zone",
+      "sublabel": "Geo-Replication Target",
+      "color": "#f85149",
+      "fontSize": 13
+    },
+    "rbd_mirror_secondary": {
+      "x": 1100,
+      "y": 1390,
+      "w": 340,
+      "h": 48,
+      "label": "RBD Mirror — Secondary",
+      "sublabel": "Receives Replicated Images",
+      "color": "#f85149",
+      "fontSize": 13
+    },
+    "odf_operator": {
+      "x": 530,
+      "y": 465,
+      "w": 200,
+      "h": 40,
+      "label": "ODF Operator (OCS)",
+      "sublabel": "OpenShift Data Foundation",
+      "color": "#d2a8ff",
+      "fontSize": 12,
+      "parent": "infra_mgmt"
+    },
+    "prometheus": {
+      "x": 140,
+      "y": 720,
+      "w": 200,
+      "h": 40,
+      "label": "Prometheus + Grafana",
+      "sublabel": "Metrics & Alerting",
+      "color": "#8b949e",
+      "fontSize": 12
+    },
+    "ceph_fs_pool": {
+      "x": 1100,
+      "y": 950,
+      "w": 340,
+      "h": 48,
+      "label": "CephFS Data + Metadata Pools",
+      "sublabel": "CephFS Backend Storage",
+      "color": "#d2a8ff",
+      "fontSize": 13
+    },
+    "arbiter_mon": {
+      "x": 1100,
+      "y": 1130,
+      "w": 340,
+      "h": 48,
+      "label": "Arbiter MON (Site 3)",
+      "sublabel": "Tiebreaker for Stretch Cluster",
+      "color": "#f0883e",
       "fontSize": 13
     }
   },
@@ -2638,6 +2769,510 @@ const diagram = {
         [
           "OpenTelemetry Collector",
           "https://opentelemetry.io/docs/collector/"
+        ]
+      ]
+    },
+    "rook_operator": {
+      "title": "Rook-Ceph Operator",
+      "description": "Kubernetes operator that automates Ceph cluster deployment, configuration, and lifecycle management. Watches CephCluster, CephBlockPool, CephFilesystem, CephObjectStore, and CephClient CRDs. Runs as a Deployment in the rook-ceph namespace. Handles MON/OSD/MDS/RGW daemon creation, rolling upgrades, health checks, and device discovery.",
+      "details": [
+        [
+          "CRDs",
+          "CephCluster, CephBlockPool, CephFilesystem, CephObjectStore, CephClient, CephRBDMirror"
+        ],
+        [
+          "Namespace",
+          "rook-ceph (operator), rook-ceph (cluster)"
+        ],
+        [
+          "Reconcile Loop",
+          "Watch CRD → diff desired vs actual → create/update Deployments/Jobs"
+        ],
+        [
+          "Device Discovery",
+          "Scans nodes for raw disks, LVM, partitions"
+        ],
+        [
+          "Health Check",
+          "Polls 'ceph status' → updates CephCluster .status.ceph"
+        ]
+      ],
+      "links": [
+        [
+          "Rook Docs",
+          "https://rook.io/docs/rook/latest-release/Getting-Started/intro/"
+        ],
+        [
+          "CephCluster CRD",
+          "https://rook.io/docs/rook/latest-release/CRDs/Cluster/ceph-cluster-crd/"
+        ],
+        [
+          "Rook GitHub",
+          "https://github.com/rook/rook"
+        ]
+      ]
+    },
+    "ceph_mgr": {
+      "title": "Ceph Manager (MGR)",
+      "description": "Daemon that collects cluster-wide metrics, hosts the dashboard web UI, and runs pluggable modules (Prometheus, balancer, orchestrator, rook). Active/standby pair for HA. The Prometheus module exposes /metrics endpoint scraped by Prometheus ServiceMonitor.",
+      "details": [
+        [
+          "Modules",
+          "dashboard, prometheus, balancer, rook, telemetry, crash"
+        ],
+        [
+          "Dashboard",
+          "Built-in web UI for cluster monitoring (port 8443)"
+        ],
+        [
+          "Prometheus",
+          "Exposes /metrics with OSD latency, PG states, pool IOPS"
+        ],
+        [
+          "Balancer",
+          "Automatic PG optimization across OSDs"
+        ],
+        [
+          "HA",
+          "Active/Standby pair, automatic failover"
+        ]
+      ],
+      "links": [
+        [
+          "Ceph MGR Docs",
+          "https://docs.ceph.com/en/latest/mgr/"
+        ],
+        [
+          "Rook MGR Config",
+          "https://rook.io/docs/rook/latest-release/CRDs/Cluster/ceph-cluster-crd/#mgr-settings"
+        ],
+        [
+          "Dashboard Module",
+          "https://docs.ceph.com/en/latest/mgr/dashboard/"
+        ]
+      ]
+    },
+    "ceph_mds": {
+      "title": "Ceph MDS (Metadata Server)",
+      "description": "Manages POSIX filesystem metadata (directory hierarchy, inodes, permissions) for CephFS. Multiple active MDS daemons can shard the namespace via subtree partitioning for scale. Standby-replay daemons maintain warm cache for fast failover.",
+      "details": [
+        [
+          "Function",
+          "POSIX metadata: readdir, stat, open, rename, unlink"
+        ],
+        [
+          "Scaling",
+          "Multiple active MDS via subtree partitioning"
+        ],
+        [
+          "HA",
+          "active + standby-replay (warm cache failover)"
+        ],
+        [
+          "Pools",
+          "Separate metadata pool (SSD) + data pool (HDD/SSD)"
+        ],
+        [
+          "Clients",
+          "ceph-fuse (FUSE) or kcephfs (kernel client)"
+        ]
+      ],
+      "links": [
+        [
+          "CephFS Docs",
+          "https://docs.ceph.com/en/latest/cephfs/"
+        ],
+        [
+          "Rook CephFilesystem CRD",
+          "https://rook.io/docs/rook/latest-release/CRDs/Shared-Filesystem/ceph-filesystem-crd/"
+        ],
+        [
+          "MDS Config",
+          "https://docs.ceph.com/en/latest/cephfs/mds-config-ref/"
+        ]
+      ]
+    },
+    "rbd_mirror": {
+      "title": "RBD Mirror Daemon",
+      "description": "Asynchronous replication daemon for RBD images between Ceph clusters. Supports journal-based (continuous) and snapshot-based (periodic) mirroring. Used for disaster recovery — secondary site can promote images to primary on failover.",
+      "details": [
+        [
+          "Modes",
+          "journal-based (continuous) or snapshot-based (periodic)"
+        ],
+        [
+          "Granularity",
+          "Per-pool or per-image mirroring"
+        ],
+        [
+          "Failover",
+          "rbd mirror image promote <pool>/<image>"
+        ],
+        [
+          "Monitoring",
+          "rbd mirror pool status — shows sync lag"
+        ],
+        [
+          "CRD",
+          "CephRBDMirror (rook-ceph)"
+        ]
+      ],
+      "links": [
+        [
+          "RBD Mirroring Docs",
+          "https://docs.ceph.com/en/latest/rbd/rbd-mirroring/"
+        ],
+        [
+          "Rook RBD Mirror CRD",
+          "https://rook.io/docs/rook/latest-release/CRDs/Block-Storage/ceph-rbd-mirror-crd/"
+        ],
+        [
+          "DR with Rook",
+          "https://rook.io/docs/rook/latest-release/Storage-Configuration/Ceph-CSI/ceph-csi-dr/"
+        ]
+      ]
+    },
+    "csi_rbdplugin": {
+      "title": "CSI RBD Plugin (DaemonSet)",
+      "description": "Ceph CSI driver for RBD block storage. Runs as a DaemonSet on all nodes. Handles PVC provisioning (rbd create), staging (rbd map → /dev/rbdX), and publishing (bind mount into pod). Supports both kernel RBD client and rbd-nbd (userspace).",
+      "details": [
+        [
+          "DaemonSet",
+          "csi-rbdplugin (one per node)"
+        ],
+        [
+          "Provisioner",
+          "csi-rbdplugin-provisioner (Deployment, 2 replicas)"
+        ],
+        [
+          "Map Method",
+          "Kernel RBD (default) or rbd-nbd (userspace)"
+        ],
+        [
+          "Operations",
+          "CreateVolume → NodeStageVolume (map) → NodePublishVolume (mount)"
+        ],
+        [
+          "Encryption",
+          "LUKS encryption via Barbican/KMS integration"
+        ]
+      ],
+      "links": [
+        [
+          "Ceph CSI RBD",
+          "https://github.com/ceph/ceph-csi/blob/devel/docs/deploy-rbd.md"
+        ],
+        [
+          "Rook CSI Config",
+          "https://rook.io/docs/rook/latest-release/Storage-Configuration/Ceph-CSI/"
+        ],
+        [
+          "CSI Spec",
+          "https://github.com/container-storage-interface/spec"
+        ]
+      ]
+    },
+    "csi_cephfsplugin": {
+      "title": "CSI CephFS Plugin (DaemonSet)",
+      "description": "Ceph CSI driver for CephFS shared filesystems. Provides RWX (ReadWriteMany) PVCs. Creates CephFS subvolumes per PVC for isolation. Mounts via kernel client (kcephfs) or FUSE (ceph-fuse). Supports snapshots and clones.",
+      "details": [
+        [
+          "DaemonSet",
+          "csi-cephfsplugin (one per node)"
+        ],
+        [
+          "Provisioner",
+          "csi-cephfsplugin-provisioner (Deployment, 2 replicas)"
+        ],
+        [
+          "Access Mode",
+          "RWX (ReadWriteMany) — shared filesystem"
+        ],
+        [
+          "Subvolumes",
+          "One CephFS subvolume per PVC (quota + isolation)"
+        ],
+        [
+          "Mount",
+          "Kernel kcephfs (default) or ceph-fuse (FUSE)"
+        ]
+      ],
+      "links": [
+        [
+          "Ceph CSI CephFS",
+          "https://github.com/ceph/ceph-csi/blob/devel/docs/deploy-cephfs.md"
+        ],
+        [
+          "Rook Shared FS",
+          "https://rook.io/docs/rook/latest-release/Storage-Configuration/Shared-Filesystem-CephFS/filesystem-storage/"
+        ],
+        [
+          "CephFS Subvolumes",
+          "https://docs.ceph.com/en/latest/cephfs/fs-volumes/"
+        ]
+      ]
+    },
+    "rgw_secondary": {
+      "title": "RGW — Secondary Zone (DR Site)",
+      "description": "RADOS Gateway instance in a secondary zone for geo-replication. Part of a multi-site configuration with zone groups and realms. The sync agent continuously replicates bucket data and metadata from the primary zone. On failover, this zone is promoted to primary.",
+      "details": [
+        [
+          "CRDs",
+          "CephObjectZone, CephObjectZoneGroup, CephObjectRealm"
+        ],
+        [
+          "Sync",
+          "Continuous metadata + data sync via sync agent"
+        ],
+        [
+          "Failover",
+          "Promote secondary zone → update DNS → clients redirect"
+        ],
+        [
+          "Endpoint",
+          "S3/Swift API (same interface as primary)"
+        ],
+        [
+          "RPO",
+          "Near-zero for metadata, seconds-to-minutes for data"
+        ]
+      ],
+      "links": [
+        [
+          "RGW Multi-Site",
+          "https://docs.ceph.com/en/latest/radosgw/multisite/"
+        ],
+        [
+          "Rook Multi-Site CRDs",
+          "https://rook.io/docs/rook/latest-release/CRDs/Object-Storage/ceph-object-multisite-crd/"
+        ],
+        [
+          "Zone Failover",
+          "https://docs.ceph.com/en/latest/radosgw/multisite/#failover-and-disaster-recovery"
+        ]
+      ]
+    },
+    "rbd_mirror_secondary": {
+      "title": "RBD Mirror — Secondary Site",
+      "description": "RBD mirror daemon on the DR site that receives replicated images. In journal mode, it replays journal entries to keep images in sync. In snapshot mode, it copies snapshots on a schedule. On primary site failure, images are promoted here for VM recovery.",
+      "details": [
+        [
+          "Role",
+          "Secondary (receives replication)"
+        ],
+        [
+          "Promote",
+          "rbd mirror image promote --force (unplanned failover)"
+        ],
+        [
+          "Demote",
+          "rbd mirror image demote (planned switchover)"
+        ],
+        [
+          "Lag",
+          "Journal: seconds | Snapshot: schedule interval"
+        ],
+        [
+          "Volume Re-point",
+          "Cinder reconfigured to use secondary Ceph"
+        ]
+      ],
+      "links": [
+        [
+          "RBD Mirroring",
+          "https://docs.ceph.com/en/latest/rbd/rbd-mirroring/"
+        ],
+        [
+          "Rook DR Config",
+          "https://rook.io/docs/rook/latest-release/Storage-Configuration/Ceph-CSI/ceph-csi-dr/"
+        ]
+      ]
+    },
+    "odf_operator": {
+      "title": "ODF Operator (OpenShift Data Foundation)",
+      "description": "Red Hat's storage platform for OpenShift, built on Rook-Ceph. Manages StorageSystem, StorageCluster, and CephConnection CRs. For RHOSO, ODF can manage external Ceph clusters and generate connection secrets (FSID, MON endpoints, cephx keys) consumed by OpenStack operators.",
+      "details": [
+        [
+          "CRDs",
+          "StorageSystem, StorageCluster, CephConnection"
+        ],
+        [
+          "Internal Mode",
+          "ODF manages Ceph cluster inside OCP"
+        ],
+        [
+          "External Mode",
+          "ODF connects to pre-existing Ceph cluster"
+        ],
+        [
+          "RHOSO Integration",
+          "Generates ceph.conf + keyring Secrets for Cinder/Glance/Nova"
+        ],
+        [
+          "Components",
+          "Rook-Ceph + NooBaa + CSI drivers"
+        ]
+      ],
+      "links": [
+        [
+          "ODF Docs",
+          "https://docs.redhat.com/en/documentation/red_hat_openshift_data_foundation/4.16"
+        ],
+        [
+          "ODF + RHOSO",
+          "https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/configuring_persistent_storage"
+        ],
+        [
+          "ODF GitHub",
+          "https://github.com/red-hat-storage/ocs-operator"
+        ]
+      ]
+    },
+    "prometheus": {
+      "title": "Prometheus + Grafana (Monitoring Stack)",
+      "description": "OpenShift built-in monitoring stack. Prometheus scrapes Ceph MGR /metrics endpoint via ServiceMonitor CRs. Grafana dashboards visualize OSD latency, PG states, pool throughput, and cluster capacity. PrometheusRule CRs define alerts (CephOSDDown, CephPGNotClean, CephClusterNearFull).",
+      "details": [
+        [
+          "Scrape",
+          "ServiceMonitor → Ceph MGR :9283/metrics"
+        ],
+        [
+          "Alerts",
+          "CephOSDDown, CephPGNotClean, CephClusterNearFull, CephMONQuorumLost"
+        ],
+        [
+          "Dashboards",
+          "OSD Overview, Pool Detail, Cluster Capacity, RBD Performance"
+        ],
+        [
+          "Integration",
+          "OCP Monitoring Operator (user-workload-monitoring)"
+        ],
+        [
+          "Retention",
+          "Default 15d (configurable)"
+        ]
+      ],
+      "links": [
+        [
+          "Ceph Prometheus Module",
+          "https://docs.ceph.com/en/latest/mgr/prometheus/"
+        ],
+        [
+          "Rook Monitoring",
+          "https://rook.io/docs/rook/latest-release/Storage-Configuration/Monitoring/ceph-monitoring/"
+        ],
+        [
+          "OCP Monitoring",
+          "https://docs.openshift.com/container-platform/4.16/monitoring/monitoring-overview.html"
+        ]
+      ]
+    },
+    "ceph_fs_pool": {
+      "title": "CephFS Data + Metadata Pools",
+      "description": "Backing RADOS pools for CephFS. The metadata pool (typically on SSD) stores directory entries, inodes, and file layouts. The data pool (HDD or SSD) stores actual file content as RADOS objects (default 4MB stripes). Multiple data pools can be assigned for tiering.",
+      "details": [
+        [
+          "Metadata Pool",
+          "SSD-backed, small, replicated 3x"
+        ],
+        [
+          "Data Pool",
+          "HDD/SSD, large, replicated 3x or EC"
+        ],
+        [
+          "Stripe",
+          "Default 4MB object size"
+        ],
+        [
+          "Tiering",
+          "Multiple data pools per filesystem"
+        ],
+        [
+          "Quota",
+          "Per-subvolume quota enforced by MDS"
+        ]
+      ],
+      "links": [
+        [
+          "CephFS Pools",
+          "https://docs.ceph.com/en/latest/cephfs/createfs/"
+        ],
+        [
+          "Rook CephFilesystem",
+          "https://rook.io/docs/rook/latest-release/CRDs/Shared-Filesystem/ceph-filesystem-crd/"
+        ]
+      ]
+    },
+    "arbiter_mon": {
+      "title": "Arbiter MON (Stretch Cluster Tiebreaker)",
+      "description": "A lightweight MON placed at a third site to break ties in a stretch cluster deployment. The stretch cluster spreads OSDs across two data sites with the arbiter MON at a third site. CRUSH rules ensure data is written to both sites. If one data site fails, the arbiter helps maintain quorum.",
+      "details": [
+        [
+          "Role",
+          "Tiebreaker only — no OSD data stored"
+        ],
+        [
+          "Latency",
+          "Higher latency acceptable (WAN link)"
+        ],
+        [
+          "CRUSH",
+          "min_size=2, data replicated across both data sites"
+        ],
+        [
+          "Failure",
+          "Tolerates loss of one full data site"
+        ],
+        [
+          "Config",
+          "mon_osd_min_down_reporters, stretch_mode"
+        ]
+      ],
+      "links": [
+        [
+          "Ceph Stretch Mode",
+          "https://docs.ceph.com/en/latest/rados/operations/stretch-mode/"
+        ],
+        [
+          "Rook Stretch Cluster",
+          "https://rook.io/docs/rook/latest-release/CRDs/Cluster/ceph-cluster-crd/#stretch-cluster"
+        ]
+      ]
+    },
+    "secondary_site": {
+      "title": "Secondary Site (DR)",
+      "description": "Disaster recovery site hosting replicated Ceph storage. Contains RBD mirror daemons receiving async replication from the primary site, and a secondary RGW zone for object storage geo-replication. On primary failure, this site is promoted to serve RHOSO workloads.",
+      "details": [
+        [
+          "RBD DR",
+          "Journal or snapshot-based async replication"
+        ],
+        [
+          "RGW DR",
+          "Multi-site zone sync (metadata + data)"
+        ],
+        [
+          "Failover",
+          "Promote RBD images + RGW zone → update endpoints"
+        ],
+        [
+          "RPO",
+          "Seconds (journal) to minutes (snapshot)"
+        ],
+        [
+          "RTO",
+          "Minutes (promotion + service restart)"
+        ]
+      ],
+      "links": [
+        [
+          "Rook DR Guide",
+          "https://rook.io/docs/rook/latest-release/Storage-Configuration/Ceph-CSI/ceph-csi-dr/"
+        ],
+        [
+          "RGW Multi-Site",
+          "https://docs.ceph.com/en/latest/radosgw/multisite/"
         ]
       ]
     }
@@ -7801,6 +8436,2089 @@ const diagram = {
           "to": "nova_conductor",
           "color": "#3fb950",
           "num": 12
+        }
+      ]
+    },
+    "rook_cluster_bootstrap": {
+      "label": "Rook-Ceph Cluster Bootstrap",
+      "steps": [
+        {
+          "from": "platform_admin",
+          "to": "rook_operator",
+          "label": "Apply CephCluster CR",
+          "color": "#58a6ff",
+          "description": "Platform admin creates and applies the CephCluster custom resource to the OpenShift cluster, declaring desired Ceph topology."
+        },
+        {
+          "target": "rook_operator",
+          "mode": "lightup",
+          "label": "Detect CephCluster CR",
+          "color": "#d2a8ff",
+          "description": "Rook Operator watch loop detects the new CephCluster CR and begins reconciliation."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_mon",
+          "label": "Create MON Deployments (×3)",
+          "color": "#d2a8ff",
+          "description": "Rook creates three MON Deployment resources, one per failure domain, ensuring HA quorum capability."
+        },
+        {
+          "target": "ceph_mon",
+          "mode": "lightup",
+          "label": "MON quorum forms",
+          "color": "#3fb950",
+          "description": "Three MON daemons elect a leader and establish Paxos quorum; cluster map is initialized."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_mgr",
+          "label": "Create MGR daemon",
+          "color": "#d2a8ff",
+          "description": "Rook deploys the Ceph Manager daemon for metrics, dashboard, and module orchestration."
+        },
+        {
+          "target": "ceph_mgr",
+          "mode": "lightup",
+          "label": "MGR active",
+          "color": "#3fb950",
+          "description": "MGR daemon becomes active and registers its modules (balancer, prometheus, dashboard)."
+        },
+        {
+          "from": "rook_operator",
+          "to": "compute_a",
+          "label": "OSD discovery – scan disks (node A)",
+          "color": "#8b949e",
+          "description": "Rook runs a device discovery DaemonSet pod on compute_a to enumerate raw block devices."
+        },
+        {
+          "from": "rook_operator",
+          "to": "compute_b",
+          "label": "OSD discovery – scan disks (node B)",
+          "color": "#8b949e",
+          "description": "Rook runs a device discovery DaemonSet pod on compute_b to enumerate raw block devices."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_osd",
+          "label": "OSD Prepare Jobs",
+          "color": "#d2a8ff",
+          "description": "Rook launches OSD Prepare Jobs that call ceph-volume lvm prepare on each discovered disk."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "OSD Deployments created",
+          "color": "#3fb950",
+          "description": "Each prepared disk gets a persistent OSD Deployment; OSDs start and register with MONs."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "PG creation",
+          "color": "#8b949e",
+          "description": "Placement Groups are created across OSDs according to pool configuration and CRUSH rules."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "Initial PG peering",
+          "color": "#8b949e",
+          "description": "PGs peer across OSDs, replicate initial objects, and transition to active+clean state."
+        },
+        {
+          "target": "ceph_mon",
+          "mode": "lightup",
+          "label": "HEALTH_OK",
+          "color": "#3fb950",
+          "description": "All PGs are active+clean; MON health checks report HEALTH_OK for the cluster."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_images",
+          "label": "Pool ready for Glance",
+          "color": "#3fb950",
+          "description": "The images RBD pool is available; Glance can now store VM images in Ceph."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_vms",
+          "label": "Pool ready for Cinder",
+          "color": "#3fb950",
+          "description": "The volumes RBD pool is available; Cinder can now provision persistent volumes in Ceph."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_boundary",
+          "label": "CephCluster status updated",
+          "color": "#3fb950",
+          "description": "Rook patches the CephCluster CR status with phase=Ready, health=HEALTH_OK, and capacity details."
+        }
+      ]
+    },
+    "osd_hot_add": {
+      "label": "OSD Addition / Disk Hot-Add",
+      "steps": [
+        {
+          "target": "compute_a",
+          "mode": "lightup",
+          "label": "New disk appears",
+          "color": "#8b949e",
+          "description": "A new raw block device is hot-plugged or unmasked on compute node A."
+        },
+        {
+          "target": "rook_operator",
+          "mode": "lightup",
+          "label": "Device discovery triggered",
+          "color": "#d2a8ff",
+          "description": "Rook's periodic device scan detects the new unformatted disk on compute_a."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_osd",
+          "label": "Create OSD Prepare Job",
+          "color": "#d2a8ff",
+          "description": "Rook creates an OSD Prepare Job targeting the new disk for LVM preparation."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "ceph-volume lvm prepare",
+          "color": "#8b949e",
+          "description": "The Prepare Job calls ceph-volume lvm prepare to create LV, encrypt if needed, and write OSD metadata."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_osd",
+          "label": "OSD Deployment created",
+          "color": "#d2a8ff",
+          "description": "Rook creates a new OSD Deployment that mounts the prepared LV and starts the OSD daemon."
+        },
+        {
+          "from": "ceph_osd",
+          "to": "ceph_mon",
+          "label": "OSD joins cluster",
+          "color": "#58a6ff",
+          "description": "New OSD registers with MONs, receives its ID, and joins the CRUSH map with appropriate weight."
+        },
+        {
+          "target": "ceph_mon",
+          "mode": "lightup",
+          "label": "PG rebalancing triggered",
+          "color": "#f0883e",
+          "description": "MON detects CRUSH map change and marks PGs for migration to balance data across the new OSD."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "Backfill I/O in progress",
+          "color": "#f0883e",
+          "description": "PG backfill operations begin moving object replicas to the new OSD; I/O is throttled."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "Data migrated",
+          "color": "#8b949e",
+          "description": "Objects are relocated according to new CRUSH placement; source OSDs release space."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "PGs active+clean",
+          "color": "#3fb950",
+          "description": "All affected PGs finish backfill and return to active+clean state."
+        },
+        {
+          "target": "ceph_mon",
+          "mode": "lightup",
+          "label": "HEALTH_OK",
+          "color": "#3fb950",
+          "description": "Cluster returns to HEALTH_OK with no misplaced or degraded PGs."
+        },
+        {
+          "from": "ceph_osd",
+          "to": "ceph_boundary",
+          "label": "New capacity advertised",
+          "color": "#3fb950",
+          "description": "Cluster total capacity increases; df reports the additional raw bytes from the new OSD."
+        },
+        {
+          "from": "ceph_boundary",
+          "to": "ceph_vms",
+          "label": "Pool capacity expanded",
+          "color": "#3fb950",
+          "description": "The volumes pool max_bytes quota (if set) reflects expanded underlying capacity."
+        },
+        {
+          "from": "ceph_vms",
+          "to": "cinder_api",
+          "label": "Cinder sees expanded pool",
+          "color": "#3fb950",
+          "description": "Cinder scheduler queries pool stats and advertises increased available capacity for new volumes."
+        }
+      ]
+    },
+    "osd_removal": {
+      "label": "OSD Removal + Rebalance",
+      "steps": [
+        {
+          "from": "platform_admin",
+          "to": "ceph_osd",
+          "label": "Mark OSD out",
+          "color": "#f85149",
+          "description": "Admin executes ceph osd out <id>, setting the OSD weight to 0 and signaling removal intent."
+        },
+        {
+          "target": "rook_operator",
+          "mode": "lightup",
+          "label": "Detect OSD weight=0",
+          "color": "#d2a8ff",
+          "description": "Rook Operator observes the OSD is marked out and begins orchestrating removal."
+        },
+        {
+          "target": "ceph_mon",
+          "mode": "lightup",
+          "label": "PG migration begins",
+          "color": "#f0883e",
+          "description": "MON recalculates CRUSH placement; PGs on the outgoing OSD are scheduled for relocation."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "Backfill across remaining OSDs",
+          "color": "#f0883e",
+          "description": "Backfill I/O moves data from the marked-out OSD to remaining OSDs in the failure domain."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "PGs relocate",
+          "color": "#8b949e",
+          "description": "PG replicas are fully moved; the outgoing OSD no longer holds primary or replica PGs."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "OSD process stopped",
+          "color": "#f85149",
+          "description": "The OSD daemon is gracefully stopped after all PGs have drained."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_osd",
+          "label": "Purge OSD",
+          "color": "#f85149",
+          "description": "Rook executes ceph osd purge --yes-i-really-mean-it, removing the OSD from CRUSH map and auth."
+        },
+        {
+          "target": "rook_operator",
+          "mode": "lightup",
+          "label": "Deployment deleted",
+          "color": "#d2a8ff",
+          "description": "Rook deletes the OSD Deployment resource from the Kubernetes API."
+        },
+        {
+          "target": "rook_operator",
+          "mode": "lightup",
+          "label": "PVC cleaned",
+          "color": "#d2a8ff",
+          "description": "Rook removes the PersistentVolumeClaim associated with the removed OSD's data volume."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "PGs settle",
+          "color": "#8b949e",
+          "description": "Remaining PGs finish any residual recovery and stabilize in active+clean state."
+        },
+        {
+          "target": "ceph_mon",
+          "mode": "lightup",
+          "label": "HEALTH_OK",
+          "color": "#3fb950",
+          "description": "Cluster health returns to HEALTH_OK after all PGs are fully placed."
+        },
+        {
+          "target": "ceph_boundary",
+          "mode": "lightup",
+          "label": "Reduced capacity",
+          "color": "#8b949e",
+          "description": "Cluster total raw capacity decreases by the size of the removed OSD."
+        },
+        {
+          "from": "ceph_boundary",
+          "to": "ceph_vms",
+          "label": "Pool capacity reduced",
+          "color": "#f0883e",
+          "description": "The volumes pool available space decreases to reflect lower underlying capacity."
+        },
+        {
+          "from": "ceph_vms",
+          "to": "cinder_api",
+          "label": "Cinder pool capacity updated",
+          "color": "#f0883e",
+          "description": "Cinder re-reads pool stats and reduces advertised free space for volume provisioning."
+        }
+      ]
+    },
+    "rook_ceph_upgrade": {
+      "label": "Rook-Ceph Rolling Upgrade",
+      "steps": [
+        {
+          "from": "platform_admin",
+          "to": "rook_operator",
+          "label": "Update CephCluster image tag",
+          "color": "#58a6ff",
+          "description": "Admin patches the CephCluster CR spec.cephVersion.image to the new Ceph container image tag."
+        },
+        {
+          "target": "rook_operator",
+          "mode": "lightup",
+          "label": "Detect version diff",
+          "color": "#d2a8ff",
+          "description": "Rook Operator reconciles and detects the image version differs from running daemons."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_mon",
+          "label": "Upgrade MON #1",
+          "color": "#d2a8ff",
+          "description": "Rook updates the first MON Deployment image; pod restarts with new Ceph version."
+        },
+        {
+          "target": "ceph_mon",
+          "mode": "lightup",
+          "label": "Quorum check after MON #1",
+          "color": "#3fb950",
+          "description": "Rook waits for MON quorum to be re-established before proceeding to next MON."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_mon",
+          "label": "Upgrade MON #2 and #3",
+          "color": "#d2a8ff",
+          "description": "Remaining MONs are upgraded one-by-one with quorum verification between each."
+        },
+        {
+          "target": "ceph_mon",
+          "mode": "lightup",
+          "label": "All MONs upgraded",
+          "color": "#3fb950",
+          "description": "All three MON daemons are running the new Ceph version with stable quorum."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_mgr",
+          "label": "MGR rolling restart",
+          "color": "#d2a8ff",
+          "description": "Rook updates the MGR Deployment image and waits for the new pod to become active."
+        },
+        {
+          "target": "ceph_mgr",
+          "mode": "lightup",
+          "label": "MGR active on new version",
+          "color": "#3fb950",
+          "description": "MGR daemon is running new version; all modules re-register successfully."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_osd",
+          "label": "Upgrade OSDs per failure domain",
+          "color": "#d2a8ff",
+          "description": "Rook upgrades OSDs in batches respecting failure domains; one domain at a time."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "Wait for PGs clean between batches",
+          "color": "#f0883e",
+          "description": "Between each OSD batch, Rook waits for all PGs to return to active+clean."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "All OSDs upgraded",
+          "color": "#3fb950",
+          "description": "Every OSD daemon is now running the target Ceph version."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_mds",
+          "label": "MDS updated",
+          "color": "#d2a8ff",
+          "description": "Rook updates MDS Deployments; CephFS active/standby failover occurs gracefully."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_rgw",
+          "label": "RGW updated",
+          "color": "#d2a8ff",
+          "description": "Rook rolls the RADOS Gateway Deployment to the new image version."
+        },
+        {
+          "target": "ceph_mon",
+          "mode": "lightup",
+          "label": "Health check passes",
+          "color": "#3fb950",
+          "description": "Post-upgrade health check confirms all daemons healthy, no version mismatch warnings."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_boundary",
+          "label": "CephCluster status → new version",
+          "color": "#3fb950",
+          "description": "Rook patches CephCluster status.version to reflect the completed upgrade."
+        },
+        {
+          "target": "ceph_mon",
+          "mode": "lightup",
+          "label": "HEALTH_OK",
+          "color": "#3fb950",
+          "description": "Cluster is fully upgraded and stable at HEALTH_OK with no upgrade-related warnings."
+        }
+      ]
+    },
+    "ceph_blockpool_sc": {
+      "label": "CephBlockPool + StorageClass Creation",
+      "steps": [
+        {
+          "from": "platform_admin",
+          "to": "rook_operator",
+          "label": "Apply CephBlockPool CR",
+          "color": "#d2a8ff",
+          "description": "Platform admin applies CephBlockPool custom resource with replication factor 3 (size: 3) to the OpenShift cluster."
+        },
+        {
+          "target": "rook_operator",
+          "mode": "lightup",
+          "label": "Reconcile CephBlockPool",
+          "color": "#d2a8ff",
+          "description": "Rook Operator detects the new CephBlockPool CR and begins reconciliation loop to converge desired state."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_mon",
+          "label": "Create RADOS pool",
+          "color": "#d2a8ff",
+          "description": "Rook Operator sends 'osd pool create' command to Ceph MON to create the RADOS block pool with replicated profile."
+        },
+        {
+          "from": "ceph_mon",
+          "to": "ceph_osd",
+          "label": "Distribute PGs to OSDs",
+          "color": "#58a6ff",
+          "description": "Ceph MON distributes Placement Groups across OSDs. PG count auto-tuned by the pg_autoscaler module."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "CRUSH rule applied",
+          "color": "#8b949e",
+          "description": "CRUSH failure domain rule (host-level) applied ensuring replicas land on different hosts for fault tolerance."
+        },
+        {
+          "from": "platform_admin",
+          "to": "ocp_cluster",
+          "label": "Create StorageClass CR",
+          "color": "#58a6ff",
+          "description": "Admin creates Kubernetes StorageClass referencing rbd.csi.ceph.com provisioner with pool name, clusterID, and fsType parameters."
+        },
+        {
+          "target": "csi_rbdplugin",
+          "mode": "lightup",
+          "label": "RBD CSI provisioner ready",
+          "color": "#d2a8ff",
+          "description": "CSI RBD plugin DaemonSet and provisioner StatefulSet are running and registered as the volume driver for this StorageClass."
+        },
+        {
+          "from": "os_operator",
+          "to": "cinder_api",
+          "label": "Cinder references StorageClass",
+          "color": "#58a6ff",
+          "description": "OpenStack operator configures Cinder volume backend to use the new StorageClass for persistent volume provisioning."
+        },
+        {
+          "from": "cloud_user",
+          "to": "ocp_cluster",
+          "label": "Tenant creates PVC",
+          "color": "#58a6ff",
+          "description": "Cloud tenant (or OpenStack service) creates a PersistentVolumeClaim referencing the rbd StorageClass."
+        },
+        {
+          "from": "ocp_cluster",
+          "to": "csi_rbdplugin",
+          "label": "CSI CreateVolume RPC",
+          "color": "#58a6ff",
+          "description": "Kubernetes PV controller triggers CSI CreateVolume RPC to the rbd CSI provisioner for dynamic provisioning."
+        },
+        {
+          "from": "csi_rbdplugin",
+          "to": "ceph_mon",
+          "label": "Create RBD image",
+          "color": "#58a6ff",
+          "description": "CSI RBD plugin creates a new RBD image in the RADOS pool via librbd, with requested capacity and thin provisioning."
+        },
+        {
+          "from": "csi_rbdplugin",
+          "to": "ocp_cluster",
+          "label": "PV created",
+          "color": "#3fb950",
+          "description": "CSI provisioner returns volume handle to Kubernetes. PersistentVolume object created with RBD volume attributes."
+        },
+        {
+          "target": "ocp_cluster",
+          "mode": "lightup",
+          "label": "PV bound to PVC",
+          "color": "#3fb950",
+          "description": "Kubernetes PV controller binds the newly created PV to the requesting PVC. Status transitions to Bound."
+        },
+        {
+          "from": "ocp_cluster",
+          "to": "compute_a",
+          "label": "Pod scheduled",
+          "color": "#58a6ff",
+          "description": "Scheduler places the pod on compute node A. Kubelet begins the volume attach/mount workflow."
+        },
+        {
+          "from": "compute_a",
+          "to": "csi_rbdplugin",
+          "label": "CSI NodeStageVolume",
+          "color": "#58a6ff",
+          "description": "Kubelet calls CSI NodeStageVolume on the local rbd CSI node plugin. Plugin executes 'rbd map' creating /dev/rbdX block device."
+        },
+        {
+          "target": "compute_a",
+          "mode": "lightup",
+          "label": "mkfs + mount into pod",
+          "color": "#3fb950",
+          "description": "Block device formatted (mkfs.ext4/xfs) and bind-mounted into the pod's container filesystem. Volume is ready for I/O."
+        }
+      ]
+    },
+    "cephfs_provision": {
+      "label": "CephFilesystem (CephFS) Provisioning",
+      "steps": [
+        {
+          "from": "platform_admin",
+          "to": "rook_operator",
+          "label": "Apply CephFilesystem CR",
+          "color": "#d2a8ff",
+          "description": "Platform admin applies CephFilesystem custom resource defining metadata and data pool specs with MDS placement policy."
+        },
+        {
+          "target": "rook_operator",
+          "mode": "lightup",
+          "label": "Detect CephFilesystem CR",
+          "color": "#d2a8ff",
+          "description": "Rook Operator watch detects the new CephFilesystem CR and enters reconciliation to create the filesystem."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_mon",
+          "label": "Create metadata pool (SSD)",
+          "color": "#d2a8ff",
+          "description": "Rook creates the CephFS metadata pool on SSD-backed OSDs using a CRUSH device class rule for low-latency metadata operations."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_osd",
+          "label": "Create data pool (HDD)",
+          "color": "#d2a8ff",
+          "description": "Rook creates the CephFS data pool on HDD-backed OSDs for cost-effective bulk data storage with replication or erasure coding."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_mds",
+          "label": "Deploy MDS Deployment",
+          "color": "#d2a8ff",
+          "description": "Rook deploys MDS Deployment with active + standby-replay daemons for high availability and fast failover."
+        },
+        {
+          "target": "ceph_mds",
+          "mode": "lightup",
+          "label": "MDS initializes",
+          "color": "#3fb950",
+          "description": "MDS daemons start, load directory tree into cache, and establish active/standby-replay roles. Ready to serve metadata."
+        },
+        {
+          "target": "ceph_mon",
+          "mode": "lightup",
+          "label": "CephFS filesystem created",
+          "color": "#3fb950",
+          "description": "Ceph MON registers the new CephFS filesystem in the cluster map. Filesystem is now operational."
+        },
+        {
+          "from": "platform_admin",
+          "to": "ocp_cluster",
+          "label": "Create StorageClass (cephfs)",
+          "color": "#58a6ff",
+          "description": "Admin creates StorageClass referencing cephfs.csi.ceph.com provisioner with filesystem name, pool, and cluster parameters."
+        },
+        {
+          "from": "cloud_user",
+          "to": "ocp_cluster",
+          "label": "Create PVC (RWX)",
+          "color": "#58a6ff",
+          "description": "Tenant creates PersistentVolumeClaim with accessMode ReadWriteMany (RWX) for shared filesystem access across multiple pods."
+        },
+        {
+          "from": "ocp_cluster",
+          "to": "csi_cephfsplugin",
+          "label": "CSI CreateVolume RPC",
+          "color": "#58a6ff",
+          "description": "Kubernetes triggers CSI CreateVolume on the CephFS provisioner to create a subvolume in the CephFS filesystem."
+        },
+        {
+          "from": "csi_cephfsplugin",
+          "to": "ceph_mds",
+          "label": "Create subvolume + quota",
+          "color": "#58a6ff",
+          "description": "CSI CephFS plugin creates a subvolume via 'ceph fs subvolume create' and sets quota to enforce PVC capacity limit."
+        },
+        {
+          "from": "csi_cephfsplugin",
+          "to": "ocp_cluster",
+          "label": "PV bound to PVC",
+          "color": "#3fb950",
+          "description": "CSI returns volume handle. PV created and bound to PVC. Volume attributes include subvolume path and monitor addresses."
+        },
+        {
+          "from": "ocp_cluster",
+          "to": "compute_a",
+          "label": "Pod scheduled",
+          "color": "#58a6ff",
+          "description": "Scheduler places pod on compute node. Kubelet initiates CephFS volume mount workflow via the CSI node plugin."
+        },
+        {
+          "from": "compute_a",
+          "to": "csi_cephfsplugin",
+          "label": "CSI NodeStageVolume",
+          "color": "#58a6ff",
+          "description": "Kubelet calls CSI NodeStageVolume. CephFS plugin prepares kernel cephfs mount with monitor IPs and auth credentials."
+        },
+        {
+          "from": "csi_cephfsplugin",
+          "to": "ceph_fs_pool",
+          "label": "Kernel kcephfs mount",
+          "color": "#58a6ff",
+          "description": "Kernel CephFS client (kcephfs) mounts the subvolume path. Direct RADOS I/O to data pool for file read/write operations."
+        },
+        {
+          "target": "compute_a",
+          "mode": "lightup",
+          "label": "POSIX filesystem ready (RWX)",
+          "color": "#3fb950",
+          "description": "Pod has a fully POSIX-compliant filesystem. Multiple pods across nodes can mount simultaneously with ReadWriteMany semantics."
+        }
+      ]
+    },
+    "rgw_object_store": {
+      "label": "CephObjectStore (RGW) for Glance/Swift",
+      "steps": [
+        {
+          "from": "platform_admin",
+          "to": "rook_operator",
+          "label": "Apply CephObjectStore CR",
+          "color": "#d2a8ff",
+          "description": "Platform admin applies CephObjectStore CR defining RGW instance count, placement, and S3/Swift API configuration."
+        },
+        {
+          "target": "rook_operator",
+          "mode": "lightup",
+          "label": "Reconcile CephObjectStore",
+          "color": "#d2a8ff",
+          "description": "Rook Operator detects the CephObjectStore CR and begins reconciliation to provision the object storage infrastructure."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_osd",
+          "label": "Create RGW data pool",
+          "color": "#d2a8ff",
+          "description": "Rook creates the RGW data pool (.rgw.buckets.data) with erasure coding or replication profile across OSDs."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_mon",
+          "label": "Create RGW metadata pool",
+          "color": "#d2a8ff",
+          "description": "Rook creates RGW metadata pools (.rgw.root, .rgw.buckets.index) on Ceph MON with replicated profile for consistency."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_rgw",
+          "label": "Deploy RGW pods",
+          "color": "#d2a8ff",
+          "description": "Rook creates RGW Deployment with configured replica count. Each pod runs the radosgw daemon serving S3 and Swift APIs."
+        },
+        {
+          "target": "ceph_rgw",
+          "mode": "lightup",
+          "label": "S3/Swift endpoint exposed",
+          "color": "#3fb950",
+          "description": "RGW pods are running and serving the S3-compatible and Swift-compatible REST API endpoints on their configured port."
+        },
+        {
+          "from": "ceph_rgw",
+          "to": "ocp_cluster",
+          "label": "K8s Service created",
+          "color": "#58a6ff",
+          "description": "Rook creates a ClusterIP Service fronting the RGW pods for internal cluster access to the object store."
+        },
+        {
+          "target": "ocp_cluster",
+          "mode": "lightup",
+          "label": "Ingress/Route for RGW",
+          "color": "#58a6ff",
+          "description": "OpenShift Route or Ingress created to expose the RGW endpoint externally with TLS termination via cert-manager."
+        },
+        {
+          "from": "os_operator",
+          "to": "glance_api",
+          "label": "Configure Glance swift backend",
+          "color": "#58a6ff",
+          "description": "OpenStack operator configures Glance to use Swift-compatible backend pointing to the RGW service endpoint with credentials."
+        },
+        {
+          "from": "cloud_user",
+          "to": "glance_api",
+          "label": "Upload image to Glance",
+          "color": "#58a6ff",
+          "description": "Cloud user uploads a VM disk image (qcow2/raw) to Glance via the OpenStack Images API."
+        },
+        {
+          "from": "glance_api",
+          "to": "ceph_rgw",
+          "label": "Image stored via RGW",
+          "color": "#58a6ff",
+          "description": "Glance streams the image data to RGW using the Swift PUT object API. RGW splits data into chunks and writes to RADOS."
+        },
+        {
+          "from": "ceph_rgw",
+          "to": "ceph_osd",
+          "label": "Data written to pool",
+          "color": "#58a6ff",
+          "description": "RGW writes object data chunks to the .rgw.buckets.data pool. Data replicated or EC-encoded across OSDs per pool policy."
+        },
+        {
+          "target": "glance_api",
+          "mode": "lightup",
+          "label": "Image available in Glance",
+          "color": "#3fb950",
+          "description": "Image upload completes. Glance marks the image as 'active'. Image is now available for VM boot operations."
+        },
+        {
+          "from": "nova_api",
+          "to": "glance_api",
+          "label": "Nova boots from Glance image",
+          "color": "#3fb950",
+          "description": "Nova requests the image from Glance for VM boot. Glance streams from RGW, completing the object storage integration."
+        }
+      ]
+    },
+    "mon_quorum_loss": {
+      "label": "MON Quorum Loss + Recovery",
+      "steps": [
+        {
+          "target": "ceph_mon",
+          "mode": "lightup",
+          "label": "2 MON pods crash/evicted",
+          "color": "#f85149",
+          "description": "Two of three MON pods are evicted due to node pressure or OOMKill, leaving only 1 MON running"
+        },
+        {
+          "from": "ceph_mon",
+          "to": "ceph_mgr",
+          "label": "Quorum lost",
+          "color": "#f85149",
+          "description": "With only 1/3 MONs alive, Paxos consensus cannot be reached; MON quorum is lost"
+        },
+        {
+          "target": "ceph_mgr",
+          "mode": "lightup",
+          "label": "HEALTH_ERR raised",
+          "color": "#f85149",
+          "description": "Ceph MGR reports cluster health status as HEALTH_ERR due to insufficient MON quorum"
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "Cluster becomes read-only",
+          "color": "#f85149",
+          "description": "Without MON quorum, OSDs cannot commit new OSDMap epochs; all writes are blocked cluster-wide"
+        },
+        {
+          "from": "cinder_api",
+          "to": "csi_rbdplugin",
+          "label": "Cinder I/O stalls",
+          "color": "#f85149",
+          "description": "Cinder volume operations stall as RBD clients cannot obtain new OSDMap from MONs"
+        },
+        {
+          "from": "glance_api",
+          "to": "csi_rbdplugin",
+          "label": "Glance I/O stalls",
+          "color": "#f85149",
+          "description": "Glance image uploads/downloads stall waiting for RBD I/O completion"
+        },
+        {
+          "target": "rook_operator",
+          "mode": "lightup",
+          "label": "Detects missing MON pods",
+          "color": "#d2a8ff",
+          "description": "Rook Operator reconcile loop detects MON Deployment replicas not matching desired count"
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_mon",
+          "label": "Checks PodDisruptionBudget",
+          "color": "#d2a8ff",
+          "description": "Rook validates PDB constraints and confirms safe to recreate MON pods without further risk"
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_mon",
+          "label": "Recreates MON Deployment",
+          "color": "#d2a8ff",
+          "description": "Rook creates new MON Deployment preserving the original monmap and MON store PVC"
+        },
+        {
+          "target": "ceph_mon",
+          "mode": "lightup",
+          "label": "New MON pod starts",
+          "color": "#f0883e",
+          "description": "Kubernetes schedules the new MON pod on an available node; container enters Running state"
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_mon",
+          "label": "Monmap injected",
+          "color": "#d2a8ff",
+          "description": "Rook injects the preserved monmap into the new MON so it can find peers and join quorum"
+        },
+        {
+          "from": "ceph_mon",
+          "to": "ceph_mgr",
+          "label": "Quorum restored (2/3)",
+          "color": "#3fb950",
+          "description": "Second MON joins the existing MON; Paxos quorum is re-established with 2/3 MONs"
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "Writes resume",
+          "color": "#3fb950",
+          "description": "OSDs receive new OSDMap epoch from restored MON quorum; write operations unblock"
+        },
+        {
+          "from": "cinder_api",
+          "to": "csi_rbdplugin",
+          "label": "Cinder I/O resumes",
+          "color": "#3fb950",
+          "description": "Cinder RBD clients reconnect to MONs and resume normal volume I/O operations"
+        },
+        {
+          "target": "ceph_mon",
+          "mode": "lightup",
+          "label": "Third MON recovered (3/3)",
+          "color": "#3fb950",
+          "description": "Third MON pod is rescheduled and rejoins quorum, restoring full 3/3 MON redundancy"
+        },
+        {
+          "target": "ceph_mgr",
+          "mode": "lightup",
+          "label": "HEALTH_OK",
+          "color": "#3fb950",
+          "description": "All MONs healthy, quorum stable at 3/3; Ceph reports HEALTH_OK"
+        }
+      ]
+    },
+    "osd_auto_recovery": {
+      "label": "OSD Failure + Automatic Recovery",
+      "steps": [
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "OSD pod crashes (disk I/O error)",
+          "color": "#f85149",
+          "description": "An OSD pod terminates with EIO after the underlying disk reports unrecoverable read errors"
+        },
+        {
+          "from": "ceph_osd",
+          "to": "ceph_mon",
+          "label": "Ceph marks OSD down",
+          "color": "#f85149",
+          "description": "Peer OSDs report heartbeat failure; MONs mark the OSD as 'down' in the OSDMap"
+        },
+        {
+          "target": "ceph_mon",
+          "mode": "lightup",
+          "label": "10-minute grace period",
+          "color": "#f0883e",
+          "description": "MONs wait mon_osd_down_out_interval (600s) before marking OSD 'out' to allow transient recovery"
+        },
+        {
+          "from": "ceph_mon",
+          "to": "ceph_osd",
+          "label": "Marks OSD out",
+          "color": "#f0883e",
+          "description": "After grace period expires, MON marks OSD 'out'; CRUSH no longer maps PGs to this OSD"
+        },
+        {
+          "from": "ceph_mon",
+          "to": "ceph_osd",
+          "label": "PG remapping triggered",
+          "color": "#f0883e",
+          "description": "OSDMap epoch increments; PGs previously on the failed OSD are remapped to surviving OSDs"
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "Recovery I/O starts",
+          "color": "#58a6ff",
+          "description": "Surviving OSDs begin recovery I/O bounded by osd_recovery_max_active (default 3 per OSD)"
+        },
+        {
+          "target": "rook_operator",
+          "mode": "lightup",
+          "label": "Detects CrashLoopBackOff",
+          "color": "#d2a8ff",
+          "description": "Rook Operator observes the OSD pod in CrashLoopBackOff state via Kubernetes watch"
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_osd",
+          "label": "Evaluates disk health",
+          "color": "#d2a8ff",
+          "description": "Rook runs smartctl or checks device status to determine if underlying disk is still viable"
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_osd",
+          "label": "Restarts OSD pod (disk valid)",
+          "color": "#d2a8ff",
+          "description": "If disk passes health check, Rook deletes the failed pod allowing Deployment to recreate it"
+        },
+        {
+          "from": "ceph_osd",
+          "to": "ceph_mon",
+          "label": "OSD rejoins cluster",
+          "color": "#3fb950",
+          "description": "Restarted OSD boots, replays journal, and reports to MONs; marked 'up' and 'in' again"
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "PGs recover",
+          "color": "#3fb950",
+          "description": "PGs that were degraded are peered and recovered back to full replication on the restored OSD"
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_osd",
+          "label": "Purges failed OSD (disk bad)",
+          "color": "#f85149",
+          "description": "If disk failed permanently, Rook runs 'ceph osd purge' removing OSD from CRUSH and auth"
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_osd",
+          "label": "Creates OSD Prepare Job",
+          "color": "#d2a8ff",
+          "description": "Rook creates a new OSD Prepare Job targeting an available spare disk on the same or different node"
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "New OSD on spare disk",
+          "color": "#d2a8ff",
+          "description": "OSD Prepare Job formats the spare disk with BlueStore and starts a new OSD Deployment"
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "Backfill completes",
+          "color": "#3fb950",
+          "description": "New OSD receives backfill data from peers; all PGs return to active+clean state"
+        },
+        {
+          "target": "ceph_mgr",
+          "mode": "lightup",
+          "label": "HEALTH_OK",
+          "color": "#3fb950",
+          "description": "All PGs clean, no down/out OSDs; cluster returns to HEALTH_OK"
+        }
+      ]
+    },
+    "pg_degraded_recovery": {
+      "label": "PG Not Clean / Degraded Recovery",
+      "steps": [
+        {
+          "from": "platform_admin",
+          "to": "compute_a",
+          "label": "kubectl drain node",
+          "color": "#58a6ff",
+          "description": "Platform admin drains a compute/storage node for maintenance using kubectl drain --ignore-daemonsets"
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "OSDs on node go down",
+          "color": "#f85149",
+          "description": "All OSD pods on the drained node are evicted and terminated; OSDs reported as 'down'"
+        },
+        {
+          "from": "ceph_osd",
+          "to": "ceph_mon",
+          "label": "PGs become degraded",
+          "color": "#f85149",
+          "description": "PGs that had replicas on the down OSDs transition to 'active+degraded' (fewer than desired copies)"
+        },
+        {
+          "from": "ceph_mon",
+          "to": "ceph_osd",
+          "label": "Starts recovery I/O",
+          "color": "#f0883e",
+          "description": "MONs update OSDMap; remaining OSDs begin recovery reads to restore missing PG replicas"
+        },
+        {
+          "target": "ceph_mgr",
+          "mode": "lightup",
+          "label": "Backfill rate limiting",
+          "color": "#f0883e",
+          "description": "MGR enforces osd_max_backfills and recovery_max_active to prevent recovery from overwhelming client I/O"
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "recovery_max_active=3",
+          "color": "#8b949e",
+          "description": "Each OSD limits concurrent recovery operations to 3 (osd_recovery_max_active default)"
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "PGs slowly relocate",
+          "color": "#f0883e",
+          "description": "Degraded PGs are gradually copied to surviving OSDs with available capacity"
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "Data rebalances",
+          "color": "#58a6ff",
+          "description": "CRUSH redistribution moves PG copies to maintain balanced utilization across OSDs"
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "PGs: degraded → recovering",
+          "color": "#f0883e",
+          "description": "PGs transition from degraded to actively recovering as recovery I/O progresses"
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "PGs: recovering → backfilling",
+          "color": "#f0883e",
+          "description": "Once primary recovery completes, remaining data movement continues as backfill"
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "PGs: active+clean",
+          "color": "#3fb950",
+          "description": "All PG replicas restored to desired count; PGs report active+clean state"
+        },
+        {
+          "target": "ceph_mgr",
+          "mode": "lightup",
+          "label": "HEALTH_OK",
+          "color": "#3fb950",
+          "description": "No degraded or misplaced PGs remain; cluster health returns to HEALTH_OK"
+        },
+        {
+          "from": "compute_a",
+          "to": "ceph_osd",
+          "label": "Node returns, OSDs rejoin",
+          "color": "#3fb950",
+          "description": "Maintenance complete; node is uncordoned, OSD pods reschedule and rejoin the cluster"
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "Rebalance back complete",
+          "color": "#3fb950",
+          "description": "CRUSH rebalances PGs back to returned OSDs for optimal distribution; cluster fully balanced"
+        }
+      ]
+    },
+    "ceph_nearfull": {
+      "label": "Ceph Full / Near-Full OSD Handling",
+      "steps": [
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "OSD reaches nearfull (85%)",
+          "color": "#f0883e",
+          "description": "An OSD's utilization crosses mon_osd_nearfull_ratio (0.85); OSD flags itself as nearfull"
+        },
+        {
+          "target": "ceph_mgr",
+          "mode": "lightup",
+          "label": "HEALTH_WARN",
+          "color": "#f0883e",
+          "description": "Ceph MGR raises HEALTH_WARN: 1 nearfull osd(s), indicating capacity pressure"
+        },
+        {
+          "from": "ceph_mgr",
+          "to": "prometheus",
+          "label": "Alert fires (CephOSDNearFull)",
+          "color": "#f85149",
+          "description": "Prometheus receives CephOSDNearFull alert from ceph_exporter metrics; alert routes to PagerDuty/Slack"
+        },
+        {
+          "target": "rook_operator",
+          "mode": "lightup",
+          "label": "Emits K8s Event",
+          "color": "#d2a8ff",
+          "description": "Rook Operator emits a Kubernetes Warning Event on the CephCluster CR for visibility"
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "Hits full_ratio (95%)",
+          "color": "#f85149",
+          "description": "OSD utilization reaches mon_osd_full_ratio (0.95); OSD sets 'full' flag, blocking writes"
+        },
+        {
+          "target": "vm_a",
+          "mode": "lightup",
+          "label": "VMs get I/O errors",
+          "color": "#f85149",
+          "description": "VM RBD volumes return -ENOSPC; guest OS sees I/O errors on virtual disks"
+        },
+        {
+          "target": "vm_b",
+          "mode": "lightup",
+          "label": "VMs get I/O errors",
+          "color": "#f85149",
+          "description": "All VMs with volumes on the full OSD experience write failures and potential filesystem damage"
+        },
+        {
+          "from": "platform_admin",
+          "to": "rook_operator",
+          "label": "Adds OSDs via CephCluster CR",
+          "color": "#58a6ff",
+          "description": "Admin patches CephCluster CR spec.storage to include new devices/nodes for additional OSDs"
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_osd",
+          "label": "Provisions new OSDs",
+          "color": "#d2a8ff",
+          "description": "Rook creates OSD Prepare Jobs for new devices; new OSD Deployments join the cluster"
+        },
+        {
+          "from": "ceph_mgr",
+          "to": "ceph_osd",
+          "label": "reweight-by-utilization",
+          "color": "#d2a8ff",
+          "description": "MGR runs 'osd reweight-by-utilization' to shift PGs away from over-utilized OSDs"
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "Data rebalances",
+          "color": "#58a6ff",
+          "description": "CRUSH redistributes PGs to new OSDs; data migrates from full OSDs to newly added capacity"
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "OSD drops below nearfull",
+          "color": "#3fb950",
+          "description": "Over-utilized OSD falls below 85% threshold; nearfull flag is cleared"
+        },
+        {
+          "target": "vm_a",
+          "mode": "lightup",
+          "label": "Writes resume, VMs recover",
+          "color": "#3fb950",
+          "description": "Full flag cleared; RBD clients retry writes successfully; VM I/O operations resume normally"
+        },
+        {
+          "target": "ceph_mgr",
+          "mode": "lightup",
+          "label": "HEALTH_OK",
+          "color": "#3fb950",
+          "description": "No nearfull or full OSDs remain; cluster health returns to HEALTH_OK"
+        }
+      ]
+    },
+    "rbd_async_mirror": {
+      "label": "RBD Mirroring (Async DR)",
+      "steps": [
+        {
+          "from": "platform_admin",
+          "to": "rook_operator",
+          "label": "Enable mirroring on CephBlockPool CR",
+          "color": "#d2a8ff",
+          "description": "Admin applies spec.mirroring.enabled=true and spec.mirroring.mode=image on the CephBlockPool custom resource."
+        },
+        {
+          "from": "rook_operator",
+          "to": "rbd_mirror",
+          "label": "Deploy rbd-mirror daemon",
+          "color": "#d2a8ff",
+          "description": "Rook operator reconciles CephBlockPool CR and deploys the rbd-mirror daemon pod in the Ceph cluster namespace."
+        },
+        {
+          "target": "rbd_mirror",
+          "mode": "lightup",
+          "label": "Generate peer bootstrap token",
+          "color": "#58a6ff",
+          "description": "rbd-mirror generates a base64-encoded bootstrap token containing cluster FSID, cephx key, and MON endpoints for peering."
+        },
+        {
+          "from": "secondary_site",
+          "to": "rbd_mirror",
+          "label": "Secondary imports peer token",
+          "color": "#58a6ff",
+          "description": "Secondary site admin creates CephBlockPool with mirroring.peers containing the bootstrap token from the primary cluster."
+        },
+        {
+          "from": "rbd_mirror",
+          "to": "rbd_mirror_secondary",
+          "label": "Establish mirror connection",
+          "color": "#58a6ff",
+          "description": "rbd-mirror daemons on both sites negotiate peering using the shared bootstrap credentials and establish a persistent connection."
+        },
+        {
+          "from": "ceph_osd",
+          "to": "rbd_mirror",
+          "label": "Stream journal entries",
+          "color": "#58a6ff",
+          "description": "Journal-based mirroring: each write to mirrored images generates journal entries that are read by the rbd-mirror daemon."
+        },
+        {
+          "from": "rbd_mirror",
+          "to": "rbd_mirror_secondary",
+          "label": "Replicate images to secondary",
+          "color": "#58a6ff",
+          "description": "rbd-mirror replays journal entries on the secondary cluster, writing identical data to the corresponding RBD images."
+        },
+        {
+          "target": "rbd_mirror_secondary",
+          "mode": "lightup",
+          "label": "Steady state replication",
+          "color": "#3fb950",
+          "description": "Both sites synchronized. RPO depends on journal replay lag (typically seconds). Secondary images are in non-primary/demoted state."
+        },
+        {
+          "target": "ceph_boundary",
+          "mode": "lightup",
+          "label": "PRIMARY SITE FAILS",
+          "color": "#f85149",
+          "description": "Primary Ceph cluster becomes unreachable due to site failure. rbd-mirror on secondary detects peer disconnect."
+        },
+        {
+          "from": "platform_admin",
+          "to": "rbd_mirror_secondary",
+          "label": "Promote secondary images (--force)",
+          "color": "#f0883e",
+          "description": "Admin runs: rbd mirror image promote --force <pool>/<image> on the secondary site, forcing promotion without primary acknowledgment."
+        },
+        {
+          "from": "rbd_mirror_secondary",
+          "to": "secondary_site",
+          "label": "Images promoted to primary",
+          "color": "#3fb950",
+          "description": "Secondary images transition to primary state, becoming read-write capable for Cinder volume attachment."
+        },
+        {
+          "from": "platform_admin",
+          "to": "cinder_api",
+          "label": "Reconfigure Cinder backend",
+          "color": "#f0883e",
+          "description": "Admin updates Cinder configuration to point rbd_ceph_conf and rbd_pool to the secondary Ceph cluster endpoints."
+        },
+        {
+          "from": "cinder_api",
+          "to": "secondary_site",
+          "label": "Cinder connects to DR Ceph",
+          "color": "#58a6ff",
+          "description": "Cinder RBD driver establishes new connection to secondary Ceph cluster using updated ceph.conf and keyring."
+        },
+        {
+          "from": "compute_a",
+          "to": "secondary_site",
+          "label": "Compute nodes reconnect",
+          "color": "#58a6ff",
+          "description": "Nova compute nodes reconnect their librbd clients to the secondary Ceph cluster for existing volume attachments."
+        },
+        {
+          "from": "vm_a",
+          "to": "secondary_site",
+          "label": "VMs mount volumes from DR site",
+          "color": "#58a6ff",
+          "description": "Virtual machines re-establish I/O paths to their volumes now served from the promoted secondary images."
+        },
+        {
+          "target": "vm_a",
+          "mode": "lightup",
+          "label": "I/O resumes from DR site",
+          "color": "#3fb950",
+          "description": "Full disaster recovery complete. VMs operational with data served from secondary site. Data loss limited to RPO window."
+        }
+      ]
+    },
+    "cephfs_snap_restore": {
+      "label": "CephFS Snapshot + Restore",
+      "steps": [
+        {
+          "from": "cloud_user",
+          "to": "csi_cephfsplugin",
+          "label": "Create VolumeSnapshot CR",
+          "color": "#58a6ff",
+          "description": "Tenant applies VolumeSnapshot referencing an existing PVC backed by CephFS. The snapshot controller triggers CSI CreateSnapshot."
+        },
+        {
+          "from": "csi_cephfsplugin",
+          "to": "ceph_mds",
+          "label": "CSI creates CephFS snapshot",
+          "color": "#58a6ff",
+          "description": "csi-cephfsplugin calls ceph fs subvolume snapshot create on the MDS to create a point-in-time snapshot of the subvolume."
+        },
+        {
+          "from": "ceph_mds",
+          "to": "ceph_fs_pool",
+          "label": "Store snapshot metadata",
+          "color": "#8b949e",
+          "description": "MDS records snapshot metadata (inode table, directory entries) in the CephFS metadata pool. Data objects are COW-protected."
+        },
+        {
+          "target": "csi_cephfsplugin",
+          "mode": "lightup",
+          "label": "VolumeSnapshotContent created",
+          "color": "#58a6ff",
+          "description": "CSI driver returns snapshot handle. Kubernetes creates VolumeSnapshotContent object linking to the CephFS snapshot."
+        },
+        {
+          "target": "csi_cephfsplugin",
+          "mode": "lightup",
+          "label": "Snapshot ready",
+          "color": "#3fb950",
+          "description": "VolumeSnapshot status.readyToUse=true. The snapshot is immutable and available for cloning or restore operations."
+        },
+        {
+          "from": "cloud_user",
+          "to": "csi_cephfsplugin",
+          "label": "Create PVC from snapshot",
+          "color": "#58a6ff",
+          "description": "Tenant creates new PVC with dataSource referencing the VolumeSnapshot. CSI CreateVolume triggered with snapshot source."
+        },
+        {
+          "from": "csi_cephfsplugin",
+          "to": "ceph_mds",
+          "label": "Provision new subvolume",
+          "color": "#58a6ff",
+          "description": "CSI calls ceph fs subvolume create for the new PVC, preparing a fresh subvolume to receive cloned data."
+        },
+        {
+          "from": "ceph_mds",
+          "to": "ceph_fs_pool",
+          "label": "Clone from snapshot",
+          "color": "#d2a8ff",
+          "description": "MDS initiates subvolume snapshot clone operation, creating a writable copy-on-write clone from the snapshot."
+        },
+        {
+          "from": "ceph_fs_pool",
+          "to": "ceph_osd",
+          "label": "Data copied to new subvolume",
+          "color": "#8b949e",
+          "description": "Clone flattening occurs asynchronously: data objects are copied from snapshot to new subvolume across OSDs."
+        },
+        {
+          "target": "csi_cephfsplugin",
+          "mode": "lightup",
+          "label": "New PV bound to PVC",
+          "color": "#3fb950",
+          "description": "CSI returns volume handle. PV created and bound to the tenant's PVC. Clone status: complete."
+        },
+        {
+          "from": "vm_a",
+          "to": "csi_cephfsplugin",
+          "label": "Pod mounts restored filesystem",
+          "color": "#58a6ff",
+          "description": "Pod referencing the new PVC is scheduled. CSI NodeStageVolume mounts the CephFS subvolume via kernel or FUSE client."
+        },
+        {
+          "target": "vm_a",
+          "mode": "lightup",
+          "label": "POSIX data verified",
+          "color": "#3fb950",
+          "description": "Application verifies restored files. All POSIX attributes (permissions, timestamps, xattrs) preserved from snapshot point-in-time."
+        },
+        {
+          "target": "ceph_fs_pool",
+          "mode": "lightup",
+          "label": "Original snapshot retained",
+          "color": "#8b949e",
+          "description": "Original VolumeSnapshot remains available for additional restores or compliance retention. Space usage is COW-efficient."
+        },
+        {
+          "target": "cloud_user",
+          "mode": "lightup",
+          "label": "Restore workflow complete",
+          "color": "#3fb950",
+          "description": "Full snapshot-to-restore cycle complete. Tenant has both original data and point-in-time restored copy available."
+        }
+      ]
+    },
+    "rgw_multisite_geo": {
+      "label": "RADOS Gateway Multi-Site (Geo-Replication)",
+      "steps": [
+        {
+          "from": "platform_admin",
+          "to": "rook_operator",
+          "label": "Apply Realm/ZoneGroup/Zone CRs",
+          "color": "#d2a8ff",
+          "description": "Admin applies CephObjectRealm, CephObjectZoneGroup, and CephObjectZone custom resources defining the multi-site topology."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_rgw",
+          "label": "Create realm/zonegroup/zone hierarchy",
+          "color": "#d2a8ff",
+          "description": "Rook operator executes radosgw-admin commands to create the realm, zonegroup, and zone entities in the primary cluster."
+        },
+        {
+          "target": "ceph_rgw",
+          "mode": "lightup",
+          "label": "Primary configured as master zone",
+          "color": "#58a6ff",
+          "description": "Primary RGW configured as master zone with --master flag. All metadata operations (bucket/user create) originate here."
+        },
+        {
+          "from": "rook_operator",
+          "to": "rgw_secondary",
+          "label": "Configure secondary zone",
+          "color": "#d2a8ff",
+          "description": "Secondary site Rook creates zone with access/secret keys from the master zone, establishing the replication relationship."
+        },
+        {
+          "from": "rgw_secondary",
+          "to": "ceph_rgw",
+          "label": "Sync agent starts",
+          "color": "#58a6ff",
+          "description": "Secondary RGW data sync process connects to the primary zone and begins polling for changes via the sync status log."
+        },
+        {
+          "from": "ceph_rgw",
+          "to": "rgw_secondary",
+          "label": "Metadata sync (buckets, users)",
+          "color": "#58a6ff",
+          "description": "Metadata sync: bucket instances, user accounts, and ACLs replicated from master zone to secondary. Sync is near-instant."
+        },
+        {
+          "from": "ceph_rgw",
+          "to": "rgw_secondary",
+          "label": "Data sync (objects)",
+          "color": "#58a6ff",
+          "description": "Data sync: object data and multipart uploads replicated per-bucket. Sync lag depends on object size and network bandwidth."
+        },
+        {
+          "target": "rgw_secondary",
+          "mode": "lightup",
+          "label": "Steady state geo-replication",
+          "color": "#3fb950",
+          "description": "Both zones synchronized. radosgw-admin sync status shows all shards caught up. RPO: seconds for metadata, minutes for large objects."
+        },
+        {
+          "target": "ceph_rgw",
+          "mode": "lightup",
+          "label": "PRIMARY RGW FAILS",
+          "color": "#f85149",
+          "description": "Primary site RGW becomes unreachable. Secondary zone sync stalls with connection timeouts in the sync error log."
+        },
+        {
+          "from": "platform_admin",
+          "to": "rgw_secondary",
+          "label": "Promote secondary zone",
+          "color": "#f0883e",
+          "description": "Admin executes: radosgw-admin zone modify --rgw-zone=secondary --master. Secondary becomes the new master zone for the realm."
+        },
+        {
+          "target": "rgw_secondary",
+          "mode": "lightup",
+          "label": "Zone promoted to master",
+          "color": "#3fb950",
+          "description": "Secondary zone now accepts metadata writes (bucket creation, user management). Period updated and committed."
+        },
+        {
+          "from": "platform_admin",
+          "to": "ext_network",
+          "label": "DNS updated to secondary endpoint",
+          "color": "#f0883e",
+          "description": "Admin updates DNS records to point the S3/Swift endpoint FQDN to the secondary site RGW service IP."
+        },
+        {
+          "from": "glance_api",
+          "to": "rgw_secondary",
+          "label": "Glance redirects to DR RGW",
+          "color": "#58a6ff",
+          "description": "Glance image-store reconnects to the RGW endpoint (now resolved to secondary). Image GET/PUT operations resume."
+        },
+        {
+          "from": "cloud_user",
+          "to": "rgw_secondary",
+          "label": "Swift/S3 clients redirect",
+          "color": "#58a6ff",
+          "description": "Tenant applications using S3/Swift APIs transparently connect to secondary RGW via updated DNS. No client changes needed."
+        },
+        {
+          "target": "rgw_secondary",
+          "mode": "lightup",
+          "label": "All objects available from DR",
+          "color": "#3fb950",
+          "description": "All previously replicated objects accessible. Objects written after last sync before failure represent the RPO data loss window."
+        },
+        {
+          "target": "secondary_site",
+          "mode": "lightup",
+          "label": "Geo-DR failover complete",
+          "color": "#3fb950",
+          "description": "Full RGW geo-DR failover complete. Secondary site serving all object storage workloads. RPO: near-zero metadata, seconds-minutes data."
+        }
+      ]
+    },
+    "ceph_prometheus_dash": {
+      "label": "Ceph Dashboard + Prometheus Integration",
+      "steps": [
+        {
+          "from": "rook_operator",
+          "to": "ceph_mgr",
+          "label": "Deploy MGR with dashboard+prometheus",
+          "color": "#d2a8ff",
+          "description": "Rook enables the dashboard and prometheus MGR modules via CephCluster CR spec.dashboard.enabled and spec.monitoring.enabled."
+        },
+        {
+          "from": "rook_operator",
+          "to": "prometheus",
+          "label": "Create ServiceMonitor CR",
+          "color": "#d2a8ff",
+          "description": "Rook creates a ServiceMonitor custom resource targeting the ceph-mgr service on port 9283 for Prometheus auto-discovery."
+        },
+        {
+          "from": "prometheus",
+          "to": "ceph_mgr",
+          "label": "Scrape MGR :9283/metrics",
+          "color": "#58a6ff",
+          "description": "Prometheus discovers the ServiceMonitor and begins scraping ceph-mgr's /metrics endpoint at the configured interval (15s default)."
+        },
+        {
+          "target": "prometheus",
+          "mode": "lightup",
+          "label": "Collect OSD/PG/pool metrics",
+          "color": "#58a6ff",
+          "description": "Key metrics collected: ceph_osd_op_r_latency, ceph_osd_op_w_latency, ceph_pg_active, ceph_pool_bytes_used, ceph_health_status."
+        },
+        {
+          "from": "rook_operator",
+          "to": "prometheus",
+          "label": "Create PrometheusRule alerts",
+          "color": "#d2a8ff",
+          "description": "Rook deploys PrometheusRule CR defining alerts: CephOSDNearFull (>85%), CephPGNotScrubbed, CephHealthWarning, etc."
+        },
+        {
+          "target": "ceph_mgr",
+          "mode": "lightup",
+          "label": "Grafana dashboards loaded",
+          "color": "#58a6ff",
+          "description": "Grafana provisioned with dashboards: Ceph OSD Overview, Pool Detail, Cluster Capacity, RBD Performance, RGW Overview."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "CephOSDNearFull alert fires",
+          "color": "#f85149",
+          "description": "OSD reaches 85% capacity. PrometheusRule expression ceph_osd_utilization > 0.85 evaluates true. Alert transitions to firing."
+        },
+        {
+          "from": "prometheus",
+          "to": "platform_admin",
+          "label": "Alert routed via AlertManager",
+          "color": "#f0883e",
+          "description": "AlertManager routes CephOSDNearFull alert to configured receiver (PagerDuty/Slack/email) per routing rules."
+        },
+        {
+          "from": "platform_admin",
+          "to": "ceph_mgr",
+          "label": "Investigate via Grafana dashboard",
+          "color": "#58a6ff",
+          "description": "Admin opens Ceph OSD Overview dashboard, filters by the alerting OSD ID, examines utilization trend and PG distribution."
+        },
+        {
+          "target": "platform_admin",
+          "mode": "lightup",
+          "label": "Identifies hot OSD",
+          "color": "#f0883e",
+          "description": "Dashboard reveals OSD.5 at 87% vs cluster average 62%. Uneven PG distribution caused by recent pool creation without balancer."
+        },
+        {
+          "from": "platform_admin",
+          "to": "ceph_osd",
+          "label": "ceph osd reweight 5 0.8",
+          "color": "#58a6ff",
+          "description": "Admin adjusts OSD weight: ceph osd reweight 5 0.8 to trigger PG migration away from the overloaded OSD."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "PGs rebalancing",
+          "color": "#58a6ff",
+          "description": "PGs migrate from OSD.5 to other OSDs. Recovery I/O visible in ceph status. Backfill completes within minutes."
+        },
+        {
+          "target": "prometheus",
+          "mode": "lightup",
+          "label": "Alert resolves",
+          "color": "#3fb950",
+          "description": "OSD.5 utilization drops below 85% threshold. Alert transitions from firing to resolved. AlertManager sends recovery notification."
+        },
+        {
+          "target": "ceph_boundary",
+          "mode": "lightup",
+          "label": "Cluster HEALTH_OK",
+          "color": "#3fb950",
+          "description": "All OSDs below threshold. ceph health returns HEALTH_OK. Dashboard shows balanced utilization across all OSDs."
+        }
+      ]
+    },
+    "rbd_qos_tuning": {
+      "label": "RBD Performance Tuning (QoS)",
+      "steps": [
+        {
+          "from": "platform_admin",
+          "to": "rook_operator",
+          "label": "Configure CephBlockPool QoS",
+          "color": "#d2a8ff",
+          "description": "Admin sets spec.parameters on CephBlockPool CR: rbd_qos_iops_limit, rbd_qos_bps_limit for pool-level QoS enforcement."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_osd",
+          "label": "Set rbd_qos_iops_limit on pool",
+          "color": "#d2a8ff",
+          "description": "Rook applies pool configuration via: ceph osd pool set <pool> rbd_qos_iops_limit <value>. OSDs enforce limits per-image."
+        },
+        {
+          "from": "platform_admin",
+          "to": "cinder_api",
+          "label": "Map volume-type to RBD QoS",
+          "color": "#58a6ff",
+          "description": "Admin creates Cinder volume-type with extra_specs: volume_backend_name=ceph-qos, IOPS limits mapped to RBD pool parameters."
+        },
+        {
+          "from": "cloud_user",
+          "to": "cinder_api",
+          "label": "Create volume with QoS type",
+          "color": "#58a6ff",
+          "description": "Tenant creates volume specifying the QoS volume-type. Cinder scheduler selects the backend matching the QoS pool."
+        },
+        {
+          "from": "cinder_api",
+          "to": "csi_rbdplugin",
+          "label": "CSI provisions RBD image",
+          "color": "#58a6ff",
+          "description": "Cinder RBD driver calls rbd create with size and pool. Image created in the QoS-enabled pool, inheriting pool-level limits."
+        },
+        {
+          "from": "csi_rbdplugin",
+          "to": "ceph_osd",
+          "label": "Image inherits pool QoS config",
+          "color": "#8b949e",
+          "description": "RBD image metadata includes QoS parameters from pool defaults. Per-image overrides possible via rbd image-meta set."
+        },
+        {
+          "from": "vm_a",
+          "to": "csi_rbdplugin",
+          "label": "VM attaches QoS volume",
+          "color": "#58a6ff",
+          "description": "Nova attaches volume to VM. librbd client maps the image and connects to OSDs, QoS parameters loaded from image metadata."
+        },
+        {
+          "from": "vm_a",
+          "to": "ceph_osd",
+          "label": "I/O issued to volume",
+          "color": "#58a6ff",
+          "description": "Application inside VM issues read/write I/O. Requests traverse: virtio-blk → QEMU → librbd → RADOS → OSD."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "OSD enforces iops_limit",
+          "color": "#f0883e",
+          "description": "OSD token bucket algorithm tracks IOPS per-image. When rate exceeds configured limit, subsequent ops are queued."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "Throttling applied to excess I/O",
+          "color": "#f0883e",
+          "description": "Excess I/O delayed by OSD scheduler. Client sees increased latency. op_queue_age_hist shows throttled operations."
+        },
+        {
+          "target": "ceph_mgr",
+          "mode": "lightup",
+          "label": "Per-image QoS in MGR dashboard",
+          "color": "#58a6ff",
+          "description": "Ceph MGR dashboard displays per-image I/O stats: current IOPS, throttle events, latency percentiles for QoS monitoring."
+        },
+        {
+          "from": "platform_admin",
+          "to": "ceph_osd",
+          "label": "Adjust limits in real-time",
+          "color": "#3fb950",
+          "description": "Admin modifies pool or per-image QoS limits without VM restart. Changes take effect immediately on next OSD token refill cycle."
+        }
+      ]
+    },
+    "stretch_cluster": {
+      "label": "Ceph Stretch Cluster (3-Site)",
+      "steps": [
+        {
+          "from": "platform_admin",
+          "to": "rook_operator",
+          "label": "Configure stretchCluster in CephCluster CR",
+          "color": "#d2a8ff",
+          "description": "Admin sets spec.mon.stretchCluster with failureDomainLabel, zones (site-a, site-b, arbiter), and arbiterMonCount=1."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_mon",
+          "label": "Deploy MONs: 2@Site-A, 2@Site-B",
+          "color": "#d2a8ff",
+          "description": "Rook deploys 4 data MONs: 2 scheduled to Site-A nodes (zone affinity), 2 scheduled to Site-B nodes via topology labels."
+        },
+        {
+          "from": "rook_operator",
+          "to": "arbiter_mon",
+          "label": "Deploy arbiter MON at Site-C",
+          "color": "#d2a8ff",
+          "description": "Rook deploys lightweight arbiter MON at Site-C (tiebreaker). Arbiter participates in quorum but holds no data copies."
+        },
+        {
+          "from": "rook_operator",
+          "to": "ceph_osd",
+          "label": "CRUSH rules: min_size=2 per site",
+          "color": "#d2a8ff",
+          "description": "Rook configures CRUSH rules with step chooseleaf for each site. Pool min_size=2 ensures each site has a full copy."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "OSDs registered at respective sites",
+          "color": "#8b949e",
+          "description": "OSDs have CRUSH location set to their respective failure domains (site-a, site-b). Data distributed across both sites."
+        },
+        {
+          "from": "vm_a",
+          "to": "ceph_osd",
+          "label": "Data written to Site-A and Site-B",
+          "color": "#58a6ff",
+          "description": "Writes replicated synchronously to both sites. Client ACK only after both site replicas confirm. Strong consistency guaranteed."
+        },
+        {
+          "target": "arbiter_mon",
+          "mode": "lightup",
+          "label": "Arbiter provides tiebreaker",
+          "color": "#8b949e",
+          "description": "Arbiter MON at Site-C participates in Paxos leader election, providing the 3rd/5th vote needed for MON quorum decisions."
+        },
+        {
+          "target": "ceph_mon",
+          "mode": "lightup",
+          "label": "Normal quorum: 5 MONs",
+          "color": "#3fb950",
+          "description": "Full quorum operational: 2 MONs Site-A + 2 MONs Site-B + 1 arbiter Site-C = 5 MONs, majority = 3 needed for quorum."
+        },
+        {
+          "target": "ceph_mon",
+          "mode": "lightup",
+          "label": "SITE-A FAILS",
+          "color": "#f85149",
+          "description": "Site-A becomes unreachable. 2 MONs at Site-A lost. Remaining: 2 MONs Site-B + 1 arbiter = 3, still achieves quorum."
+        },
+        {
+          "from": "arbiter_mon",
+          "to": "ceph_mon",
+          "label": "Arbiter + Site-B maintain quorum",
+          "color": "#f0883e",
+          "description": "Arbiter MON and 2 Site-B MONs form majority (3/5). Cluster remains operational. New leader elected from surviving MONs."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "stretch_mode: degraded writes",
+          "color": "#f0883e",
+          "description": "Ceph enters stretch degraded mode. Writes proceed with only Site-B replicas (min_size met locally). RPO=0 until site recovery."
+        },
+        {
+          "target": "vm_b",
+          "mode": "lightup",
+          "label": "VMs on surviving site continue",
+          "color": "#3fb950",
+          "description": "VMs on Site-B compute nodes continue I/O without interruption. Volumes accessible via surviving OSDs and degraded write mode."
+        },
+        {
+          "target": "ceph_mon",
+          "mode": "lightup",
+          "label": "Site-A recovers",
+          "color": "#58a6ff",
+          "description": "Site-A network restored. MONs at Site-A rejoin the cluster and begin synchronizing missed Paxos transactions."
+        },
+        {
+          "from": "ceph_mon",
+          "to": "arbiter_mon",
+          "label": "MONs rejoin quorum (5/5)",
+          "color": "#3fb950",
+          "description": "All 5 MONs back in quorum. Paxos leader may re-elect. Cluster transitions out of stretch degraded mode."
+        },
+        {
+          "target": "ceph_osd",
+          "mode": "lightup",
+          "label": "Data re-replicates to Site-A",
+          "color": "#58a6ff",
+          "description": "OSDs at Site-A backfill data written during the outage. Recovery I/O distributed across Site-A OSDs until fully consistent."
+        },
+        {
+          "target": "ceph_boundary",
+          "mode": "lightup",
+          "label": "HEALTH_OK — full stretch restored",
+          "color": "#3fb950",
+          "description": "All PGs active+clean. Both sites fully replicated. Stretch cluster back to normal operation with synchronous cross-site writes."
+        }
+      ]
+    },
+    "odf_external_ceph": {
+      "label": "ODF StorageSystem → External Ceph for RHOSO",
+      "steps": [
+        {
+          "from": "platform_admin",
+          "to": "olm",
+          "label": "Deploy ODF Operator via OLM",
+          "color": "#d2a8ff",
+          "description": "Admin creates Subscription CR for odf-operator in openshift-storage namespace. OLM installs the ODF operator bundle."
+        },
+        {
+          "from": "olm",
+          "to": "odf_operator",
+          "label": "ODF Operator installed",
+          "color": "#d2a8ff",
+          "description": "OLM deploys ODF operator pods (ocs-operator, odf-operator, rook-ceph-operator) and registers CRDs (StorageSystem, StorageCluster)."
+        },
+        {
+          "from": "platform_admin",
+          "to": "odf_operator",
+          "label": "Create StorageSystem CR (external)",
+          "color": "#58a6ff",
+          "description": "Admin creates StorageSystem with spec.kind=storagecluster and StorageCluster with spec.externalStorage.enable=true."
+        },
+        {
+          "from": "odf_operator",
+          "to": "ceph_boundary",
+          "label": "Discover external Ceph cluster",
+          "color": "#58a6ff",
+          "description": "ODF operator uses the provided external cluster script output to connect to the external Ceph cluster and verify accessibility."
+        },
+        {
+          "from": "odf_operator",
+          "to": "ceph_mon",
+          "label": "Import ceph.conf + keyring",
+          "color": "#58a6ff",
+          "description": "ODF imports MON endpoints from ceph.conf and cephx authentication credentials (keyring) for each required client identity."
+        },
+        {
+          "target": "odf_operator",
+          "mode": "lightup",
+          "label": "Create CephConnection Secret",
+          "color": "#3fb950",
+          "description": "ODF creates Secret containing: FSID, MON endpoints, cephx keys for CinderBackup, CinderVolumes, GlanceImages, NovaEphemeral clients."
+        },
+        {
+          "from": "odf_operator",
+          "to": "os_operator",
+          "label": "RHOSO operators consume secret",
+          "color": "#d2a8ff",
+          "description": "RHOSO OpenStack operators watch for the CephConnection secret and use it to configure their respective Ceph backend connections."
+        },
+        {
+          "from": "os_operator",
+          "to": "cinder_api",
+          "label": "Configure Cinder rbd backend",
+          "color": "#d2a8ff",
+          "description": "OpenStack operator configures Cinder with rbd backend: rbd_pool=volumes, rbd_ceph_conf, rbd_user=openstack from the CephConnection secret."
+        },
+        {
+          "from": "os_operator",
+          "to": "glance_api",
+          "label": "Configure Glance rbd store",
+          "color": "#d2a8ff",
+          "description": "OpenStack operator configures Glance with rbd store: rbd_store_pool=images, rbd_store_user=openstack pointing to external Ceph."
+        },
+        {
+          "from": "os_operator",
+          "to": "nova_api",
+          "label": "Configure Nova ephemeral rbd",
+          "color": "#d2a8ff",
+          "description": "OpenStack operator configures Nova libvirt: images_type=rbd, images_rbd_pool=vms, images_rbd_ceph_conf for ephemeral disk storage."
+        },
+        {
+          "target": "odf_operator",
+          "mode": "lightup",
+          "label": "StorageClass created per pool",
+          "color": "#3fb950",
+          "description": "ODF creates StorageClasses: ocs-external-storagecluster-ceph-rbd (block), ocs-external-storagecluster-cephfs (file) with CSI provisioners."
+        },
+        {
+          "from": "cloud_user",
+          "to": "csi_rbdplugin",
+          "label": "Tenant creates PVC",
+          "color": "#58a6ff",
+          "description": "Tenant creates PVC referencing the ODF StorageClass. CSI RBD provisioner receives CreateVolume request."
+        },
+        {
+          "from": "csi_rbdplugin",
+          "to": "ceph_osd",
+          "label": "CSI connects, volume provisioned",
+          "color": "#58a6ff",
+          "description": "csi-rbdplugin uses the cluster credentials from CSI secret to connect to external Ceph and create an RBD image in the volumes pool."
+        },
+        {
+          "target": "vm_a",
+          "mode": "lightup",
+          "label": "Workloads run on RHOSO + external Ceph",
+          "color": "#3fb950",
+          "description": "Full integration complete. RHOSO workloads (VMs, images, volumes) backed by external Ceph cluster managed via ODF StorageSystem."
+        }
+      ]
+    },
+    "csi_rbd_attach_path": {
+      "label": "CSI Volume Attach Path (RBD Kernel)",
+      "steps": [
+        {
+          "from": "cloud_user",
+          "to": "csi_rbdplugin",
+          "label": "PVC created and bound to PV",
+          "color": "#58a6ff",
+          "description": "PersistentVolumeClaim created with RBD StorageClass. CSI provisioner creates RBD image and PV. PVC bound to PV."
+        },
+        {
+          "from": "nova_sched",
+          "to": "compute_a",
+          "label": "Pod scheduled on compute node",
+          "color": "#58a6ff",
+          "description": "Kubernetes scheduler places the pod on compute_a based on resource requests, affinity rules, and topology constraints."
+        },
+        {
+          "target": "compute_a",
+          "mode": "lightup",
+          "label": "kubelet starts container lifecycle",
+          "color": "#8b949e",
+          "description": "kubelet on compute_a receives pod assignment, begins volume attachment phase before starting containers."
+        },
+        {
+          "target": "csi_rbdplugin",
+          "mode": "lightup",
+          "label": "ControllerPublishVolume (no-op)",
+          "color": "#8b949e",
+          "description": "CSI ControllerPublishVolume called but is a no-op for RBD — no fabric zoning or export needed. Returns immediately."
+        },
+        {
+          "from": "compute_a",
+          "to": "csi_rbdplugin",
+          "label": "kubelet calls NodeStageVolume",
+          "color": "#58a6ff",
+          "description": "kubelet invokes CSI NodeStageVolume RPC via unix socket to the csi-rbdplugin daemonset pod on this node."
+        },
+        {
+          "from": "csi_rbdplugin",
+          "to": "ceph_osd",
+          "label": "rbd map — map RBD image",
+          "color": "#58a6ff",
+          "description": "csi-rbdplugin executes rbd map <pool>/<image> --id <user> which sends map request to MONs, then connects to OSDs."
+        },
+        {
+          "target": "compute_a",
+          "mode": "lightup",
+          "label": "Kernel loads rbd.ko module",
+          "color": "#8b949e",
+          "description": "Linux kernel loads the rbd kernel module (rbd.ko) if not already loaded. Module handles block device I/O translation to RADOS objects."
+        },
+        {
+          "target": "compute_a",
+          "mode": "lightup",
+          "label": "/dev/rbdX device appears",
+          "color": "#3fb950",
+          "description": "Kernel creates /dev/rbd0 (or next available) block device. Device backed by the mapped RBD image with correct size."
+        },
+        {
+          "target": "compute_a",
+          "mode": "lightup",
+          "label": "mkfs.ext4 if unformatted",
+          "color": "#8b949e",
+          "description": "csi-rbdplugin checks for existing filesystem. If none found (new volume), formats with mkfs.ext4 (or xfs per StorageClass fsType)."
+        },
+        {
+          "from": "csi_rbdplugin",
+          "to": "compute_a",
+          "label": "Mount to staging directory",
+          "color": "#58a6ff",
+          "description": "csi-rbdplugin mounts /dev/rbdX to the staging path: /var/lib/kubelet/plugins/kubernetes.io/csi/pv/<pvname>/globalmount."
+        },
+        {
+          "target": "compute_a",
+          "mode": "lightup",
+          "label": "kubelet calls NodePublishVolume",
+          "color": "#58a6ff",
+          "description": "kubelet invokes NodePublishVolume to create the final bind mount from staging directory into the pod's volume mount path."
+        },
+        {
+          "from": "csi_rbdplugin",
+          "to": "vm_a",
+          "label": "Bind mount into pod container",
+          "color": "#3fb950",
+          "description": "csi-rbdplugin bind-mounts staging path to /var/lib/kubelet/pods/<poduid>/volumes/kubernetes.io~csi/<pvname>/mount."
+        },
+        {
+          "from": "vm_a",
+          "to": "compute_a",
+          "label": "App → VFS → ext4 → rbd.ko",
+          "color": "#58a6ff",
+          "description": "Application I/O path: write() syscall → VFS layer → ext4 journal + data → rbd.ko block layer → RADOS object writes."
+        },
+        {
+          "from": "compute_a",
+          "to": "csi_rbdplugin",
+          "label": "rbd.ko → librados wire protocol",
+          "color": "#58a6ff",
+          "description": "rbd.ko translates block offset to RADOS object (4MB striping). Kernel libceph sends OSD op messages over TCP/msgr2."
+        },
+        {
+          "from": "csi_rbdplugin",
+          "to": "ceph_osd",
+          "label": "librados → OSD → replication",
+          "color": "#58a6ff",
+          "description": "Primary OSD receives write, replicates to replica OSDs per pool replication factor. All replicas ACK before client ACK."
+        },
+        {
+          "from": "ceph_osd",
+          "to": "vm_a",
+          "label": "ACK propagates back to app",
+          "color": "#3fb950",
+          "description": "Write ACK path: OSD replicas → primary OSD → kernel rbd.ko → ext4 journal commit → write() syscall returns to application."
         }
       ]
     }
@@ -17561,6 +20279,2835 @@ const diagram = {
             }
           ]
         }
+      ],
+      "rook_cluster_bootstrap": [
+        {
+          "step": 1,
+          "replaceHeaders": [
+            [
+              "Flow",
+              "Rook-Ceph Cluster Bootstrap"
+            ],
+            [
+              "Trigger",
+              "CephCluster CR Applied"
+            ],
+            [
+              "Status",
+              "Initializing"
+            ]
+          ],
+          "replaceBody": "Platform admin applies the CephCluster custom resource.\\nRook Operator will detect and begin reconciliation.\\nTarget: 3 MONs, 1 MGR, OSDs on all available disks."
+        },
+        {
+          "step": 2,
+          "setCycleState": [
+            [
+              "phase",
+              "operator-reconcile"
+            ]
+          ]
+        },
+        {
+          "step": 3,
+          "setCycleState": [
+            [
+              "phase",
+              "mon-deploy"
+            ]
+          ]
+        },
+        {
+          "step": 4,
+          "setCycleState": [
+            [
+              "phase",
+              "mon-quorum"
+            ],
+            [
+              "quorum",
+              "3/3"
+            ]
+          ]
+        },
+        {
+          "step": 5,
+          "setCycleState": [
+            [
+              "phase",
+              "mgr-deploy"
+            ]
+          ]
+        },
+        {
+          "step": 6,
+          "setCycleState": [
+            [
+              "phase",
+              "mgr-active"
+            ]
+          ]
+        },
+        {
+          "step": 7,
+          "setCycleState": [
+            [
+              "phase",
+              "osd-discovery"
+            ],
+            [
+              "node",
+              "compute_a"
+            ]
+          ]
+        },
+        {
+          "step": 8,
+          "setCycleState": [
+            [
+              "phase",
+              "osd-discovery"
+            ],
+            [
+              "node",
+              "compute_b"
+            ]
+          ]
+        },
+        {
+          "step": 9,
+          "setCycleState": [
+            [
+              "phase",
+              "osd-prepare"
+            ]
+          ]
+        },
+        {
+          "step": 10,
+          "setCycleState": [
+            [
+              "phase",
+              "osd-running"
+            ]
+          ]
+        },
+        {
+          "step": 11,
+          "setCycleState": [
+            [
+              "phase",
+              "pg-create"
+            ]
+          ]
+        },
+        {
+          "step": 12,
+          "setCycleState": [
+            [
+              "phase",
+              "pg-peering"
+            ]
+          ]
+        },
+        {
+          "step": 13,
+          "setCycleState": [
+            [
+              "phase",
+              "health-ok"
+            ],
+            [
+              "health",
+              "HEALTH_OK"
+            ]
+          ]
+        },
+        {
+          "step": 14,
+          "setCycleState": [
+            [
+              "phase",
+              "pools-ready"
+            ],
+            [
+              "pool",
+              "images"
+            ]
+          ]
+        },
+        {
+          "step": 15,
+          "setCycleState": [
+            [
+              "phase",
+              "pools-ready"
+            ],
+            [
+              "pool",
+              "volumes"
+            ]
+          ]
+        },
+        {
+          "step": 16,
+          "phase": "response",
+          "clearCycleState": true
+        }
+      ],
+      "osd_hot_add": [
+        {
+          "step": 1,
+          "replaceHeaders": [
+            [
+              "Flow",
+              "OSD Addition / Disk Hot-Add"
+            ],
+            [
+              "Trigger",
+              "New Disk Detected"
+            ],
+            [
+              "Status",
+              "Discovery"
+            ]
+          ],
+          "replaceBody": "New raw block device detected on compute node.\\nRook Operator will discover, prepare, and deploy a new OSD.\\nCluster will rebalance PGs to utilize new capacity."
+        },
+        {
+          "step": 2,
+          "setCycleState": [
+            [
+              "phase",
+              "discovery"
+            ]
+          ]
+        },
+        {
+          "step": 3,
+          "setCycleState": [
+            [
+              "phase",
+              "osd-prepare-job"
+            ]
+          ]
+        },
+        {
+          "step": 4,
+          "setCycleState": [
+            [
+              "phase",
+              "lvm-prepare"
+            ]
+          ]
+        },
+        {
+          "step": 5,
+          "setCycleState": [
+            [
+              "phase",
+              "osd-deployment"
+            ]
+          ]
+        },
+        {
+          "step": 6,
+          "setCycleState": [
+            [
+              "phase",
+              "osd-join"
+            ]
+          ]
+        },
+        {
+          "step": 7,
+          "setCycleState": [
+            [
+              "phase",
+              "rebalance-start"
+            ],
+            [
+              "health",
+              "HEALTH_WARN"
+            ]
+          ]
+        },
+        {
+          "step": 8,
+          "setCycleState": [
+            [
+              "phase",
+              "backfill"
+            ],
+            [
+              "health",
+              "HEALTH_WARN"
+            ]
+          ]
+        },
+        {
+          "step": 9,
+          "setCycleState": [
+            [
+              "phase",
+              "data-migration"
+            ]
+          ]
+        },
+        {
+          "step": 10,
+          "setCycleState": [
+            [
+              "phase",
+              "pgs-clean"
+            ],
+            [
+              "health",
+              "HEALTH_OK"
+            ]
+          ]
+        },
+        {
+          "step": 11,
+          "setCycleState": [
+            [
+              "phase",
+              "health-ok"
+            ]
+          ]
+        },
+        {
+          "step": 12,
+          "setCycleState": [
+            [
+              "phase",
+              "capacity-update"
+            ]
+          ]
+        },
+        {
+          "step": 13,
+          "setCycleState": [
+            [
+              "phase",
+              "pool-expand"
+            ]
+          ]
+        },
+        {
+          "step": 14,
+          "phase": "response",
+          "clearCycleState": true
+        }
+      ],
+      "osd_removal": [
+        {
+          "step": 1,
+          "replaceHeaders": [
+            [
+              "Flow",
+              "OSD Removal + Rebalance"
+            ],
+            [
+              "Trigger",
+              "ceph osd out"
+            ],
+            [
+              "Status",
+              "Draining"
+            ]
+          ],
+          "replaceBody": "Admin marks OSD out, triggering PG migration.\\nData drains from target OSD to remaining OSDs.\\nAfter drain completes, OSD is purged and resources cleaned up."
+        },
+        {
+          "step": 2,
+          "setCycleState": [
+            [
+              "phase",
+              "operator-detect"
+            ]
+          ]
+        },
+        {
+          "step": 3,
+          "setCycleState": [
+            [
+              "phase",
+              "pg-migration"
+            ],
+            [
+              "health",
+              "HEALTH_WARN"
+            ]
+          ]
+        },
+        {
+          "step": 4,
+          "setCycleState": [
+            [
+              "phase",
+              "backfill"
+            ],
+            [
+              "health",
+              "HEALTH_WARN"
+            ]
+          ]
+        },
+        {
+          "step": 5,
+          "setCycleState": [
+            [
+              "phase",
+              "pg-relocate"
+            ]
+          ]
+        },
+        {
+          "step": 6,
+          "setCycleState": [
+            [
+              "phase",
+              "osd-stop"
+            ]
+          ]
+        },
+        {
+          "step": 7,
+          "setCycleState": [
+            [
+              "phase",
+              "osd-purge"
+            ]
+          ]
+        },
+        {
+          "step": 8,
+          "setCycleState": [
+            [
+              "phase",
+              "deployment-delete"
+            ]
+          ]
+        },
+        {
+          "step": 9,
+          "setCycleState": [
+            [
+              "phase",
+              "pvc-cleanup"
+            ]
+          ]
+        },
+        {
+          "step": 10,
+          "setCycleState": [
+            [
+              "phase",
+              "pg-settle"
+            ]
+          ]
+        },
+        {
+          "step": 11,
+          "setCycleState": [
+            [
+              "phase",
+              "health-ok"
+            ],
+            [
+              "health",
+              "HEALTH_OK"
+            ]
+          ]
+        },
+        {
+          "step": 12,
+          "setCycleState": [
+            [
+              "phase",
+              "capacity-reduced"
+            ]
+          ]
+        },
+        {
+          "step": 13,
+          "setCycleState": [
+            [
+              "phase",
+              "pool-update"
+            ]
+          ]
+        },
+        {
+          "step": 14,
+          "phase": "response",
+          "clearCycleState": true
+        }
+      ],
+      "rook_ceph_upgrade": [
+        {
+          "step": 1,
+          "replaceHeaders": [
+            [
+              "Flow",
+              "Rook-Ceph Rolling Upgrade"
+            ],
+            [
+              "Trigger",
+              "Image Tag Updated"
+            ],
+            [
+              "Status",
+              "Upgrading"
+            ]
+          ],
+          "replaceBody": "Admin updates CephCluster image tag to target version.\\nRook orchestrates rolling upgrade: MONs → MGR → OSDs → MDS → RGW.\\nQuorum and PG health verified between each daemon group."
+        },
+        {
+          "step": 2,
+          "setCycleState": [
+            [
+              "phase",
+              "version-detect"
+            ]
+          ]
+        },
+        {
+          "step": 3,
+          "setCycleState": [
+            [
+              "phase",
+              "mon-upgrade"
+            ],
+            [
+              "mon_progress",
+              "1/3"
+            ]
+          ]
+        },
+        {
+          "step": 4,
+          "setCycleState": [
+            [
+              "phase",
+              "mon-upgrade"
+            ],
+            [
+              "mon_progress",
+              "1/3"
+            ],
+            [
+              "quorum",
+              "ok"
+            ]
+          ]
+        },
+        {
+          "step": 5,
+          "setCycleState": [
+            [
+              "phase",
+              "mon-upgrade"
+            ],
+            [
+              "mon_progress",
+              "3/3"
+            ]
+          ]
+        },
+        {
+          "step": 6,
+          "setCycleState": [
+            [
+              "phase",
+              "mon-complete"
+            ],
+            [
+              "mon_progress",
+              "3/3"
+            ]
+          ]
+        },
+        {
+          "step": 7,
+          "setCycleState": [
+            [
+              "phase",
+              "mgr-upgrade"
+            ]
+          ]
+        },
+        {
+          "step": 8,
+          "setCycleState": [
+            [
+              "phase",
+              "mgr-complete"
+            ]
+          ]
+        },
+        {
+          "step": 9,
+          "setCycleState": [
+            [
+              "phase",
+              "osd-upgrade"
+            ]
+          ]
+        },
+        {
+          "step": 10,
+          "setCycleState": [
+            [
+              "phase",
+              "osd-upgrade"
+            ],
+            [
+              "health",
+              "HEALTH_WARN"
+            ]
+          ]
+        },
+        {
+          "step": 11,
+          "setCycleState": [
+            [
+              "phase",
+              "osd-complete"
+            ],
+            [
+              "health",
+              "HEALTH_OK"
+            ]
+          ]
+        },
+        {
+          "step": 12,
+          "setCycleState": [
+            [
+              "phase",
+              "mds-upgrade"
+            ]
+          ]
+        },
+        {
+          "step": 13,
+          "setCycleState": [
+            [
+              "phase",
+              "rgw-upgrade"
+            ]
+          ]
+        },
+        {
+          "step": 14,
+          "setCycleState": [
+            [
+              "phase",
+              "health-check"
+            ],
+            [
+              "health",
+              "HEALTH_OK"
+            ]
+          ]
+        },
+        {
+          "step": 15,
+          "setCycleState": [
+            [
+              "phase",
+              "status-update"
+            ]
+          ]
+        },
+        {
+          "step": 16,
+          "phase": "response",
+          "clearCycleState": true
+        }
+      ],
+      "ceph_blockpool_sc": [
+        {
+          "step": 1,
+          "replaceHeaders": [
+            [
+              "Flow",
+              "CephBlockPool + StorageClass Creation"
+            ],
+            [
+              "Phase",
+              "Pool Creation"
+            ],
+            [
+              "Actor",
+              "Platform Admin"
+            ]
+          ],
+          "replaceBody": "Platform admin applies CephBlockPool CR with replication size: 3.\\nThis initiates the Rook-managed block storage provisioning pipeline."
+        },
+        {
+          "step": 2,
+          "setCycleState": [
+            [
+              "blockpool_status",
+              "reconciling"
+            ]
+          ]
+        },
+        {
+          "step": 3,
+          "setCycleState": [
+            [
+              "rados_pool",
+              "creating"
+            ]
+          ]
+        },
+        {
+          "step": 4,
+          "setCycleState": [
+            [
+              "pg_distribution",
+              "in_progress"
+            ]
+          ]
+        },
+        {
+          "step": 5,
+          "setCycleState": [
+            [
+              "crush_rule",
+              "applied"
+            ]
+          ]
+        },
+        {
+          "step": 6,
+          "setCycleState": [
+            [
+              "storageclass",
+              "created"
+            ]
+          ]
+        },
+        {
+          "step": 7,
+          "setCycleState": [
+            [
+              "csi_rbd",
+              "registered"
+            ]
+          ]
+        },
+        {
+          "step": 8,
+          "setCycleState": [
+            [
+              "cinder_backend",
+              "configured"
+            ]
+          ]
+        },
+        {
+          "step": 9,
+          "setCycleState": [
+            [
+              "pvc_status",
+              "pending"
+            ]
+          ]
+        },
+        {
+          "step": 10,
+          "setCycleState": [
+            [
+              "csi_provision",
+              "creating_volume"
+            ]
+          ]
+        },
+        {
+          "step": 11,
+          "setCycleState": [
+            [
+              "rbd_image",
+              "created"
+            ]
+          ]
+        },
+        {
+          "step": 12,
+          "setCycleState": [
+            [
+              "pv_status",
+              "created"
+            ]
+          ]
+        },
+        {
+          "step": 13,
+          "setCycleState": [
+            [
+              "pvc_status",
+              "bound"
+            ]
+          ]
+        },
+        {
+          "step": 14,
+          "setCycleState": [
+            [
+              "pod",
+              "scheduled"
+            ]
+          ]
+        },
+        {
+          "step": 15,
+          "setCycleState": [
+            [
+              "rbd_device",
+              "mapped"
+            ]
+          ]
+        },
+        {
+          "step": 16,
+          "phase": "response",
+          "clearCycleState": true
+        }
+      ],
+      "cephfs_provision": [
+        {
+          "step": 1,
+          "replaceHeaders": [
+            [
+              "Flow",
+              "CephFilesystem (CephFS) Provisioning"
+            ],
+            [
+              "Phase",
+              "Filesystem Creation"
+            ],
+            [
+              "Actor",
+              "Platform Admin"
+            ]
+          ],
+          "replaceBody": "Platform admin applies CephFilesystem CR defining metadata pool (SSD) and data pool (HDD).\\nMDS placement with active + standby-replay for HA."
+        },
+        {
+          "step": 2,
+          "setCycleState": [
+            [
+              "cephfs_status",
+              "reconciling"
+            ]
+          ]
+        },
+        {
+          "step": 3,
+          "setCycleState": [
+            [
+              "metadata_pool",
+              "creating_ssd"
+            ]
+          ]
+        },
+        {
+          "step": 4,
+          "setCycleState": [
+            [
+              "data_pool",
+              "creating_hdd"
+            ]
+          ]
+        },
+        {
+          "step": 5,
+          "setCycleState": [
+            [
+              "mds_deployment",
+              "deploying"
+            ]
+          ]
+        },
+        {
+          "step": 6,
+          "setCycleState": [
+            [
+              "mds_status",
+              "initialized"
+            ]
+          ]
+        },
+        {
+          "step": 7,
+          "setCycleState": [
+            [
+              "cephfs",
+              "created"
+            ]
+          ]
+        },
+        {
+          "step": 8,
+          "setCycleState": [
+            [
+              "storageclass",
+              "created_cephfs"
+            ]
+          ]
+        },
+        {
+          "step": 9,
+          "setCycleState": [
+            [
+              "pvc_status",
+              "pending_rwx"
+            ]
+          ]
+        },
+        {
+          "step": 10,
+          "setCycleState": [
+            [
+              "csi_provision",
+              "creating_subvolume"
+            ]
+          ]
+        },
+        {
+          "step": 11,
+          "setCycleState": [
+            [
+              "subvolume",
+              "quota_set"
+            ]
+          ]
+        },
+        {
+          "step": 12,
+          "setCycleState": [
+            [
+              "pv_status",
+              "bound"
+            ]
+          ]
+        },
+        {
+          "step": 13,
+          "setCycleState": [
+            [
+              "pod",
+              "scheduled"
+            ]
+          ]
+        },
+        {
+          "step": 14,
+          "setCycleState": [
+            [
+              "csi_mount",
+              "staging"
+            ]
+          ]
+        },
+        {
+          "step": 15,
+          "setCycleState": [
+            [
+              "kcephfs",
+              "mounted"
+            ]
+          ]
+        },
+        {
+          "step": 16,
+          "phase": "response",
+          "clearCycleState": true
+        }
+      ],
+      "rgw_object_store": [
+        {
+          "step": 1,
+          "replaceHeaders": [
+            [
+              "Flow",
+              "CephObjectStore (RGW) for Glance/Swift"
+            ],
+            [
+              "Phase",
+              "Object Store Deployment"
+            ],
+            [
+              "Actor",
+              "Platform Admin"
+            ]
+          ],
+          "replaceBody": "Platform admin applies CephObjectStore CR for RGW deployment.\\nConfigures S3/Swift-compatible object storage for OpenStack Glance image backend."
+        },
+        {
+          "step": 2,
+          "setCycleState": [
+            [
+              "objectstore_status",
+              "reconciling"
+            ]
+          ]
+        },
+        {
+          "step": 3,
+          "setCycleState": [
+            [
+              "rgw_data_pool",
+              "creating"
+            ]
+          ]
+        },
+        {
+          "step": 4,
+          "setCycleState": [
+            [
+              "rgw_metadata_pool",
+              "creating"
+            ]
+          ]
+        },
+        {
+          "step": 5,
+          "setCycleState": [
+            [
+              "rgw_deployment",
+              "deploying"
+            ]
+          ]
+        },
+        {
+          "step": 6,
+          "setCycleState": [
+            [
+              "rgw_endpoint",
+              "exposed"
+            ]
+          ]
+        },
+        {
+          "step": 7,
+          "setCycleState": [
+            [
+              "k8s_service",
+              "created"
+            ]
+          ]
+        },
+        {
+          "step": 8,
+          "setCycleState": [
+            [
+              "ingress_route",
+              "created"
+            ]
+          ]
+        },
+        {
+          "step": 9,
+          "setCycleState": [
+            [
+              "glance_backend",
+              "swift_configured"
+            ]
+          ]
+        },
+        {
+          "step": 10,
+          "setCycleState": [
+            [
+              "image_upload",
+              "in_progress"
+            ]
+          ]
+        },
+        {
+          "step": 11,
+          "setCycleState": [
+            [
+              "rgw_write",
+              "streaming"
+            ]
+          ]
+        },
+        {
+          "step": 12,
+          "setCycleState": [
+            [
+              "osd_write",
+              "replicating"
+            ]
+          ]
+        },
+        {
+          "step": 13,
+          "setCycleState": [
+            [
+              "image_status",
+              "active"
+            ]
+          ]
+        },
+        {
+          "step": 14,
+          "phase": "response",
+          "clearCycleState": true
+        }
+      ],
+      "mon_quorum_loss": [
+        {
+          "step": 1,
+          "replaceHeaders": [
+            [
+              "Scenario",
+              "MON Quorum Loss"
+            ],
+            [
+              "Severity",
+              "Critical"
+            ],
+            [
+              "Impact",
+              "Cluster-wide write block"
+            ]
+          ],
+          "replaceBody": "FAILURE: 2 of 3 MON pods crash or get evicted\\nQuorum requires majority (2/3) to function\\nWith only 1 MON alive, Paxos consensus fails\\nAll cluster write operations will be blocked"
+        },
+        {
+          "step": 2,
+          "setCycleState": [
+            [
+              "mon_status",
+              "quorum_lost"
+            ]
+          ]
+        },
+        {
+          "step": 3,
+          "setCycleState": [
+            [
+              "cluster_health",
+              "HEALTH_ERR"
+            ]
+          ]
+        },
+        {
+          "step": 4,
+          "setCycleState": [
+            [
+              "write_status",
+              "blocked"
+            ]
+          ]
+        },
+        {
+          "step": 5,
+          "setCycleState": [
+            [
+              "cinder_io",
+              "stalled"
+            ]
+          ]
+        },
+        {
+          "step": 6,
+          "setCycleState": [
+            [
+              "glance_io",
+              "stalled"
+            ]
+          ]
+        },
+        {
+          "step": 7,
+          "setCycleState": [
+            [
+              "rook_action",
+              "detecting"
+            ]
+          ]
+        },
+        {
+          "step": 8,
+          "setCycleState": [
+            [
+              "rook_action",
+              "checking_pdb"
+            ]
+          ]
+        },
+        {
+          "step": 9,
+          "setCycleState": [
+            [
+              "rook_action",
+              "recreating_mon"
+            ]
+          ]
+        },
+        {
+          "step": 10,
+          "setCycleState": [
+            [
+              "new_mon",
+              "starting"
+            ]
+          ]
+        },
+        {
+          "step": 11,
+          "setCycleState": [
+            [
+              "new_mon",
+              "monmap_injected"
+            ]
+          ]
+        },
+        {
+          "step": 12,
+          "setCycleState": [
+            [
+              "mon_status",
+              "quorum_restored_2_of_3"
+            ]
+          ]
+        },
+        {
+          "step": 13,
+          "setCycleState": [
+            [
+              "write_status",
+              "resumed"
+            ]
+          ]
+        },
+        {
+          "step": 14,
+          "setCycleState": [
+            [
+              "cinder_io",
+              "resumed"
+            ]
+          ]
+        },
+        {
+          "step": 15,
+          "setCycleState": [
+            [
+              "mon_status",
+              "quorum_full_3_of_3"
+            ]
+          ]
+        },
+        {
+          "step": 16,
+          "replaceHeaders": [
+            [
+              "Scenario",
+              "MON Quorum Loss"
+            ],
+            [
+              "Resolution",
+              "Full Recovery"
+            ],
+            [
+              "Final State",
+              "HEALTH_OK"
+            ]
+          ],
+          "replaceBody": "RECOVERED: All 3 MON pods healthy and in quorum\\nPaxos consensus fully operational\\nAll client I/O resumed normally\\nNo data loss occurred during the outage",
+          "phase": "response",
+          "clearCycleState": true
+        }
+      ],
+      "osd_auto_recovery": [
+        {
+          "step": 1,
+          "replaceHeaders": [
+            [
+              "Scenario",
+              "OSD Auto Recovery"
+            ],
+            [
+              "Trigger",
+              "Disk I/O Error"
+            ],
+            [
+              "Impact",
+              "PG Degradation"
+            ]
+          ],
+          "replaceBody": "FAILURE: OSD pod exits with EIO (I/O error)\\nUnderlying disk reports unrecoverable read errors\\nOSD cannot serve reads or accept writes\\nRook and Ceph will collaborate on automatic recovery"
+        },
+        {
+          "step": 2,
+          "setCycleState": [
+            [
+              "osd_status",
+              "down"
+            ]
+          ]
+        },
+        {
+          "step": 3,
+          "setCycleState": [
+            [
+              "grace_period",
+              "active_600s"
+            ]
+          ]
+        },
+        {
+          "step": 4,
+          "setCycleState": [
+            [
+              "osd_status",
+              "out"
+            ]
+          ]
+        },
+        {
+          "step": 5,
+          "setCycleState": [
+            [
+              "pg_status",
+              "remapping"
+            ]
+          ]
+        },
+        {
+          "step": 6,
+          "setCycleState": [
+            [
+              "recovery_io",
+              "active"
+            ]
+          ]
+        },
+        {
+          "step": 7,
+          "setCycleState": [
+            [
+              "rook_action",
+              "detected_crashloop"
+            ]
+          ]
+        },
+        {
+          "step": 8,
+          "setCycleState": [
+            [
+              "rook_action",
+              "evaluating_disk"
+            ]
+          ]
+        },
+        {
+          "step": 9,
+          "setCycleState": [
+            [
+              "rook_action",
+              "restarting_osd"
+            ]
+          ]
+        },
+        {
+          "step": 10,
+          "setCycleState": [
+            [
+              "osd_status",
+              "up_and_in"
+            ]
+          ]
+        },
+        {
+          "step": 11,
+          "setCycleState": [
+            [
+              "pg_status",
+              "recovering"
+            ]
+          ]
+        },
+        {
+          "step": 12,
+          "setCycleState": [
+            [
+              "rook_action",
+              "purging_osd"
+            ]
+          ]
+        },
+        {
+          "step": 13,
+          "setCycleState": [
+            [
+              "rook_action",
+              "preparing_replacement"
+            ]
+          ]
+        },
+        {
+          "step": 14,
+          "setCycleState": [
+            [
+              "new_osd",
+              "provisioned"
+            ]
+          ]
+        },
+        {
+          "step": 15,
+          "setCycleState": [
+            [
+              "pg_status",
+              "active_clean"
+            ]
+          ]
+        },
+        {
+          "step": 16,
+          "replaceHeaders": [
+            [
+              "Scenario",
+              "OSD Auto Recovery"
+            ],
+            [
+              "Resolution",
+              "Automatic"
+            ],
+            [
+              "Final State",
+              "HEALTH_OK"
+            ]
+          ],
+          "replaceBody": "RECOVERED: OSD failure handled automatically by Rook\\nPath A: Disk valid → OSD restarted and rejoined\\nPath B: Disk failed → OSD purged, replacement provisioned\\nAll PGs returned to active+clean, no manual intervention needed",
+          "phase": "response",
+          "clearCycleState": true
+        }
+      ],
+      "pg_degraded_recovery": [
+        {
+          "step": 1,
+          "replaceHeaders": [
+            [
+              "Scenario",
+              "PG Degraded Recovery"
+            ],
+            [
+              "Trigger",
+              "Node Drain"
+            ],
+            [
+              "Impact",
+              "Temporary PG Degradation"
+            ]
+          ],
+          "replaceBody": "MAINTENANCE: Node drain initiated by platform admin\\nAll pods on target node will be evicted\\nOSD pods on the node will terminate gracefully\\nPGs with replicas on those OSDs will degrade temporarily"
+        },
+        {
+          "step": 2,
+          "setCycleState": [
+            [
+              "osd_status",
+              "down"
+            ]
+          ]
+        },
+        {
+          "step": 3,
+          "setCycleState": [
+            [
+              "pg_status",
+              "degraded"
+            ]
+          ]
+        },
+        {
+          "step": 4,
+          "setCycleState": [
+            [
+              "recovery_io",
+              "started"
+            ]
+          ]
+        },
+        {
+          "step": 5,
+          "setCycleState": [
+            [
+              "rate_limiting",
+              "active"
+            ]
+          ]
+        },
+        {
+          "step": 6,
+          "setCycleState": [
+            [
+              "recovery_max_active",
+              "3"
+            ]
+          ]
+        },
+        {
+          "step": 7,
+          "setCycleState": [
+            [
+              "pg_status",
+              "relocating"
+            ]
+          ]
+        },
+        {
+          "step": 8,
+          "setCycleState": [
+            [
+              "rebalance",
+              "in_progress"
+            ]
+          ]
+        },
+        {
+          "step": 9,
+          "setCycleState": [
+            [
+              "pg_status",
+              "recovering"
+            ]
+          ]
+        },
+        {
+          "step": 10,
+          "setCycleState": [
+            [
+              "pg_status",
+              "backfilling"
+            ]
+          ]
+        },
+        {
+          "step": 11,
+          "setCycleState": [
+            [
+              "pg_status",
+              "active_clean"
+            ]
+          ]
+        },
+        {
+          "step": 12,
+          "setCycleState": [
+            [
+              "cluster_health",
+              "HEALTH_OK"
+            ]
+          ]
+        },
+        {
+          "step": 13,
+          "setCycleState": [
+            [
+              "node_status",
+              "returned"
+            ]
+          ]
+        },
+        {
+          "step": 14,
+          "replaceHeaders": [
+            [
+              "Scenario",
+              "PG Degraded Recovery"
+            ],
+            [
+              "Resolution",
+              "Self-Healing"
+            ],
+            [
+              "Final State",
+              "HEALTH_OK"
+            ]
+          ],
+          "replaceBody": "RECOVERED: PGs fully healed after node drain\\nRecovery I/O completed within rate limits\\nNode returned and OSDs rejoined cluster\\nCRUSH rebalanced PGs for optimal distribution",
+          "phase": "response",
+          "clearCycleState": true
+        }
+      ],
+      "ceph_nearfull": [
+        {
+          "step": 1,
+          "replaceHeaders": [
+            [
+              "Scenario",
+              "Ceph Near-Full OSD"
+            ],
+            [
+              "Trigger",
+              "85% Utilization"
+            ],
+            [
+              "Risk",
+              "Write Blocking at 95%"
+            ]
+          ],
+          "replaceBody": "WARNING: OSD utilization crossed nearfull_ratio (85%)\\nIf unchecked, will reach full_ratio (95%) and block writes\\nAll VMs with volumes on this OSD are at risk\\nImmediate capacity expansion recommended"
+        },
+        {
+          "step": 2,
+          "setCycleState": [
+            [
+              "cluster_health",
+              "HEALTH_WARN"
+            ]
+          ]
+        },
+        {
+          "step": 3,
+          "setCycleState": [
+            [
+              "alert_status",
+              "CephOSDNearFull_firing"
+            ]
+          ]
+        },
+        {
+          "step": 4,
+          "setCycleState": [
+            [
+              "rook_event",
+              "emitted"
+            ]
+          ]
+        },
+        {
+          "step": 5,
+          "setCycleState": [
+            [
+              "osd_status",
+              "full_writes_blocked"
+            ]
+          ]
+        },
+        {
+          "step": 6,
+          "setCycleState": [
+            [
+              "vm_a_io",
+              "error"
+            ]
+          ]
+        },
+        {
+          "step": 7,
+          "setCycleState": [
+            [
+              "vm_b_io",
+              "error"
+            ]
+          ]
+        },
+        {
+          "step": 8,
+          "setCycleState": [
+            [
+              "admin_action",
+              "adding_osds"
+            ]
+          ]
+        },
+        {
+          "step": 9,
+          "setCycleState": [
+            [
+              "rook_action",
+              "provisioning_osds"
+            ]
+          ]
+        },
+        {
+          "step": 10,
+          "setCycleState": [
+            [
+              "rebalance",
+              "reweight_active"
+            ]
+          ]
+        },
+        {
+          "step": 11,
+          "setCycleState": [
+            [
+              "rebalance",
+              "data_moving"
+            ]
+          ]
+        },
+        {
+          "step": 12,
+          "setCycleState": [
+            [
+              "osd_status",
+              "below_nearfull"
+            ]
+          ]
+        },
+        {
+          "step": 13,
+          "setCycleState": [
+            [
+              "vm_io",
+              "resumed"
+            ]
+          ]
+        },
+        {
+          "step": 14,
+          "replaceHeaders": [
+            [
+              "Scenario",
+              "Ceph Near-Full OSD"
+            ],
+            [
+              "Resolution",
+              "Capacity Expansion"
+            ],
+            [
+              "Final State",
+              "HEALTH_OK"
+            ]
+          ],
+          "replaceBody": "RECOVERED: OSD capacity crisis resolved\\nNew OSDs added and data rebalanced\\nAll OSDs below nearfull threshold\\nVM I/O fully restored, no data loss",
+          "phase": "response",
+          "clearCycleState": true
+        }
+      ],
+      "rbd_async_mirror": [
+        {
+          "step": 1,
+          "replaceHeaders": [
+            [
+              "Flow",
+              "RBD Mirroring (Async DR)"
+            ],
+            [
+              "Phase",
+              "Configuration"
+            ],
+            [
+              "Actor",
+              "Platform Admin"
+            ]
+          ],
+          "replaceBody": "Enabling RBD mirroring on CephBlockPool CR.\n\nspec:\n  mirroring:\n    enabled: true\n    mode: image\n  statusCheck:\n    mirror: {}"
+        },
+        {
+          "step": 2,
+          "setCycleState": [
+            [
+              "mirror_state",
+              "deploying"
+            ]
+          ]
+        },
+        {
+          "step": 3,
+          "setCycleState": [
+            [
+              "mirror_state",
+              "token_generated"
+            ]
+          ]
+        },
+        {
+          "step": 4,
+          "setCycleState": [
+            [
+              "mirror_state",
+              "peer_imported"
+            ]
+          ]
+        },
+        {
+          "step": 5,
+          "setCycleState": [
+            [
+              "mirror_state",
+              "connected"
+            ]
+          ]
+        },
+        {
+          "step": 6,
+          "setCycleState": [
+            [
+              "mirror_state",
+              "streaming_journals"
+            ]
+          ]
+        },
+        {
+          "step": 7,
+          "setCycleState": [
+            [
+              "mirror_state",
+              "replicating"
+            ]
+          ]
+        },
+        {
+          "step": 8,
+          "setCycleState": [
+            [
+              "mirror_state",
+              "steady_state"
+            ]
+          ]
+        },
+        {
+          "step": 9,
+          "setCycleState": [
+            [
+              "mirror_state",
+              "primary_failed"
+            ]
+          ]
+        },
+        {
+          "step": 10,
+          "setCycleState": [
+            [
+              "mirror_state",
+              "promoting_secondary"
+            ]
+          ]
+        },
+        {
+          "step": 11,
+          "setCycleState": [
+            [
+              "mirror_state",
+              "secondary_promoted"
+            ]
+          ]
+        },
+        {
+          "step": 12,
+          "setCycleState": [
+            [
+              "mirror_state",
+              "reconfiguring_cinder"
+            ]
+          ]
+        },
+        {
+          "step": 13,
+          "setCycleState": [
+            [
+              "mirror_state",
+              "cinder_reconnected"
+            ]
+          ]
+        },
+        {
+          "step": 14,
+          "setCycleState": [
+            [
+              "mirror_state",
+              "compute_reconnecting"
+            ]
+          ]
+        },
+        {
+          "step": 15,
+          "setCycleState": [
+            [
+              "mirror_state",
+              "vms_remounted"
+            ]
+          ]
+        },
+        {
+          "step": 16,
+          "phase": "response",
+          "clearCycleState": true
+        }
+      ],
+      "cephfs_snap_restore": [
+        {
+          "step": 1,
+          "replaceHeaders": [
+            [
+              "Flow",
+              "CephFS Snapshot + Restore"
+            ],
+            [
+              "Phase",
+              "Snapshot Creation"
+            ],
+            [
+              "Actor",
+              "Tenant"
+            ]
+          ],
+          "replaceBody": "Tenant creates VolumeSnapshot CR referencing an existing CephFS-backed PVC.\n\napiVersion: snapshot.storage.k8s.io/v1\nkind: VolumeSnapshot\nmetadata:\n  name: mydata-snap\nspec:\n  source:\n    persistentVolumeClaimName: mydata-pvc"
+        },
+        {
+          "step": 2,
+          "setCycleState": [
+            [
+              "snap_state",
+              "creating"
+            ]
+          ]
+        },
+        {
+          "step": 3,
+          "setCycleState": [
+            [
+              "snap_state",
+              "metadata_stored"
+            ]
+          ]
+        },
+        {
+          "step": 4,
+          "setCycleState": [
+            [
+              "snap_state",
+              "content_created"
+            ]
+          ]
+        },
+        {
+          "step": 5,
+          "setCycleState": [
+            [
+              "snap_state",
+              "ready"
+            ]
+          ]
+        },
+        {
+          "step": 6,
+          "setCycleState": [
+            [
+              "snap_state",
+              "restore_requested"
+            ]
+          ]
+        },
+        {
+          "step": 7,
+          "setCycleState": [
+            [
+              "snap_state",
+              "provisioning"
+            ]
+          ]
+        },
+        {
+          "step": 8,
+          "setCycleState": [
+            [
+              "snap_state",
+              "cloning"
+            ]
+          ]
+        },
+        {
+          "step": 9,
+          "setCycleState": [
+            [
+              "snap_state",
+              "copying_data"
+            ]
+          ]
+        },
+        {
+          "step": 10,
+          "setCycleState": [
+            [
+              "snap_state",
+              "pv_bound"
+            ]
+          ]
+        },
+        {
+          "step": 11,
+          "setCycleState": [
+            [
+              "snap_state",
+              "mounted"
+            ]
+          ]
+        },
+        {
+          "step": 12,
+          "setCycleState": [
+            [
+              "snap_state",
+              "verified"
+            ]
+          ]
+        },
+        {
+          "step": 13,
+          "setCycleState": [
+            [
+              "snap_state",
+              "snapshot_retained"
+            ]
+          ]
+        },
+        {
+          "step": 14,
+          "phase": "response",
+          "clearCycleState": true
+        }
+      ],
+      "rgw_multisite_geo": [
+        {
+          "step": 1,
+          "replaceHeaders": [
+            [
+              "Flow",
+              "RADOS Gateway Multi-Site (Geo-Replication)"
+            ],
+            [
+              "Phase",
+              "Realm Setup"
+            ],
+            [
+              "Actor",
+              "Platform Admin"
+            ]
+          ],
+          "replaceBody": "Admin applies multi-site CRDs to establish geo-replication.\n\nCephObjectRealm → CephObjectZoneGroup → CephObjectZone\n\nTopology:\n  Realm: production\n  ZoneGroup: us\n  Primary Zone: us-east-1\n  Secondary Zone: us-west-2"
+        },
+        {
+          "step": 2,
+          "setCycleState": [
+            [
+              "rgw_state",
+              "hierarchy_created"
+            ]
+          ]
+        },
+        {
+          "step": 3,
+          "setCycleState": [
+            [
+              "rgw_state",
+              "master_configured"
+            ]
+          ]
+        },
+        {
+          "step": 4,
+          "setCycleState": [
+            [
+              "rgw_state",
+              "secondary_configured"
+            ]
+          ]
+        },
+        {
+          "step": 5,
+          "setCycleState": [
+            [
+              "rgw_state",
+              "sync_started"
+            ]
+          ]
+        },
+        {
+          "step": 6,
+          "setCycleState": [
+            [
+              "rgw_state",
+              "metadata_syncing"
+            ]
+          ]
+        },
+        {
+          "step": 7,
+          "setCycleState": [
+            [
+              "rgw_state",
+              "data_syncing"
+            ]
+          ]
+        },
+        {
+          "step": 8,
+          "setCycleState": [
+            [
+              "rgw_state",
+              "steady_state"
+            ]
+          ]
+        },
+        {
+          "step": 9,
+          "setCycleState": [
+            [
+              "rgw_state",
+              "primary_failed"
+            ]
+          ]
+        },
+        {
+          "step": 10,
+          "setCycleState": [
+            [
+              "rgw_state",
+              "promoting"
+            ]
+          ]
+        },
+        {
+          "step": 11,
+          "setCycleState": [
+            [
+              "rgw_state",
+              "promoted"
+            ]
+          ]
+        },
+        {
+          "step": 12,
+          "setCycleState": [
+            [
+              "rgw_state",
+              "dns_updated"
+            ]
+          ]
+        },
+        {
+          "step": 13,
+          "setCycleState": [
+            [
+              "rgw_state",
+              "glance_redirected"
+            ]
+          ]
+        },
+        {
+          "step": 14,
+          "setCycleState": [
+            [
+              "rgw_state",
+              "clients_redirected"
+            ]
+          ]
+        },
+        {
+          "step": 15,
+          "setCycleState": [
+            [
+              "rgw_state",
+              "objects_available"
+            ]
+          ]
+        },
+        {
+          "step": 16,
+          "phase": "response",
+          "clearCycleState": true
+        }
+      ],
+      "ceph_prometheus_dash": [
+        {
+          "step": 1,
+          "replaceHeaders": [
+            [
+              "Flow",
+              "Ceph Dashboard + Prometheus Integration"
+            ],
+            [
+              "Phase",
+              "Monitoring Setup"
+            ],
+            [
+              "Actor",
+              "Rook Operator"
+            ]
+          ],
+          "replaceBody": "Rook deploys MGR with monitoring modules enabled.\n\nspec:\n  dashboard:\n    enabled: true\n  monitoring:\n    enabled: true\n    metricsDisabled: false\n\nEndpoints:\n  Dashboard: https://ceph-mgr:8443\n  Metrics: http://ceph-mgr:9283/metrics"
+        },
+        {
+          "step": 2,
+          "setCycleState": [
+            [
+              "mon_state",
+              "servicemonitor_created"
+            ]
+          ]
+        },
+        {
+          "step": 3,
+          "setCycleState": [
+            [
+              "mon_state",
+              "scraping"
+            ]
+          ]
+        },
+        {
+          "step": 4,
+          "setCycleState": [
+            [
+              "mon_state",
+              "metrics_collected"
+            ]
+          ]
+        },
+        {
+          "step": 5,
+          "setCycleState": [
+            [
+              "mon_state",
+              "alerts_defined"
+            ]
+          ]
+        },
+        {
+          "step": 6,
+          "setCycleState": [
+            [
+              "mon_state",
+              "dashboards_loaded"
+            ]
+          ]
+        },
+        {
+          "step": 7,
+          "setCycleState": [
+            [
+              "mon_state",
+              "alert_firing"
+            ]
+          ]
+        },
+        {
+          "step": 8,
+          "setCycleState": [
+            [
+              "mon_state",
+              "alert_routed"
+            ]
+          ]
+        },
+        {
+          "step": 9,
+          "setCycleState": [
+            [
+              "mon_state",
+              "investigating"
+            ]
+          ]
+        },
+        {
+          "step": 10,
+          "setCycleState": [
+            [
+              "mon_state",
+              "root_cause_found"
+            ]
+          ]
+        },
+        {
+          "step": 11,
+          "setCycleState": [
+            [
+              "mon_state",
+              "reweight_applied"
+            ]
+          ]
+        },
+        {
+          "step": 12,
+          "setCycleState": [
+            [
+              "mon_state",
+              "rebalancing"
+            ]
+          ]
+        },
+        {
+          "step": 13,
+          "setCycleState": [
+            [
+              "mon_state",
+              "alert_resolved"
+            ]
+          ]
+        },
+        {
+          "step": 14,
+          "phase": "response",
+          "clearCycleState": true
+        }
+      ],
+      "rbd_qos_tuning": [
+        {
+          "step": 1,
+          "replaceHeaders": [
+            [
+              "Flow",
+              "RBD Performance Tuning (QoS)"
+            ],
+            [
+              "Phase",
+              "QoS Configuration"
+            ],
+            [
+              "Actor",
+              "Platform Admin"
+            ]
+          ],
+          "replaceBody": "Configuring pool-level QoS on CephBlockPool.\n\nspec:\n  parameters:\n    rbd_qos_iops_limit: \"5000\"\n    rbd_qos_bps_limit: \"1073741824\"\n    rbd_qos_read_iops_limit: \"3000\"\n    rbd_qos_write_iops_limit: \"2000\"\n\nEnforcement: OSD-side token bucket per RBD image"
+        },
+        {
+          "step": 2,
+          "setCycleState": [
+            [
+              "qos_state",
+              "pool_configured"
+            ]
+          ]
+        },
+        {
+          "step": 3,
+          "setCycleState": [
+            [
+              "qos_state",
+              "volume_type_mapped"
+            ]
+          ]
+        },
+        {
+          "step": 4,
+          "setCycleState": [
+            [
+              "qos_state",
+              "volume_requested"
+            ]
+          ]
+        },
+        {
+          "step": 5,
+          "setCycleState": [
+            [
+              "qos_state",
+              "image_created"
+            ]
+          ]
+        },
+        {
+          "step": 6,
+          "setCycleState": [
+            [
+              "qos_state",
+              "qos_inherited"
+            ]
+          ]
+        },
+        {
+          "step": 7,
+          "setCycleState": [
+            [
+              "qos_state",
+              "volume_attached"
+            ]
+          ]
+        },
+        {
+          "step": 8,
+          "setCycleState": [
+            [
+              "qos_state",
+              "io_active"
+            ]
+          ]
+        },
+        {
+          "step": 9,
+          "setCycleState": [
+            [
+              "qos_state",
+              "throttle_enforcing"
+            ]
+          ]
+        },
+        {
+          "step": 10,
+          "setCycleState": [
+            [
+              "qos_state",
+              "throttling_active"
+            ]
+          ]
+        },
+        {
+          "step": 11,
+          "setCycleState": [
+            [
+              "qos_state",
+              "dashboard_visible"
+            ]
+          ]
+        },
+        {
+          "step": 12,
+          "phase": "response",
+          "clearCycleState": true
+        }
+      ],
+      "stretch_cluster": [
+        {
+          "step": 1,
+          "replaceHeaders": [
+            [
+              "Flow",
+              "Ceph Stretch Cluster (3-Site)"
+            ],
+            [
+              "Phase",
+              "Stretch Configuration"
+            ],
+            [
+              "Actor",
+              "Platform Admin"
+            ]
+          ],
+          "replaceBody": "Configuring 3-site stretch cluster in CephCluster CR.\n\nspec:\n  mon:\n    count: 5\n    stretchCluster:\n      failureDomainLabel: topology.kubernetes.io/zone\n      zones:\n      - name: site-a\n        arbiter: false\n      - name: site-b\n        arbiter: false\n      - name: site-c\n        arbiter: true"
+        },
+        {
+          "step": 2,
+          "setCycleState": [
+            [
+              "stretch_state",
+              "mons_deploying"
+            ]
+          ]
+        },
+        {
+          "step": 3,
+          "setCycleState": [
+            [
+              "stretch_state",
+              "arbiter_deployed"
+            ]
+          ]
+        },
+        {
+          "step": 4,
+          "setCycleState": [
+            [
+              "stretch_state",
+              "crush_configured"
+            ]
+          ]
+        },
+        {
+          "step": 5,
+          "setCycleState": [
+            [
+              "stretch_state",
+              "osds_registered"
+            ]
+          ]
+        },
+        {
+          "step": 6,
+          "setCycleState": [
+            [
+              "stretch_state",
+              "io_active"
+            ]
+          ]
+        },
+        {
+          "step": 7,
+          "setCycleState": [
+            [
+              "stretch_state",
+              "arbiter_active"
+            ]
+          ]
+        },
+        {
+          "step": 8,
+          "setCycleState": [
+            [
+              "stretch_state",
+              "quorum_normal"
+            ]
+          ]
+        },
+        {
+          "step": 9,
+          "setCycleState": [
+            [
+              "stretch_state",
+              "site_a_failed"
+            ]
+          ]
+        },
+        {
+          "step": 10,
+          "setCycleState": [
+            [
+              "stretch_state",
+              "quorum_maintained"
+            ]
+          ]
+        },
+        {
+          "step": 11,
+          "setCycleState": [
+            [
+              "stretch_state",
+              "degraded_writes"
+            ]
+          ]
+        },
+        {
+          "step": 12,
+          "setCycleState": [
+            [
+              "stretch_state",
+              "surviving_site_ok"
+            ]
+          ]
+        },
+        {
+          "step": 13,
+          "setCycleState": [
+            [
+              "stretch_state",
+              "site_a_recovering"
+            ]
+          ]
+        },
+        {
+          "step": 14,
+          "setCycleState": [
+            [
+              "stretch_state",
+              "quorum_full"
+            ]
+          ]
+        },
+        {
+          "step": 15,
+          "setCycleState": [
+            [
+              "stretch_state",
+              "re_replicating"
+            ]
+          ]
+        },
+        {
+          "step": 16,
+          "phase": "response",
+          "clearCycleState": true
+        }
+      ],
+      "odf_external_ceph": [
+        {
+          "step": 1,
+          "replaceHeaders": [
+            [
+              "Flow",
+              "ODF StorageSystem → External Ceph for RHOSO"
+            ],
+            [
+              "Phase",
+              "ODF Deployment"
+            ],
+            [
+              "Actor",
+              "Platform Admin"
+            ]
+          ],
+          "replaceBody": "Deploying ODF Operator for external Ceph integration.\n\nNamespace: openshift-storage\nSubscription:\n  source: redhat-operators\n  name: odf-operator\n\nMode: External (no local Ceph cluster)\nConnection: Pre-existing Ceph cluster"
+        },
+        {
+          "step": 2,
+          "setCycleState": [
+            [
+              "odf_state",
+              "operator_installed"
+            ]
+          ]
+        },
+        {
+          "step": 3,
+          "setCycleState": [
+            [
+              "odf_state",
+              "storage_system_created"
+            ]
+          ]
+        },
+        {
+          "step": 4,
+          "setCycleState": [
+            [
+              "odf_state",
+              "cluster_discovered"
+            ]
+          ]
+        },
+        {
+          "step": 5,
+          "setCycleState": [
+            [
+              "odf_state",
+              "credentials_imported"
+            ]
+          ]
+        },
+        {
+          "step": 6,
+          "setCycleState": [
+            [
+              "odf_state",
+              "secret_created"
+            ]
+          ]
+        },
+        {
+          "step": 7,
+          "setCycleState": [
+            [
+              "odf_state",
+              "operators_consuming"
+            ]
+          ]
+        },
+        {
+          "step": 8,
+          "setCycleState": [
+            [
+              "odf_state",
+              "cinder_configured"
+            ]
+          ]
+        },
+        {
+          "step": 9,
+          "setCycleState": [
+            [
+              "odf_state",
+              "glance_configured"
+            ]
+          ]
+        },
+        {
+          "step": 10,
+          "setCycleState": [
+            [
+              "odf_state",
+              "nova_configured"
+            ]
+          ]
+        },
+        {
+          "step": 11,
+          "setCycleState": [
+            [
+              "odf_state",
+              "storageclasses_ready"
+            ]
+          ]
+        },
+        {
+          "step": 12,
+          "setCycleState": [
+            [
+              "odf_state",
+              "pvc_created"
+            ]
+          ]
+        },
+        {
+          "step": 13,
+          "setCycleState": [
+            [
+              "odf_state",
+              "volume_provisioned"
+            ]
+          ]
+        },
+        {
+          "step": 14,
+          "phase": "response",
+          "clearCycleState": true
+        }
+      ],
+      "csi_rbd_attach_path": [
+        {
+          "step": 1,
+          "replaceHeaders": [
+            [
+              "Flow",
+              "CSI Volume Attach Path (RBD Kernel)"
+            ],
+            [
+              "Phase",
+              "Volume Binding"
+            ],
+            [
+              "Actor",
+              "Tenant / kubelet"
+            ]
+          ],
+          "replaceBody": "CSI RBD kernel attach path from PVC to application I/O.\n\nI/O Stack:\n  app → write() → VFS → ext4 → rbd.ko → libceph\n  → msgr2/TCP → OSD → BlueStore → NVMe\n\nKernel Module: rbd.ko (in-kernel RADOS client)\nDevice: /dev/rbdN\nFilesystem: ext4 (default) or xfs"
+        },
+        {
+          "step": 2,
+          "setCycleState": [
+            [
+              "attach_state",
+              "pod_scheduled"
+            ]
+          ]
+        },
+        {
+          "step": 3,
+          "setCycleState": [
+            [
+              "attach_state",
+              "lifecycle_started"
+            ]
+          ]
+        },
+        {
+          "step": 4,
+          "setCycleState": [
+            [
+              "attach_state",
+              "controller_publish_done"
+            ]
+          ]
+        },
+        {
+          "step": 5,
+          "setCycleState": [
+            [
+              "attach_state",
+              "node_stage_called"
+            ]
+          ]
+        },
+        {
+          "step": 6,
+          "setCycleState": [
+            [
+              "attach_state",
+              "rbd_mapping"
+            ]
+          ]
+        },
+        {
+          "step": 7,
+          "setCycleState": [
+            [
+              "attach_state",
+              "kernel_module_loaded"
+            ]
+          ]
+        },
+        {
+          "step": 8,
+          "setCycleState": [
+            [
+              "attach_state",
+              "device_created"
+            ]
+          ]
+        },
+        {
+          "step": 9,
+          "setCycleState": [
+            [
+              "attach_state",
+              "filesystem_ready"
+            ]
+          ]
+        },
+        {
+          "step": 10,
+          "setCycleState": [
+            [
+              "attach_state",
+              "staged"
+            ]
+          ]
+        },
+        {
+          "step": 11,
+          "setCycleState": [
+            [
+              "attach_state",
+              "node_publish_called"
+            ]
+          ]
+        },
+        {
+          "step": 12,
+          "setCycleState": [
+            [
+              "attach_state",
+              "bind_mounted"
+            ]
+          ]
+        },
+        {
+          "step": 13,
+          "setCycleState": [
+            [
+              "attach_state",
+              "io_vfs_ext4"
+            ]
+          ]
+        },
+        {
+          "step": 14,
+          "setCycleState": [
+            [
+              "attach_state",
+              "io_rbd_librados"
+            ]
+          ]
+        },
+        {
+          "step": 15,
+          "setCycleState": [
+            [
+              "attach_state",
+              "io_osd_replicated"
+            ]
+          ]
+        },
+        {
+          "step": 16,
+          "phase": "response",
+          "clearCycleState": true
+        }
       ]
     }
   },
@@ -17602,7 +23149,26 @@ const diagram = {
     "full_dr_restore",
     "api_trace_jaeger",
     "compute_split_brain",
-    "quota_enforcement"
+    "quota_enforcement",
+    "rook_cluster_bootstrap",
+    "osd_hot_add",
+    "osd_removal",
+    "rook_ceph_upgrade",
+    "ceph_blockpool_sc",
+    "cephfs_provision",
+    "rgw_object_store",
+    "mon_quorum_loss",
+    "osd_auto_recovery",
+    "pg_degraded_recovery",
+    "ceph_nearfull",
+    "rbd_async_mirror",
+    "cephfs_snap_restore",
+    "rgw_multisite_geo",
+    "ceph_prometheus_dash",
+    "rbd_qos_tuning",
+    "stretch_cluster",
+    "odf_external_ceph",
+    "csi_rbd_attach_path"
   ],
   "defaultFlow": "vm_launch",
   "legend": [
