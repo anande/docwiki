@@ -7900,7 +7900,8 @@ const diagram = {
           "target": "rabbitmq",
           "badge": "✓"
         }
-      ]
+      ],
+      "label": "㉝ RabbitMQ Network Partition Recovery"
     },
     "ovn_db_failover": {
       "title": "㉞ OVN DB Leader Election + Failover",
@@ -8003,7 +8004,8 @@ const diagram = {
           "target": "ovn_nb",
           "badge": "✓"
         }
-      ]
+      ],
+      "label": "㉞ OVN DB Leader Failover (RAFT)"
     },
     "full_dr_restore": {
       "title": "㉟ Full Control Plane Disaster Recovery",
@@ -8134,7 +8136,8 @@ const diagram = {
           "target": "platform_admin",
           "badge": "✓"
         }
-      ]
+      ],
+      "label": "㉟ Full Control Plane DR Restore"
     },
     "api_trace_jaeger": {
       "title": "㊱ OpenStack API Request Tracing (OSProfiler)",
@@ -8245,7 +8248,8 @@ const diagram = {
           "color": "#3fb950",
           "num": 14
         }
-      ]
+      ],
+      "label": "㊱ API Tracing (OSProfiler → Jaeger)"
     },
     "compute_split_brain": {
       "title": "㊲ Compute Node Connectivity Loss (Split-Brain)",
@@ -8360,7 +8364,8 @@ const diagram = {
           "target": "vm_a",
           "badge": "✓"
         }
-      ]
+      ],
+      "label": "㊲ Compute Split-Brain Detection + Recovery"
     },
     "quota_enforcement": {
       "title": "㊳ Quota Enforcement + Unified Limits",
@@ -8453,10 +8458,11 @@ const diagram = {
           "color": "#3fb950",
           "num": 12
         }
-      ]
+      ],
+      "label": "㊳ Quota Enforcement + Unified Limits"
     },
     "rook_cluster_bootstrap": {
-      "label": "Rook-Ceph Cluster Bootstrap",
+      "label": "㊴ Rook-Ceph Cluster Bootstrap",
       "steps": [
         {
           "from": "platform_admin",
@@ -8582,7 +8588,7 @@ const diagram = {
       ]
     },
     "osd_hot_add": {
-      "label": "OSD Addition / Disk Hot-Add",
+      "label": "㊵ OSD Addition / Disk Hot-Add",
       "steps": [
         {
           "target": "compute_a",
@@ -8691,7 +8697,7 @@ const diagram = {
       ]
     },
     "osd_removal": {
-      "label": "OSD Removal + Rebalance",
+      "label": "㊶ OSD Removal + Rebalance",
       "steps": [
         {
           "from": "platform_admin",
@@ -8798,7 +8804,7 @@ const diagram = {
       ]
     },
     "rook_ceph_upgrade": {
-      "label": "Rook-Ceph Rolling Upgrade",
+      "label": "㊷ Rook-Ceph Rolling Upgrade",
       "steps": [
         {
           "from": "platform_admin",
@@ -8923,7 +8929,7 @@ const diagram = {
       ]
     },
     "ceph_blockpool_sc": {
-      "label": "CephBlockPool + StorageClass Creation",
+      "label": "㊸ CephBlockPool + StorageClass Creation",
       "steps": [
         {
           "from": "platform_admin",
@@ -9051,7 +9057,7 @@ const diagram = {
       ]
     },
     "cephfs_provision": {
-      "label": "CephFilesystem (CephFS) Provisioning",
+      "label": "㊹ CephFilesystem (CephFS) Provisioning",
       "steps": [
         {
           "from": "platform_admin",
@@ -9180,7 +9186,7 @@ const diagram = {
       ]
     },
     "rgw_object_store": {
-      "label": "CephObjectStore (RGW) for Glance/Swift",
+      "label": "㊺ CephObjectStore (RGW) for Glance/Swift",
       "steps": [
         {
           "from": "platform_admin",
@@ -9293,7 +9299,7 @@ const diagram = {
       ]
     },
     "mon_quorum_loss": {
-      "label": "MON Quorum Loss + Recovery",
+      "label": "㊻ MON Quorum Loss + Recovery",
       "steps": [
         {
           "target": "ceph_mon",
@@ -9418,7 +9424,7 @@ const diagram = {
       ]
     },
     "osd_auto_recovery": {
-      "label": "OSD Failure + Automatic Recovery",
+      "label": "㊼ OSD Failure + Automatic Recovery",
       "steps": [
         {
           "target": "ceph_osd",
@@ -9543,7 +9549,7 @@ const diagram = {
       ]
     },
     "pg_degraded_recovery": {
-      "label": "PG Not Clean / Degraded Recovery",
+      "label": "㊽ PG Not Clean / Degraded Recovery",
       "steps": [
         {
           "from": "platform_admin",
@@ -9650,7 +9656,7 @@ const diagram = {
       ]
     },
     "ceph_nearfull": {
-      "label": "Ceph Full / Near-Full OSD Handling",
+      "label": "㊾ Ceph Full / Near-Full OSD Handling",
       "steps": [
         {
           "target": "ceph_osd",
@@ -9757,7 +9763,7 @@ const diagram = {
       ]
     },
     "rbd_async_mirror": {
-      "label": "RBD Mirroring (Async DR)",
+      "label": "㊿ RBD Mirroring (Async DR)",
       "steps": [
         {
           "from": "platform_admin",
@@ -9886,7 +9892,7 @@ const diagram = {
       ]
     },
     "cephfs_snap_restore": {
-      "label": "CephFS Snapshot + Restore",
+      "label": "(51) CephFS Snapshot + Restore",
       "steps": [
         {
           "from": "cloud_user",
@@ -9997,7 +10003,7 @@ const diagram = {
       ]
     },
     "rgw_multisite_geo": {
-      "label": "RADOS Gateway Multi-Site (Geo-Replication)",
+      "label": "(52) RADOS Gateway Multi-Site (Geo-Replication)",
       "steps": [
         {
           "from": "platform_admin",
@@ -10124,7 +10130,7 @@ const diagram = {
       ]
     },
     "ceph_prometheus_dash": {
-      "label": "Ceph Dashboard + Prometheus Integration",
+      "label": "(53) Ceph Dashboard + Prometheus Integration",
       "steps": [
         {
           "from": "rook_operator",
@@ -10234,7 +10240,7 @@ const diagram = {
       ]
     },
     "rbd_qos_tuning": {
-      "label": "RBD Performance Tuning (QoS)",
+      "label": "(54) RBD Performance Tuning (QoS)",
       "steps": [
         {
           "from": "platform_admin",
@@ -10332,7 +10338,7 @@ const diagram = {
       ]
     },
     "stretch_cluster": {
-      "label": "Ceph Stretch Cluster (3-Site)",
+      "label": "(55) Ceph Stretch Cluster (3-Site)",
       "steps": [
         {
           "from": "platform_admin",
@@ -10456,7 +10462,7 @@ const diagram = {
       ]
     },
     "odf_external_ceph": {
-      "label": "ODF StorageSystem → External Ceph for RHOSO",
+      "label": "(56) ODF StorageSystem → External Ceph for RHOSO",
       "steps": [
         {
           "from": "platform_admin",
@@ -10570,7 +10576,7 @@ const diagram = {
       ]
     },
     "csi_rbd_attach_path": {
-      "label": "CSI Volume Attach Path (RBD Kernel)",
+      "label": "(57) CSI Volume Attach Path (RBD Kernel)",
       "steps": [
         {
           "from": "cloud_user",
