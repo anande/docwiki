@@ -851,6 +851,72 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#red-hat-idm-3-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Red Hat IDM (3 flows)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-ceph-storage-4-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Ceph Storage (4 flows)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spine-leaf-dpu-networking-4-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spine-Leaf &amp; DPU Networking (4 flows)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nfv-telco-5-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NFV / Telco (5 flows)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aiml-integration-4-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI/ML Integration (4 flows)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customer-demo-scenarios-3-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Customer Demo Scenarios (3 flows)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -996,7 +1062,7 @@
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 20a8 8 0 0 0 8-8 8 8 0 0 0-8-8 8 8 0 0 0-8 8 8 8 0 0 0 8 8m0-18a10 10 0 0 1 10 10 10 10 0 0 1-10 10C6.47 22 2 17.5 2 12A10 10 0 0 1 12 2m.5 5v5.25l4.5 2.67-.75 1.23L11 13V7z"/></svg>
                           <span class="md-ellipsis">
                             
-                              8 min read
+                              10 min read
                             
                           </span>
                         </div>
@@ -1059,7 +1125,21 @@
       
       
       
+        <a href="../../../../../tags/#tag:idm" class="md-tag">IDM</a>
+      
+    
+      
+      
+      
+      
         <a href="../../../../../tags/#tag:kubernetes" class="md-tag">Kubernetes</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../../tags/#tag:nfv" class="md-tag">NFV</a>
       
     
       
@@ -1082,7 +1162,7 @@
 
 
 <h1 id="rhoso-180-architecture-interactive-flowstory-visualizer">RHOSO 18.0 Architecture — Interactive FlowStory Visualizer<a class="headerlink" href="#rhoso-180-architecture-interactive-flowstory-visualizer" title="Permanent link">&para;</a></h1>
-<p>An interactive, animated architecture diagram for Red Hat OpenStack Services on OpenShift (RHOSO) 18.0, built with <a href="https://github.com/noyitz/flowstory">FlowStory</a>. A single self-contained HTML file that visualizes 73 operational flows with 1144 animated steps across the podified control plane, EDPM data plane, Rook-Ceph storage, GitOps/CI-CD, multi-cluster management, and disaster recovery sites.</p>
+<p>An interactive, animated architecture diagram for Red Hat OpenStack Services on OpenShift (RHOSO) 18.0, built with <a href="https://github.com/noyitz/flowstory">FlowStory</a>. A single self-contained HTML file that visualizes <strong>96 operational flows</strong> with <strong>1476 animated steps</strong> across 26 categories — covering the podified control plane, EDPM data plane, Rook-Ceph storage, GitOps/CI-CD, NFV/telco, AI/ML, Red Hat IDM, spine-leaf networking, and disaster recovery.</p>
 <!-- more -->
 
 <hr />
@@ -1799,6 +1879,222 @@
 </tr>
 </tbody>
 </table>
+<h3 id="red-hat-idm-3-flows">Red Hat IDM (3 flows)<a class="headerlink" href="#red-hat-idm-3-flows" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Flow</th>
+<th>Steps</th>
+<th>What It Shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>74</td>
+<td>IDM-Backed Keystone LDAP Federation</td>
+<td>14</td>
+<td>FreeIPA LDAP backend → user/group sync → Kerberos SSO → project role mapping</td>
+</tr>
+<tr>
+<td>75</td>
+<td>IDM Certificate Authority for TLS</td>
+<td>14</td>
+<td>Cert-Manager + Dogtag CA → enterprise PKI for all RHOSO endpoints → auto-renewal</td>
+</tr>
+<tr>
+<td>76</td>
+<td>SSSD + HBAC on EDPM Nodes</td>
+<td>14</td>
+<td>ipa-client-install → SSSD → centralized sudo rules → host-based access control</td>
+</tr>
+</tbody>
+</table>
+<h3 id="advanced-ceph-storage-4-flows">Advanced Ceph Storage (4 flows)<a class="headerlink" href="#advanced-ceph-storage-4-flows" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Flow</th>
+<th>Steps</th>
+<th>What It Shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>77</td>
+<td>Erasure-Coded Pool (Cost-Efficient)</td>
+<td>14</td>
+<td>k=4, m=2 EC pool → 1.5x raw vs 3x replica → Cinder volume type mapping</td>
+</tr>
+<tr>
+<td>78</td>
+<td>Ceph Encryption at Rest (dmcrypt)</td>
+<td>14</td>
+<td>LUKS-encrypted OSDs → key in Vault → FIPS 140-2 compliance → zero plaintext on disk</td>
+</tr>
+<tr>
+<td>79</td>
+<td>CRUSH Rule Customization</td>
+<td>14</td>
+<td>Rack-aware replica placement → row-aware EC → survive rack/row failures → CRUSH map verification</td>
+</tr>
+<tr>
+<td>80</td>
+<td>NVMe-oF Gateway (Block over Fabric)</td>
+<td>14</td>
+<td>NVMe/TCP gateway → sub-100μs latency → ANA multipath HA → replace kernel RBD</td>
+</tr>
+</tbody>
+</table>
+<h3 id="spine-leaf-dpu-networking-4-flows">Spine-Leaf &amp; DPU Networking (4 flows)<a class="headerlink" href="#spine-leaf-dpu-networking-4-flows" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Flow</th>
+<th>Steps</th>
+<th>What It Shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>81</td>
+<td>BGP EVPN + OVN L2 Extension</td>
+<td>14</td>
+<td>OVN Type-5 routes → leaf/spine EVPN → L2 across racks without flood-and-learn</td>
+</tr>
+<tr>
+<td>82</td>
+<td>DPDK-Accelerated OVS for NFV</td>
+<td>14</td>
+<td>Hugepages + PMD threads → DPDK NIC → vhostuser → 10x throughput vs kernel OVS</td>
+</tr>
+<tr>
+<td>83</td>
+<td>Network Segmentation per Tenant</td>
+<td>14</td>
+<td>Per-tenant VNI → leaf VLAN mapping → spine BGP routing → complete tenant isolation</td>
+</tr>
+<tr>
+<td>84</td>
+<td>OVN Hardware Offload (BlueField DPU)</td>
+<td>14</td>
+<td>TC flower → ConnectX hardware tables → zero host CPU for networking → 100Gbps line-rate</td>
+</tr>
+</tbody>
+</table>
+<h3 id="nfv-telco-5-flows">NFV / Telco (5 flows)<a class="headerlink" href="#nfv-telco-5-flows" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Flow</th>
+<th>Steps</th>
+<th>What It Shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>85</td>
+<td>NUMA-Aware VM + CPU Pinning</td>
+<td>14</td>
+<td>Dedicated CPUs + NUMA topology → zero context switching → deterministic VNF performance</td>
+</tr>
+<tr>
+<td>86</td>
+<td>Huge Pages + Real-Time Kernel</td>
+<td>14</td>
+<td>1GB hugepages → RT kernel tuned profile → sub-millisecond latency → zero TLB misses</td>
+</tr>
+<tr>
+<td>87</td>
+<td>Service Function Chaining (SFC)</td>
+<td>16</td>
+<td>Port-chain: classifier → firewall VNF → IDS VNF → egress → OVN traffic steering</td>
+</tr>
+<tr>
+<td>88</td>
+<td>Port Mirroring + Network Tap</td>
+<td>12</td>
+<td>Tap-as-a-service → mirror VM traffic to Suricata IDS → non-intrusive monitoring</td>
+</tr>
+<tr>
+<td>89</td>
+<td>VNF Lifecycle: Heat + AAP Day-2</td>
+<td>16</td>
+<td>Heat deploys VNF chain → AAP pushes config via NETCONF → rolling upgrade + rollback</td>
+</tr>
+</tbody>
+</table>
+<h3 id="aiml-integration-4-flows">AI/ML Integration (4 flows)<a class="headerlink" href="#aiml-integration-4-flows" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Flow</th>
+<th>Steps</th>
+<th>What It Shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>90</td>
+<td>Multi-GPU VM with MIG Slicing</td>
+<td>14</td>
+<td>A100 → 7 MIG instances → per-tenant GPU isolation → no interference</td>
+</tr>
+<tr>
+<td>91</td>
+<td>Distributed Training (NCCL + RoCE)</td>
+<td>16</td>
+<td>4x GPU VMs + SR-IOV → NCCL all-reduce over RDMA → 95% GPU utilization</td>
+</tr>
+<tr>
+<td>92</td>
+<td>ML Model Pipeline (Train→Serve)</td>
+<td>14</td>
+<td>Train → RGW model registry → Glance image → inference VM → Octavia LB → autoscale</td>
+</tr>
+<tr>
+<td>93</td>
+<td>Ceph S3 Data Lake for AI/ML</td>
+<td>14</td>
+<td>Hot/warm/archive tiering → S3 lifecycle → object lock versioning → cost optimization</td>
+</tr>
+</tbody>
+</table>
+<h3 id="customer-demo-scenarios-3-flows">Customer Demo Scenarios (3 flows)<a class="headerlink" href="#customer-demo-scenarios-3-flows" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Flow</th>
+<th>Steps</th>
+<th>What It Shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>94</td>
+<td>Terraform Multi-Resource Provision</td>
+<td>16</td>
+<td>HCL plan → 12 resources → Keystone auth → network + VMs + LB + DNS in one apply</td>
+</tr>
+<tr>
+<td>95</td>
+<td>Tenant Isolation Deep Dive</td>
+<td>16</td>
+<td>Keystone RBAC → OVN ACLs → Ceph namespace → host aggregates → cross-tenant blocked</td>
+</tr>
+<tr>
+<td>96</td>
+<td>Zero-Downtime EDPM Rolling Patch</td>
+<td>16</td>
+<td>Drain → live migrate → yum update + reboot → re-enable → repeat → zero VM downtime</td>
+</tr>
+</tbody>
+</table>
 <h2 id="architecture-layout">Architecture Layout<a class="headerlink" href="#architecture-layout" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌─────────────────────────────────────────────────────────────┐
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│  Red Hat OpenShift Container Platform (RHOCP)               │
@@ -1846,7 +2142,7 @@
 </ul>
 <div class="admonition info">
 <p class="admonition-title">Self-Contained</p>
-<p>The entire diagram — 70 component tooltips, 73 flows with 1144 steps, and full inspector mutations — lives in a single ~807KB HTML file with zero build tooling required. Just open it in a browser.</p>
+<p>The entire diagram — 78 component tooltips, 96 flows with 1476 steps across 26 categories, and full inspector mutations — lives in a single ~1MB HTML file with zero build tooling required. Just open it in a browser.</p>
 </div>
 <h2 id="key-highlights">Key Highlights<a class="headerlink" href="#key-highlights" title="Permanent link">&para;</a></h2>
 <h3 id="redfish-bmc-ironic-flow">Redfish BMC + Ironic Flow<a class="headerlink" href="#redfish-bmc-ironic-flow" title="Permanent link">&para;</a></h3>
