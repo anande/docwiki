@@ -1,0 +1,2042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RHOSO 18.0 — Architecture Flow Visualizer</title>
+<link rel="stylesheet" href="https://noyitz.github.io/flowstory/templates/style.css">
+<style>
+/* Overlay tooltip styles (required for click-to-view component details) */
+#fs-overlay {
+  display: none;
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6); z-index: 9999;
+}
+#fs-overlay-card {
+  position: absolute;
+  background: var(--fs-bg-surface, #161b22); border: 1px solid var(--fs-border, #30363d);
+  border-radius: 16px; padding: 28px 32px; max-width: 520px; width: 420px;
+  max-height: 80vh; overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+#fs-overlay-accent {
+  height: 4px; border-radius: 2px; margin-bottom: 16px;
+}
+#fs-overlay-title {
+  font-size: 20px; font-weight: 700; margin-bottom: 8px;
+}
+#fs-overlay-desc {
+  font-size: 14px; line-height: 1.6; margin-bottom: 16px;
+  color: var(--fs-text, #c9d1d9);
+}
+#fs-overlay-details {
+  font-size: 13px; margin-bottom: 16px;
+}
+#fs-overlay-links { margin-bottom: 16px; }
+#fs-overlay-close {
+  position: absolute; top: 12px; right: 16px; background: none;
+  border: none; color: var(--fs-text-dim, #8b949e); font-size: 24px;
+  cursor: pointer; line-height: 1; z-index: 10;
+}
+#fs-overlay-close:hover { color: var(--fs-text-bright, #fff); }
+#fs-overlay-resume {
+  display: block; width: 100%; padding: 10px;
+  background: var(--fs-bg, #0d1117); border: 1px solid var(--fs-success, #3fb950);
+  border-radius: 8px; color: var(--fs-success, #3fb950);
+  font-size: 14px; cursor: pointer; text-align: center;
+}
+#fs-overlay-resume:hover { background: #3fb95022; }
+#fs-highlight-box {
+  position: fixed; display: none; z-index: 9998;
+  pointer-events: none; border-radius: 8px;
+}
+/* Light mode: make white wordmark in logo visible on light background */
+body.light .fs-brand img {
+  filter: brightness(0) saturate(100%);
+  /* turns white text black, keeps red hat recognizable */
+}
+</style>
+</head>
+<body>
+<button class="fs-theme-toggle" id="fs-theme" aria-label="Toggle theme">☾</button>
+
+<div class="fs-brand" id="fs-brand"></div>
+<h1 class="fs-title" id="fs-title"></h1>
+
+<canvas id="fs-canvas"></canvas>
+<div id="fs-highlight-box"></div>
+
+<!-- Right Panel -->
+<div class="fs-panel">
+  <div class="fs-flow-bar">
+    <select id="fs-flow-select"></select>
+    <button class="fs-start" id="fs-play">&#9654; Start</button>
+    <button id="fs-speed">1x</button>
+    <button id="fs-loop">&#8635; Loop</button>
+    <button class="fs-reset" id="fs-reset">Reset</button>
+  </div>
+
+  <div class="fs-steps">
+    <div class="fs-steps-title">Flow Steps &middot; click to jump</div>
+    <div id="fs-steps-container"></div>
+  </div>
+
+  <div class="fs-inspector">
+    <div class="fs-inspector-title" id="fs-inspector-title">Request</div>
+    <div id="fs-inspector-content"></div>
+  </div>
+</div>
+
+<div class="fs-legend" id="fs-legend"></div>
+
+<div id="fs-overlay">
+  <div id="fs-overlay-card">
+    <button id="fs-overlay-close">&times;</button>
+    <div id="fs-overlay-accent"></div>
+    <h2 id="fs-overlay-title"></h2>
+    <p id="fs-overlay-desc"></p>
+    <div id="fs-overlay-details"></div>
+    <div id="fs-overlay-links"></div>
+    <button id="fs-overlay-resume">&#9654; Resume Flow</button>
+  </div>
+</div>
+
+<script type="module">
+import { FlowStory } from 'https://noyitz.github.io/flowstory/src/index.js';
+
+const diagram = {
+  "meta": {
+    "title": "RHOSO 18.0 — Architecture Flow Visualizer",
+    "author": "Cloud Native Field Notes",
+    "branding": { "logo": "https://static.redhat.com/legacy/rhdc-cms-d7/profiles/rh/themes/redhatdotcom/img/logo.svg"}
+  },
+  "canvas": { "width": 1500, "height": 1500 },
+  "nodes": {
+    "cloud_user": { "x": -30, "y": 150, "w": 110, "h": 50, "label": "Cloud User", "type": "icon" },
+    "platform_admin": { "x": -30, "y": 520, "w": 110, "h": 50, "label": "Platform Admin", "type": "icon" },
+
+    "ocp_cluster": { "x": 110, "y": 50, "w": 920, "h": 750, "type": "boundary", "label": "Red Hat OpenShift Container Platform (RHOCP)" },
+
+    "control_plane": { "x": 140, "y": 85, "w": 860, "h": 320, "type": "container", "label": "Podified Control Plane (openstack namespace)", "color": "#58a6ff" },
+    "keystone": { "x": 165, "y": 115, "w": 130, "h": 48, "label": "Keystone API", "sublabel": "Identity", "color": "#f0883e", "fontSize": 13, "inner": true },
+    "nova_api": { "x": 315, "y": 115, "w": 130, "h": 48, "label": "Nova API", "sublabel": "Compute", "color": "#58a6ff", "fontSize": 13, "inner": true },
+    "neutron_api": { "x": 465, "y": 115, "w": 130, "h": 48, "label": "Neutron API", "sublabel": "Networking", "color": "#58a6ff", "fontSize": 13, "inner": true },
+    "cinder_api": { "x": 615, "y": 115, "w": 130, "h": 48, "label": "Cinder API", "sublabel": "Block Storage", "color": "#58a6ff", "fontSize": 13, "inner": true },
+    "glance_api": { "x": 765, "y": 115, "w": 110, "h": 48, "label": "Glance API", "sublabel": "Images", "color": "#58a6ff", "fontSize": 13, "inner": true },
+    "placement": { "x": 895, "y": 115, "w": 80, "h": 48, "label": "Placement", "color": "#79c0ff", "fontSize": 11, "inner": true },
+    "nova_conductor": { "x": 165, "y": 195, "w": 140, "h": 48, "label": "Nova Conductor", "sublabel": "Orchestrator", "color": "#79c0ff", "fontSize": 13, "inner": true },
+    "nova_sched": { "x": 325, "y": 195, "w": 130, "h": 48, "label": "Nova Scheduler", "sublabel": "Filter+Weight", "color": "#79c0ff", "fontSize": 13, "inner": true },
+    "ovn_nb": { "x": 475, "y": 195, "w": 130, "h": 48, "label": "OVN Northbound", "sublabel": "Logical DB", "color": "#79c0ff", "fontSize": 13, "inner": true },
+    "ovn_sb": { "x": 625, "y": 195, "w": 130, "h": 48, "label": "OVN Southbound", "sublabel": "Physical DB", "color": "#79c0ff", "fontSize": 13, "inner": true },
+    "cinder_sched": { "x": 775, "y": 195, "w": 120, "h": 48, "label": "Cinder Sched", "sublabel": "Backend Select", "color": "#79c0ff", "fontSize": 12, "inner": true },
+    "galera_db": { "x": 165, "y": 278, "w": 130, "h": 48, "label": "Galera (MariaDB)", "sublabel": "Cluster DB", "color": "#8b949e", "fontSize": 12, "inner": true },
+    "rabbitmq": { "x": 315, "y": 278, "w": 130, "h": 48, "label": "RabbitMQ", "sublabel": "AMQP Bus", "color": "#8b949e", "fontSize": 13, "inner": true },
+    "memcached": { "x": 465, "y": 278, "w": 120, "h": 48, "label": "Memcached", "sublabel": "Token Cache", "color": "#8b949e", "fontSize": 12, "inner": true },
+    "heat_api": { "x": 605, "y": 278, "w": 110, "h": 48, "label": "Heat API", "sublabel": "Orchestration", "color": "#58a6ff", "fontSize": 12, "inner": true },
+    "designate": { "x": 735, "y": 278, "w": 110, "h": 48, "label": "Designate", "sublabel": "DNS-as-a-Svc", "color": "#58a6ff", "fontSize": 12, "inner": true },
+    "ironic": { "x": 865, "y": 278, "w": 110, "h": 48, "label": "Ironic", "sublabel": "Bare Metal", "color": "#58a6ff", "fontSize": 12, "inner": true },
+
+    "infra_mgmt": { "x": 140, "y": 435, "w": 860, "h": 100, "type": "container", "label": "Infrastructure Management Operators", "color": "#8b949e" },
+    "os_operator": { "x": 165, "y": 460, "w": 155, "h": 46, "label": "OpenStack Operator", "color": "#d2a8ff", "fontSize": 12, "inner": true },
+    "nmstate": { "x": 340, "y": 460, "w": 140, "h": 46, "label": "NMState Operator", "color": "#8b949e", "fontSize": 12, "inner": true },
+    "metallb": { "x": 500, "y": 460, "w": 110, "h": 46, "label": "MetalLB", "color": "#8b949e", "fontSize": 12, "inner": true },
+    "certmgr": { "x": 630, "y": 460, "w": 115, "h": 46, "label": "Cert-Manager", "color": "#8b949e", "fontSize": 12, "inner": true },
+    "olm": { "x": 765, "y": 460, "w": 90, "h": 46, "label": "OLM", "sublabel": "Lifecycle", "color": "#8b949e", "fontSize": 11, "inner": true },
+    "bmo": { "x": 875, "y": 460, "w": 100, "h": 46, "label": "BMO", "sublabel": "Bare Metal Op", "color": "#8b949e", "fontSize": 11, "inner": true },
+
+    "edpm_engine": { "x": 140, "y": 565, "w": 860, "h": 105, "type": "container", "label": "External Data Plane Management (EDPM)", "color": "#d2a8ff" },
+    "nodeset_crd": { "x": 165, "y": 595, "w": 190, "h": 46, "label": "DataPlaneNodeSet CRD", "color": "#d2a8ff", "fontSize": 11, "inner": true },
+    "dp_service": { "x": 375, "y": 595, "w": 190, "h": 46, "label": "DataPlaneService CRD", "color": "#d2a8ff", "fontSize": 11, "inner": true },
+    "dp_deployment": { "x": 585, "y": 595, "w": 195, "h": 46, "label": "DataPlaneDeployment", "sublabel": "Trigger CR", "color": "#d2a8ff", "fontSize": 11, "inner": true },
+    "ansible_runner": { "x": 800, "y": 595, "w": 175, "h": 46, "label": "Ansible Runner Pod", "sublabel": "K8s Job", "color": "#d2a8ff", "fontSize": 12, "inner": true },
+
+    "data_plane": { "x": 110, "y": 840, "w": 920, "h": 560, "type": "boundary", "label": "RHOSO Data Plane (Bare-Metal RHEL 9 Hosts — SSH/EDPM Managed)", "labelColor": "#3fb950" },
+
+    "compute_a": { "x": 140, "y": 890, "w": 280, "h": 180, "type": "container", "label": "Compute Node A (edpm-compute-0)", "color": "#3fb950" },
+    "nova_compute_a": { "x": 165, "y": 920, "w": 120, "h": 42, "label": "Nova Compute", "color": "#3fb950", "fontSize": 12, "inner": true },
+    "ovn_ctrl_a": { "x": 300, "y": 920, "w": 100, "h": 42, "label": "OVN Ctrl", "color": "#3fb950", "fontSize": 12, "inner": true },
+    "libvirt_a": { "x": 165, "y": 985, "w": 110, "h": 40, "label": "Libvirt/QEMU", "color": "#3fb950", "fontSize": 11, "inner": true },
+    "ovs_a": { "x": 290, "y": 985, "w": 110, "h": 40, "label": "Open vSwitch", "color": "#3fb950", "fontSize": 11, "inner": true },
+
+    "compute_b": { "x": 450, "y": 890, "w": 280, "h": 180, "type": "container", "label": "Compute Node B (edpm-compute-1)", "color": "#3fb950" },
+    "nova_compute_b": { "x": 475, "y": 920, "w": 120, "h": 42, "label": "Nova Compute", "color": "#3fb950", "fontSize": 12, "inner": true },
+    "ovn_ctrl_b": { "x": 610, "y": 920, "w": 100, "h": 42, "label": "OVN Ctrl", "color": "#3fb950", "fontSize": 12, "inner": true },
+    "libvirt_b": { "x": 475, "y": 985, "w": 110, "h": 40, "label": "Libvirt/QEMU", "color": "#3fb950", "fontSize": 11, "inner": true },
+    "ovs_b": { "x": 600, "y": 985, "w": 110, "h": 40, "label": "Open vSwitch", "color": "#3fb950", "fontSize": 11, "inner": true },
+
+    "networker_grp": { "x": 760, "y": 890, "w": 240, "h": 180, "type": "container", "label": "Networker Chassis", "color": "#79c0ff" },
+    "ovn_gw": { "x": 780, "y": 920, "w": 200, "h": 42, "label": "OVN Gateway Agent", "sublabel": "N-S Routing", "color": "#79c0ff", "fontSize": 12, "inner": true },
+    "octavia": { "x": 780, "y": 985, "w": 100, "h": 40, "label": "Octavia", "color": "#79c0ff", "fontSize": 11, "inner": true },
+    "frr": { "x": 895, "y": 985, "w": 85, "h": 40, "label": "FRR/BGP", "color": "#79c0ff", "fontSize": 11, "inner": true },
+
+    "vm_a": { "x": 165, "y": 1100, "w": 130, "h": 45, "label": "VM Instance A", "sublabel": "10.0.0.5 (tap-A)", "color": "#3fb950", "fontSize": 12 },
+    "vm_b": { "x": 475, "y": 1100, "w": 130, "h": 45, "label": "VM Instance B", "sublabel": "10.0.0.6 (tap-B)", "color": "#3fb950", "fontSize": 12 },
+    "ext_network": { "x": 780, "y": 1100, "w": 200, "h": 45, "label": "External/Provider Net", "sublabel": "VLAN/Flat (physnet1)", "color": "#79c0ff", "fontSize": 12 },
+    "geneve_tunnel": { "x": 320, "y": 1200, "w": 280, "h": 40, "label": "Geneve Tunnel (UDP 6081)", "sublabel": "Encapsulated L2 over L3", "color": "#8b949e", "fontSize": 11 },
+    "redfish_bmc_a": { "x": 165, "y": 1290, "w": 230, "h": 48, "label": "BMC (Redfish)", "sublabel": "edpm-compute-0 IPMI/iLO", "color": "#f0883e", "fontSize": 12 },
+    "redfish_bmc_b": { "x": 475, "y": 1290, "w": 230, "h": 48, "label": "BMC (Redfish)", "sublabel": "edpm-compute-1 IPMI/iLO", "color": "#f0883e", "fontSize": 12 },
+    "ipa_ramdisk": { "x": 780, "y": 1290, "w": 220, "h": 48, "label": "IPA Ramdisk", "sublabel": "Ironic Python Agent", "color": "#d2a8ff", "fontSize": 12 },
+    "galera_backup": { "x": 1100, "y": 730, "w": 340, "h": 48, "label": "Galera Backup CronJob", "sublabel": "mysqldump → PVC/S3", "color": "#8b949e", "fontSize": 13 },
+
+    "ceph_boundary": { "x": 1070, "y": 150, "w": 400, "h": 550, "type": "boundary", "label": "External Red Hat Ceph Storage 7", "labelColor": "#d2a8ff" },
+    "ceph_mon": { "x": 1100, "y": 230, "w": 340, "h": 48, "label": "Ceph MON (x3)", "sublabel": "CRUSH Map + Auth (cephx)", "color": "#d2a8ff", "fontSize": 13 },
+    "ceph_osd": { "x": 1100, "y": 320, "w": 340, "h": 48, "label": "Ceph OSD Pool: volumes", "sublabel": "RBD — 3x Replicated", "color": "#d2a8ff", "fontSize": 13 },
+    "ceph_images": { "x": 1100, "y": 410, "w": 340, "h": 48, "label": "Ceph OSD Pool: images", "sublabel": "RBD — Glance Backend", "color": "#d2a8ff", "fontSize": 13 },
+    "ceph_vms": { "x": 1100, "y": 500, "w": 340, "h": 48, "label": "Ceph OSD Pool: vms", "sublabel": "RBD — Ephemeral Disks", "color": "#d2a8ff", "fontSize": 13 },
+    "ceph_rgw": { "x": 1100, "y": 590, "w": 340, "h": 48, "label": "Ceph RGW (S3/Swift)", "sublabel": "Object Storage Gateway", "color": "#d2a8ff", "fontSize": 13 }
+  },
+  "tooltips": {
+    "keystone": {
+      "title": "Keystone API Pod",
+      "description": "Identity service providing authentication (AuthN) and authorization (AuthZ). Issues Fernet tokens, validates project scoping, and integrates with external IdPs. In RHOSO, runs as a horizontally-scaled Deployment with PodDisruptionBudget.",
+      "details": [
+        ["CRD", "KeystoneAPI (keystone.openstack.org)"],
+        ["Token Backend", "Fernet (symmetric keys rotated via CronJob)"],
+        ["Catalog", "Internal endpoints registered via ServiceEndpoint CRs"],
+        ["HA", "Multiple replicas behind MetalLB VIP"],
+        ["DB", "MariaDB/Galera (dedicated keystone database)"],
+        ["Cache", "Memcached (token validation cache)"]
+      ],
+      "links": [
+        ["RHOSO 18.0 Docs", "https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0"]
+      ]
+    },
+    "nova_api": {
+      "title": "Nova API Pod",
+      "description": "Compute service entry point. Accepts VM lifecycle requests, performs quota checks against Keystone, validates flavor/image references, then delegates to Nova Conductor for orchestration via RabbitMQ.",
+      "details": [
+        ["CRD", "Nova (nova.openstack.org)"],
+        ["Cell Architecture", "Cell0 (failed instances) + Cell1..N (active)"],
+        ["API Version", "2.1 (microversions up to 2.95)"],
+        ["Quota Enforcement", "Unified limits via Keystone"],
+        ["Communication", "AMQP (RabbitMQ) to Conductor/Scheduler"],
+        ["DB", "nova_api DB (cell mappings) + per-cell nova DB"]
+      ]
+    },
+    "nova_conductor": {
+      "title": "Nova Conductor Pod",
+      "description": "Orchestrates long-running compute operations (build, resize, migrate, evacuate). Acts as a DB proxy for compute nodes — they never access the database directly. Coordinates multi-step workflows between Scheduler, Placement, and Compute agents.",
+      "details": [
+        ["Function", "Orchestrate complex VM operations"],
+        ["DB Proxy", "Compute nodes communicate only via Conductor"],
+        ["Operations", "build_instance, live_migrate, rebuild, resize"],
+        ["Messaging", "RPC via RabbitMQ (nova.conductor topic)"],
+        ["Scaling", "Multiple replicas for HA and throughput"]
+      ]
+    },
+    "nova_sched": {
+      "title": "Nova Scheduler Pod",
+      "description": "Selects the optimal compute host using a multi-pass filter pipeline. Queries Placement API for resource providers matching the requested flavor, then applies host filters (RAM, CPU, disk, affinity) and weighers.",
+      "details": [
+        ["Algorithm", "FilterScheduler (default)"],
+        ["Filters", "AvailabilityZone, Compute, RAM, Disk, CPU, Numa, PCI"],
+        ["Weighers", "RAM, Disk, CPU, Metrics, ServerGroup"],
+        ["Placement Query", "GET /allocation_candidates?resources=VCPU:N,MEMORY_MB:M"],
+        ["Output", "Selected host + claim allocation in Placement"]
+      ]
+    },
+    "placement": {
+      "title": "Placement API Pod",
+      "description": "Resource inventory and allocation tracking. Each compute node registers as a Resource Provider with inventories (VCPU, MEMORY_MB, DISK_GB). Scheduler queries for candidates; allocations are claimed atomically.",
+      "details": [
+        ["CRD", "Part of Nova CR (shared deployment)"],
+        ["Resources Tracked", "VCPU, MEMORY_MB, DISK_GB, VGPU, PCI_DEVICE"],
+        ["Traits", "HW_CPU_X86_AVX2, COMPUTE_STATUS_DISABLED, etc."],
+        ["Aggregates", "Map to Nova availability zones"],
+        ["Allocation", "Atomic claim prevents double-booking"]
+      ]
+    },
+    "neutron_api": {
+      "title": "Neutron API Pod (ML2/OVN)",
+      "description": "Networking service using ML2 plugin with OVN mechanism driver. Translates API operations (create network, subnet, router, port) into OVN Northbound DB objects. Security groups become OVN ACLs.",
+      "details": [
+        ["CRD", "Neutron (neutron.openstack.org)"],
+        ["Plugin", "ML2 with OVN mechanism driver"],
+        ["Network Types", "geneve (default), vlan, flat"],
+        ["DVR", "Distributed Virtual Router via OVN"],
+        ["Security Groups", "Translated to OVN ACLs (conntrack)"],
+        ["DHCP", "Native OVN DHCP (no neutron-dhcp-agent)"]
+      ]
+    },
+    "ovn_nb": {
+      "title": "OVN Northbound Database",
+      "description": "Stores the logical network topology: logical switches, routers, ports, ACLs, load balancers. Neutron writes here; ovn-northd compiles logical flows into the Southbound DB. Uses OVSDB protocol (JSON-RPC over TCP).",
+      "details": [
+        ["Protocol", "OVSDB (RFC 7047)"],
+        ["Contents", "Logical_Switch, Logical_Router, ACL, LB"],
+        ["Writer", "Neutron ML2/OVN driver"],
+        ["Reader", "ovn-northd (compiles to SB)"],
+        ["HA", "Raft consensus (3 replicas)"]
+      ]
+    },
+    "ovn_sb": {
+      "title": "OVN Southbound Database",
+      "description": "Stores compiled logical flows and chassis bindings. ovn-northd compiles NB logical topology into SB logical flows. OVN Controllers on each host subscribe to their chassis-relevant flows and translate them to OpenFlow rules in OVS.",
+      "details": [
+        ["Protocol", "OVSDB (RFC 7047)"],
+        ["Contents", "Logical_Flow, Port_Binding, Chassis, Encap"],
+        ["Writer", "ovn-northd"],
+        ["Readers", "OVN Controllers on each data plane node"],
+        ["Binding", "Port → Chassis mapping (VM location)"]
+      ]
+    },
+    "cinder_api": {
+      "title": "Cinder API Pod",
+      "description": "Block storage service managing volume lifecycle. Supports multi-backend configurations with capacity-based scheduling. Volumes are RBD images in Ceph, or LUNs on enterprise SANs. Manages snapshots, backups, and volume types.",
+      "details": [
+        ["CRD", "Cinder (cinder.openstack.org)"],
+        ["Backends", "Ceph RBD, Pure FA, Dell PowerFlex, NetApp"],
+        ["Features", "Snapshots, Clones, Backup to Swift/Ceph"],
+        ["Multi-backend", "Volume types map to specific backends"],
+        ["Encryption", "LUKS encryption via Barbican keys"],
+        ["Replication", "Ceph mirroring or vendor-native replication"]
+      ]
+    },
+    "galera_db": {
+      "title": "MariaDB Galera Cluster",
+      "description": "Provides persistent state for all OpenStack services. Runs as a multi-master Galera cluster (synchronous replication) on PVCs backed by the OCP storage class. Each service gets its own database within the cluster.",
+      "details": [
+        ["CRD", "Galera (mariadb.openstack.org)"],
+        ["Replication", "Synchronous multi-master (wsrep)"],
+        ["Databases", "keystone, nova_api, nova_cell0, nova_cell1, neutron, cinder, glance, heat"],
+        ["Storage", "PVC on OCP StorageClass (high-perf CSI)"],
+        ["Backup", "Periodic mysqldump to PVC or S3"]
+      ]
+    },
+    "rabbitmq": {
+      "title": "RabbitMQ Cluster",
+      "description": "AMQP message broker for asynchronous RPC between OpenStack services. Nova API sends cast() messages to Conductor/Scheduler; Conductor sends call() to Compute. Each cell has its own RabbitMQ transport URL.",
+      "details": [
+        ["CRD", "TransportURL (rabbitmq.openstack.org)"],
+        ["Protocol", "AMQP 0-9-1"],
+        ["Queues", "Per-service topic queues (nova.conductor, nova.scheduler)"],
+        ["HA", "Quorum queues (Raft) replacing classic mirroring"],
+        ["Per-Cell", "Each Nova cell has dedicated RabbitMQ instance"],
+        ["TLS", "Cert-Manager issued certificates"]
+      ]
+    },
+    "os_operator": {
+      "title": "OpenStack Operator (openstack-operator)",
+      "description": "Top-level meta-operator deployed via OLM. Watches OpenStackControlPlane CR and reconciles all sub-operators (Nova, Neutron, Cinder, etc.). Also manages EDPM CRDs for data plane lifecycle. Implements the entire control plane desired-state model.",
+      "details": [
+        ["CRD", "OpenStackControlPlane"],
+        ["Sub-operators", "keystone-operator, nova-operator, neutron-operator, cinder-operator, etc."],
+        ["EDPM CRDs", "OpenStackDataPlaneNodeSet, DataPlaneService, DataPlaneDeployment"],
+        ["Deployment", "OLM (Operator Lifecycle Manager)"],
+        ["Namespace", "openstack-operators (operators), openstack (workloads)"],
+        ["Reconcile Loop", "Watch CRs → Diff → Apply → Report Status"]
+      ]
+    },
+    "nmstate": {
+      "title": "NMState Operator",
+      "description": "Manages declarative network configuration on OCP nodes via NodeNetworkConfigurationPolicy (NNCP) CRDs. Ensures bonds, VLANs, bridges, and static routes are configured before OpenStack networking starts.",
+      "details": [
+        ["CRD", "NodeNetworkConfigurationPolicy (NNCP)"],
+        ["Enactment", "NodeNetworkConfigurationEnactment (NNCE) per node"],
+        ["Manages", "Bonds (802.3ad), VLANs, Linux Bridges, OVS Bridges"],
+        ["Networks", "ctlplane, internalapi, storage, storagemgmt, tenant, external"],
+        ["Validation", "Rollback on failure (timeout-based)"]
+      ]
+    },
+    "metallb": {
+      "title": "MetalLB Operator",
+      "description": "Provides bare-metal LoadBalancer services for OpenStack API VIPs. Announces IP addresses via L2 (gratuitous ARP) or BGP. Each OpenStack service endpoint gets a dedicated VIP for HA access from data plane nodes.",
+      "details": [
+        ["CRDs", "IPAddressPool, L2Advertisement, BGPAdvertisement"],
+        ["VIPs", "keystone-public, nova-public, neutron-public, etc."],
+        ["L2 Mode", "Speaker pods send GARP on correct interface"],
+        ["BGP Mode", "Peers with ToR switches for ECMP"],
+        ["Interface", "Must match NNCP-configured bridge/bond"]
+      ]
+    },
+    "nodeset_crd": {
+      "title": "OpenStackDataPlaneNodeSet CRD",
+      "description": "Defines a group of bare-metal hosts to be managed as a unit. Contains node inventory (IPs, BMC credentials), network attachments, SSH keys, and references to DataPlaneServices that define what software to install.",
+      "details": [
+        ["CRD", "OpenStackDataPlaneNodeSet"],
+        ["Contents", "Node list, ansibleSSHPrivateKeySecret, networkAttachments"],
+        ["Roles", "Compute, Networker (via different service lists)"],
+        ["Network Config", "Per-node NIC templates (edpm_network_config)"],
+        ["Secrets", "SSH keys, Ceph client keys, TLS certs"],
+        ["Pre-provisioned", "Nodes must have RHEL 9 + SSH access"]
+      ]
+    },
+    "ansible_runner": {
+      "title": "Containerized Ansible Runner",
+      "description": "Kubernetes Job that runs ansible-runner inside a container. Executes ordered DataPlaneService playbooks against target hosts via SSH. Supports parallel execution across nodes and serial service ordering.",
+      "details": [
+        ["Implementation", "K8s Job → Pod → ansible-runner"],
+        ["Image", "registry.redhat.io/rhoso/openstack-ansible-runner"],
+        ["SSH", "Private key from Secret mounted into Pod"],
+        ["Inventory", "Auto-generated from NodeSet spec"],
+        ["Services", "install_os, configure_network, install_certs, nova, ovn, libvirt, ceph_client"],
+        ["Logs", "oc logs job/dataplane-deployment-*"]
+      ]
+    },
+    "nova_compute_a": {
+      "title": "Nova Compute (edpm-compute-0)",
+      "description": "Hypervisor agent on bare-metal RHEL host. Manages VM lifecycle via libvirt, reports resource usage to Placement, and communicates with Conductor via RabbitMQ. Never directly accesses the database.",
+      "details": [
+        ["Process", "nova-compute (systemd service)"],
+        ["Hypervisor", "libvirt + QEMU/KVM"],
+        ["Communication", "RabbitMQ RPC (nova.compute.edpm-compute-0)"],
+        ["Resource Report", "Periodic update to Placement (VCPU, RAM, disk)"],
+        ["Live Migration", "Libvirt tunnel or direct block migration"],
+        ["Ceph Client", "Direct RBD access for ephemeral/volume disks"]
+      ]
+    },
+    "nova_compute_b": {
+      "title": "Nova Compute (edpm-compute-1)",
+      "description": "Second compute host — target for live migrations. Identical configuration to compute-0. Scheduler may select this host when compute-0 is overcommitted or for anti-affinity placement.",
+      "details": [
+        ["Process", "nova-compute (systemd service)"],
+        ["Hypervisor", "libvirt + QEMU/KVM"],
+        ["Migration Target", "Receives incoming live migrations"],
+        ["Pre-copy", "Iterative memory pages transfer"],
+        ["Post-migration", "Source libvirt cleans up domain"]
+      ]
+    },
+    "ovn_ctrl_a": {
+      "title": "OVN Controller (Compute-0)",
+      "description": "Local SDN controller daemon. Subscribes to OVN Southbound DB for flows relevant to this chassis. Translates logical flows into OpenFlow rules installed in the local Open vSwitch. Handles port binding when VMs start.",
+      "details": [
+        ["Process", "ovn-controller (systemd service)"],
+        ["Connects To", "OVN Southbound DB (ovsdb-server in control plane)"],
+        ["Programs", "br-int OpenFlow rules via ovs-ofctl"],
+        ["Port Binding", "Claims port in Chassis_Private table"],
+        ["Security Groups", "Conntrack-based ACL enforcement"],
+        ["Encapsulation", "Geneve tunnels to other chassis"]
+      ]
+    },
+    "ovn_gw": {
+      "title": "OVN Gateway Chassis (Networker)",
+      "description": "Provides centralized services: SNAT for tenant-to-external traffic, DNAT for floating IPs, and routing between tenant networks and provider networks. Runs on dedicated networker nodes for performance isolation.",
+      "details": [
+        ["Process", "ovn-controller (with gateway_chassis role)"],
+        ["N-S Traffic", "SNAT/DNAT for floating IPs"],
+        ["HA", "Active-Standby via BFD between gateway nodes"],
+        ["External Bridge", "br-ex connected to provider network"],
+        ["DVR", "Distributed east-west, centralized north-south"],
+        ["FRR/BGP", "Dynamic routing for external connectivity"]
+      ]
+    },
+    "ceph_mon": {
+      "title": "Ceph Monitor Cluster (MON x3)",
+      "description": "Maintains the CRUSH map, monitors OSD health, and handles client authentication (cephx). All Ceph clients (Cinder, Glance, Nova on compute nodes) connect to MONs first to retrieve the cluster map.",
+      "details": [
+        ["Quorum", "Paxos consensus (minimum 3)"],
+        ["CRUSH Map", "Defines data placement rules"],
+        ["Auth", "cephx protocol (shared secrets)"],
+        ["Client Bootstrap", "MON address in ceph.conf/keyring"],
+        ["Health", "HEALTH_OK / HEALTH_WARN / HEALTH_ERR"]
+      ]
+    },
+    "ceph_osd": {
+      "title": "Ceph OSD Pool: volumes",
+      "description": "Primary pool for Cinder block storage. Each volume is an RBD image. Default 3x replication ensures data durability. PG autoscaler manages placement group count for optimal distribution.",
+      "details": [
+        ["Pool", "volumes (replicated, size=3)"],
+        ["Interface", "RADOS Block Device (RBD)"],
+        ["Client", "Cinder-volume pod + Nova Compute (attach)"],
+        ["Features", "Thin provisioning, snapshots, clones"],
+        ["Performance", "BlueStore OSD backend (direct block I/O)"],
+        ["Network", "Dedicated storage network (MTU 9000)"]
+      ]
+    },
+    "galera_backup": {
+      "title": "Galera Backup CronJob",
+      "description": "Kubernetes CronJob that runs mariabackup against the Galera cluster for point-in-time recovery. Uses SST (State Snapshot Transfer) from a donor node. Backup is compressed and stored on a PVC or pushed to S3-compatible storage.",
+      "details": [
+        ["Tool", "mariabackup (Percona XtraBackup fork)"],
+        ["Schedule", "CronJob (configurable, default daily)"],
+        ["Method", "Hot backup (SST from donor, non-blocking)"],
+        ["Storage", "PVC (galera-backup) or S3 via RGW"],
+        ["Recovery", "--prepare + --copy-back + bootstrap"],
+        ["GTID", "Global Transaction ID for point-in-time restore"]
+      ]
+    },
+    "geneve_tunnel": {
+      "title": "Geneve Tunnel Overlay",
+      "description": "Generic Network Virtualization Encapsulation (Geneve) tunnel connecting OVS instances across compute nodes. Carries tenant L2 frames inside UDP/6081 packets over the physical L3 network. Each tenant network gets a unique VNI (Virtual Network Identifier).",
+      "details": [
+        ["Protocol", "Geneve (RFC 8926) over UDP:6081"],
+        ["Encapsulation", "Outer IP + UDP + Geneve Header + Inner L2"],
+        ["VNI", "24-bit Virtual Network Identifier (per tenant net)"],
+        ["Overhead", "~50 bytes (need MTU 1500+50 or jumbo frames)"],
+        ["Managed By", "OVN Controller (tunnel endpoints auto-discovered)"],
+        ["Tunnel Port", "ovs-vsctl: Port genev_sys (type=geneve, on br-int)"],
+        ["Endpoint Discovery", "OVN SB: Encap table (chassis IP + type)"],
+        ["Frame Format", "| Outer Eth | Outer IP | UDP:6081 | Geneve(VNI) | Inner L2 Frame |"]
+      ]
+    },
+    "ovs_a": {
+      "title": "Open vSwitch — Compute-0 (Bridge/Port Map)",
+      "description": "OVS bridge topology on edpm-compute-0. Two bridges: br-int (integration, managed by OVN Controller) and br-ex (provider/external, linked via patch). All VM traffic enters br-int; provider traffic exits via br-ex to physical NIC.",
+      "details": [
+        ["═══ br-int (Integration Bridge) ═══", "────────────────────────────"],
+        ["  Port: tap-AAAA (VM-A)", "tag=internal, iface-id=neutron-port-uuid-A"],
+        ["  Port: tap-BBBB (VM-B)", "tag=internal, iface-id=neutron-port-uuid-B"],
+        ["  Port: genev_sys_6081", "type=geneve (tunnel to all other chassis)"],
+        ["  Port: int-br-ex", "type=patch, peer=phy-br-ex (→ br-ex)"],
+        ["  Port: ovn-k8s-mp0", "OVN management port (node IP)"],
+        ["  Controller", "tcp:127.0.0.1:6633 (OVN Controller)"],
+        ["  Flows", "~200-500 OpenFlow rules (ovs-ofctl dump-flows br-int)"],
+        ["═══ br-ex (Provider Bridge) ═══", "────────────────────────────"],
+        ["  Port: phy-br-ex", "type=patch, peer=int-br-ex (→ br-int)"],
+        ["  Port: eth1", "physical NIC (provider/external network)"],
+        ["  VLAN Swap", "Internal tag ↔ 802.1q VLAN (e.g., 5↔101)"],
+        ["═══ Bridge Mappings (ovs-vsctl) ═══", "────────────────────────────"],
+        ["  bridge_mappings", "physnet1:br-ex"],
+        ["  Security Groups", "conntrack (ct zone per-port in br-int)"],
+        ["  Cmd: ovs-vsctl show", "Lists all bridges, ports, interfaces"],
+        ["  Cmd: ovs-ofctl dump-flows br-int", "Show all OpenFlow rules"]
+      ],
+      "links": [
+        ["OVS Commands", "https://docs.openvswitch.org/en/latest/ref/ovs-vsctl.1/"],
+        ["OVN Architecture", "https://docs.ovn.org/en/latest/ref/ovn-architecture.7.html"]
+      ]
+    },
+    "ovs_b": {
+      "title": "Open vSwitch — Compute-1 (Bridge/Port Map)",
+      "description": "OVS bridge topology on edpm-compute-1. Mirror of compute-0 layout. Has its own Geneve tunnel endpoints to all other chassis. During live migration, the tap port moves here and OVN rebinds the chassis.",
+      "details": [
+        ["═══ br-int (Integration Bridge) ═══", "────────────────────────────"],
+        ["  Port: tap-CCCC (VM-C)", "tag=internal, iface-id=neutron-port-uuid-C"],
+        ["  Port: tap-DDDD (VM-D)", "tag=internal, iface-id=neutron-port-uuid-D"],
+        ["  Port: genev_sys_6081", "type=geneve (tunnel to compute-0, networker)"],
+        ["  Port: int-br-ex", "type=patch, peer=phy-br-ex (→ br-ex)"],
+        ["  Controller", "tcp:127.0.0.1:6633 (OVN Controller)"],
+        ["═══ br-ex (Provider Bridge) ═══", "────────────────────────────"],
+        ["  Port: phy-br-ex", "type=patch, peer=int-br-ex (→ br-int)"],
+        ["  Port: eth1", "physical NIC (provider/external network)"],
+        ["  VLAN Swap", "Internal tag ↔ 802.1q VLAN"],
+        ["═══ Key Difference ═══", "────────────────────────────"],
+        ["  Migration", "After live-migrate, new tap port appears here"],
+        ["  OVN Rebind", "Port_Binding.chassis = edpm-compute-1"],
+        ["  GARP", "Gratuitous ARP sent to update MAC tables"]
+      ]
+    },
+    "ext_network": {
+      "title": "External/Provider Network (Physical Fabric)",
+      "description": "The physical network infrastructure outside OVS. For provider networks, this is the direct VLAN segment (e.g., VLAN 101 on physnet1). For floating IPs, this is the external network reached via the OVN Gateway chassis. Traffic exits br-ex with 802.1q VLAN tag intact.",
+      "details": [
+        ["═══ Provider Network Path ═══", "────────────────────────────"],
+        ["  br-ex eth1", "802.1q tagged frame exits here"],
+        ["  Physical Switch", "ToR switch (access/trunk port)"],
+        ["  VLAN Stripping", "Switch strips tag for access ports"],
+        ["  Gateway", "Physical router (L3 gateway on subnet)"],
+        ["═══ Provider Network Config ═══", "────────────────────────────"],
+        ["  Type", "VLAN (802.1q) or Flat (untagged)"],
+        ["  Physical Network", "physnet1 (maps to br-ex via bridge_mappings)"],
+        ["  Segmentation ID", "VLAN ID (e.g., 101, 102)"],
+        ["  Subnet", "203.0.113.0/24 (routable, no NAT)"],
+        ["  Gateway IP", "203.0.113.1 (physical router)"],
+        ["═══ Key Properties ═══", "────────────────────────────"],
+        ["  No Geneve", "Direct L2 — no encapsulation overhead"],
+        ["  No NAT", "VMs get IPs directly on physical segment"],
+        ["  Switch Routing", "Physical infra handles L3 (not OVN)"]
+      ]
+    },
+    "libvirt_a": {
+      "title": "Libvirt/QEMU — Compute-0 (VM Interfaces)",
+      "description": "Libvirt creates the VM domain and manages virtual interfaces. Each VM NIC becomes a tap device on the host, which OVN Controller then attaches to br-int. The tap name matches the Neutron port's first 11 chars.",
+      "details": [
+        ["═══ VM Domain (virsh dumpxml) ═══", "────────────────────────────"],
+        ["  <interface type='bridge'>", "Bridge connection to OVS"],
+        ["    <source bridge='br-int'/>", "Attached to integration bridge"],
+        ["    <target dev='tap-AAAA'/>", "Host tap device name"],
+        ["    <virtualport type='openvswitch'>", "OVS virtualport type"],
+        ["      <parameters interfaceid='PORT_UUID'/>", "Neutron port UUID"],
+        ["    </virtualport>", ""],
+        ["    <model type='virtio'/>", "Virtio NIC driver (best perf)"],
+        ["  </interface>", ""],
+        ["═══ Host View ═══", "────────────────────────────"],
+        ["  ip link show tap-AAAA", "state UP, master ovs-system"],
+        ["  ovs-vsctl list-ports br-int", "Shows tap-AAAA in port list"],
+        ["  MAC", "fa:16:3e:aa:aa:aa (Neutron-assigned)"],
+        ["  MTU", "1442 (1500 - Geneve overhead) or 1500 (provider)"]
+      ]
+    },
+    "libvirt_b": {
+      "title": "Libvirt/QEMU — Compute-1 (VM Interfaces)",
+      "description": "Same Libvirt configuration pattern as compute-0. During live migration, the destination libvirt starts an incoming migration listener, receives the VM memory state, then the tap interface is created and OVN binds the port to this chassis.",
+      "details": [
+        ["═══ Migration Target ═══", "────────────────────────────"],
+        ["  virsh migrate --live", "Pre-copy memory transfer"],
+        ["  Incoming listener", "qemu:///system on dest"],
+        ["  Post-migration", "Tap created → OVN binds port → GARP"],
+        ["═══ VM Interface (same as compute-0) ═══", "────────────────"],
+        ["  <source bridge='br-int'/>", "Attached to integration bridge"],
+        ["  <target dev='tap-CCCC'/>", "Host tap device"],
+        ["  <virtualport type='openvswitch'>", "OVS managed"],
+        ["  <model type='virtio'/>", "Virtio NIC driver"]
+      ]
+    },
+    "vm_a": {
+      "title": "VM Instance A — Network Stack",
+      "description": "A running QEMU/KVM virtual machine. Its virtual NIC (virtio-net) connects via a tap device to br-int. The VM sees a standard eth0 interface configured via DHCP (OVN native DHCP, no dnsmasq).",
+      "details": [
+        ["═══ Inside the VM ═══", "────────────────────────────"],
+        ["  eth0", "10.0.0.5/24 (DHCP from OVN)"],
+        ["  MAC", "fa:16:3e:aa:aa:aa"],
+        ["  Default GW", "10.0.0.1 (OVN distributed router)"],
+        ["  DNS", "8.8.8.8 (from DHCP_Options)"],
+        ["  MTU", "1442 (geneve) or 1500 (provider)"],
+        ["═══ Host Side (tap device) ═══", "────────────────────────────"],
+        ["  tap-AAAA", "Attached to br-int port"],
+        ["  OVS Port", "internal VLAN tag assigned by OVN"],
+        ["  Security", "conntrack zone (ACL per-port)"],
+        ["  DHCP", "OVN Controller responds in-datapath"],
+        ["═══ OVN Logical View ═══", "────────────────────────────"],
+        ["  Logical Switch Port", "uuid: neutron-port-uuid-A"],
+        ["  Port Binding", "Chassis: edpm-compute-0"],
+        ["  Addresses", "fa:16:3e:aa:aa:aa 10.0.0.5"]
+      ]
+    },
+    "vm_b": {
+      "title": "VM Instance B — Network Stack",
+      "description": "Second VM on compute-1 (or migrating). When on a different compute node than VM-A, cross-node traffic uses Geneve tunnels. When on the same node, br-int can switch locally without going to the physical network.",
+      "details": [
+        ["═══ Inside the VM ═══", "────────────────────────────"],
+        ["  eth0", "10.0.0.6/24 (DHCP from OVN)"],
+        ["  MAC", "fa:16:3e:bb:bb:bb"],
+        ["  Default GW", "10.0.0.1 (OVN distributed router)"],
+        ["═══ Cross-Node Communication ═══", "────────────────────────────"],
+        ["  Same node?", "br-int switches locally (no tunnel)"],
+        ["  Diff node?", "br-int → Geneve tunnel → remote br-int"],
+        ["  Encap", "Outer IP: compute-0↔compute-1, VNI=seg_id"],
+        ["═══ OVN View ═══", "────────────────────────────"],
+        ["  Logical Switch Port", "uuid: neutron-port-uuid-B"],
+        ["  Port Binding", "Chassis: edpm-compute-1"],
+        ["  ARP Responder", "OVN knows MAC without flooding"]
+      ]
+    },
+    "ironic": {
+      "title": "Ironic — Bare Metal Provisioning Service",
+      "description": "OpenStack bare metal provisioning service. In RHOSO, Ironic runs as pods in the control plane and manages the lifecycle of bare metal nodes: enroll → inspect → clean → provision → active. The Ironic Conductor communicates with BMCs via Redfish/IPMI to control power, boot device, and virtual media. Works with BMO (Bare Metal Operator) which creates BareMetalHost CRs that Ironic reconciles.",
+      "details": [
+        ["CRD", "Ironic (ironic.openstack.org)"],
+        ["Components", "ironic-api, ironic-conductor, ironic-inspector"],
+        ["BMC Drivers", "idrac (Dell iDRAC), ilo (HPE iLO), redfish (DMTF standard), ipmi (legacy)"],
+        ["Inspect", "IPA ramdisk collects HW inventory → stored in Ironic DB"],
+        ["Provision", "Deploy ramdisk writes image to disk via dd/qemu-img"],
+        ["Clean", "Pre/post-deploy: BIOS config, RAID setup, firmware update"],
+        ["Network", "Uses provisioning network (L2) for PXE/DHCP or Virtual Media (Redfish)"],
+        ["Integration", "BMO reconciles BareMetalHost CR ↔ Ironic node state"],
+        ["HA", "Multiple conductor replicas with hash ring for node assignment"]
+      ],
+      "links": [
+        ["Ironic Docs", "https://docs.openstack.org/ironic/latest/"],
+        ["RHOSO Bare Metal", "https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0"]
+      ]
+    },
+    "bmo": {
+      "title": "Bare Metal Operator (BMO)",
+      "description": "Kubernetes operator that manages BareMetalHost custom resources. BMO bridges the gap between Kubernetes-native resource management and Ironic's bare metal provisioning. When a BareMetalHost CR is created, BMO registers the node with Ironic, triggers inspection, and manages the provisioning lifecycle. In RHOSO, BMO runs in the openshift-machine-api namespace.",
+      "details": [
+        ["CRD", "BareMetalHost (metal3.io/v1alpha1)"],
+        ["Namespace", "openshift-machine-api"],
+        ["State Machine", "registering → inspecting → available → provisioning → provisioned"],
+        ["BMC Spec", "spec.bmc.address = redfish+https://<ip>/redfish/v1/Systems/1"],
+        ["Credentials", "spec.bmc.credentialsName → Secret (username/password)"],
+        ["Image", "spec.image.url = RHEL 9 qcow2/raw image URL"],
+        ["Introspection", "Stores HW inventory in status.hardware (CPU, RAM, NICs, disks)"],
+        ["Reconcile", "Watches BareMetalHost CRs → calls Ironic API → updates status"]
+      ]
+    },
+    "redfish_bmc_a": {
+      "title": "BMC — Redfish Interface (edpm-compute-0)",
+      "description": "Baseboard Management Controller with DMTF Redfish REST API. Provides out-of-band management for the bare metal server: power control, boot device selection, virtual media mount, sensor monitoring, and firmware management. Ironic Conductor communicates with BMC via HTTPS to /redfish/v1/ endpoints.",
+      "details": [
+        ["═══ Redfish Endpoints ═══", "────────────────────────────"],
+        ["  /redfish/v1/Systems/1", "Server system resource (CPU, RAM, boot)"],
+        ["  /Systems/1/Actions/Reset", "POST {ResetType: ForceOn|ForceOff|GracefulRestart}"],
+        ["  /Systems/1/Boot", "PATCH {BootSourceOverrideTarget: Pxe|Cd|Hdd}"],
+        ["  /Managers/1/VirtualMedia/CD1", "Mount ISO for virtual media boot"],
+        ["  /Chassis/1/Power", "Power supply / consumption readings"],
+        ["  /Chassis/1/Thermal", "Temperature / fan sensor readings"],
+        ["═══ BMC Configuration ═══", "────────────────────────────"],
+        ["  Protocol", "HTTPS (TLS 1.2+) on port 443"],
+        ["  Auth", "Basic Auth or Session (X-Auth-Token)"],
+        ["  Vendor", "Dell iDRAC / HPE iLO / Supermicro / Lenovo XCC"],
+        ["  Network", "Dedicated IPMI/BMC VLAN (isolated management network)"],
+        ["═══ Ironic Driver Mapping ═══", "────────────────────────────"],
+        ["  driver", "idrac / ilo / redfish"],
+        ["  power_interface", "redfish (ResetType actions)"],
+        ["  management_interface", "redfish (boot device, sensors)"],
+        ["  inspect_interface", "redfish-inspector (inventory via Redfish)"],
+        ["  deploy_interface", "direct (IPA writes image) or ramdisk"],
+        ["  boot_interface", "redfish-virtual-media (ISO mount) or pxe"]
+      ],
+      "links": [
+        ["DMTF Redfish", "https://www.dmtf.org/standards/redfish"],
+        ["Ironic Redfish", "https://docs.openstack.org/ironic/latest/admin/drivers/redfish.html"]
+      ]
+    },
+    "redfish_bmc_b": {
+      "title": "BMC — Redfish Interface (edpm-compute-1)",
+      "description": "Second bare metal server's BMC. Same Redfish REST API surface as compute-0. Ironic's hash ring assigns each node to a conductor replica for management. During EDPM scale-out, new BareMetalHost CRs trigger the same enroll → inspect → provision lifecycle.",
+      "details": [
+        ["  /redfish/v1/Systems/1", "GET → 200 {PowerState: On, Boot: {BootSourceOverrideTarget: Hdd}}"],
+        ["  Vendor", "Same or different vendor BMC (Redfish is standardized)"],
+        ["  IP", "BMC management VLAN (e.g., 192.168.10.x)"],
+        ["  Conductor", "Assigned via hash ring (different conductor may manage)"]
+      ]
+    },
+    "ipa_ramdisk": {
+      "title": "IPA — Ironic Python Agent (Deploy Ramdisk)",
+      "description": "Lightweight Linux ramdisk containing the Ironic Python Agent. Booted on bare metal nodes via PXE or Redfish Virtual Media during inspection and deployment. IPA runs as a systemd service inside the ramdisk, communicates back to Ironic Conductor via heartbeat API, executes hardware introspection, disk erasure, image writing, and BIOS/RAID configuration.",
+      "details": [
+        ["═══ IPA Lifecycle ═══", "────────────────────────────"],
+        ["  1. Boot", "PXE/DHCP or Virtual Media ISO mount via Redfish"],
+        ["  2. Heartbeat", "POST /v1/heartbeat/{node_uuid} to Ironic API"],
+        ["  3. Inspect", "Collect: lshw, lsblk, ip link, dmidecode, BIOS info"],
+        ["  4. Clean", "Erase disks (shred/ATA secure erase), BIOS config"],
+        ["  5. Deploy", "Download image from Glance/HTTP → dd/qemu-img to target disk"],
+        ["  6. Reboot", "Set boot to HDD, reboot into installed OS"],
+        ["═══ IPA Commands ═══", "────────────────────────────"],
+        ["  inspect", "Returns JSON: CPUs, RAM, disks, NICs with MAC, PCI, NUMA"],
+        ["  deploy", "Writes rootfs image to /dev/sda (or configdrive partition)"],
+        ["  clean", "Execute clean steps: erase_devices, update_firmware"],
+        ["  rescue", "Boot into rescue mode for troubleshooting"],
+        ["═══ Communication ═══", "────────────────────────────"],
+        ["  Heartbeat URL", "http://ironic-api:6385/v1/heartbeat"],
+        ["  Lookup URL", "http://ironic-api:6385/v1/lookup?addresses=<MAC>"],
+        ["  Image URL", "http://glance-api:9292 or http://httpd-prov/images/rhel9.qcow2"]
+      ]
+    }
+  },
+  "flows": {
+    "vm_launch": {
+      "label": "① VM Launch (Detailed)",
+      "steps": [
+        { "text": "1. Cloud User: POST /v2.1/servers with Fernet token", "mode": "arrow", "from": "cloud_user", "to": "keystone", "color": "#f0883e", "num": 1, "fromRight": true, "toLeft": true },
+        { "text": "2. Keystone validates Fernet token → checks Memcached", "mode": "arrow", "from": "keystone", "to": "memcached", "color": "#f0883e", "num": 2, "fromBottom": true, "toTop": true },
+        { "text": "3. Token valid: project scoped, compute:create role", "mode": "lightup", "target": "keystone", "badge": 3 },
+        { "text": "4. Auth'd request → Nova API (quota check against Galera)", "mode": "arrow", "from": "keystone", "to": "nova_api", "color": "#58a6ff", "num": 4 },
+        { "text": "5. Nova API persists instance record (vm_state=BUILDING)", "mode": "arrow", "from": "nova_api", "to": "galera_db", "color": "#58a6ff", "num": 5, "fromBottom": true, "toTop": true },
+        { "text": "6. Nova API casts build_instances() → Conductor via RabbitMQ", "mode": "arrow", "from": "nova_api", "to": "rabbitmq", "color": "#58a6ff", "num": 6, "fromBottom": true, "toTop": true },
+        { "text": "7. Nova Conductor picks up from conductor queue", "mode": "arrow", "from": "rabbitmq", "to": "nova_conductor", "color": "#58a6ff", "num": 7 },
+        { "text": "8. Conductor calls Scheduler: select_destinations()", "mode": "arrow", "from": "nova_conductor", "to": "nova_sched", "color": "#58a6ff", "num": 8 },
+        { "text": "9. Scheduler queries Placement: GET /allocation_candidates", "mode": "arrow", "from": "nova_sched", "to": "placement", "color": "#58a6ff", "num": 9 },
+        { "text": "10. Placement returns candidates (VCPU:2, RAM:4096, DISK:40)", "mode": "lightup", "target": "placement", "badge": 10 },
+        { "text": "11. Scheduler applies filters: RAM, NUMA, ServerGroup", "mode": "lightup", "target": "nova_sched", "badge": 11 },
+        { "text": "12. Scheduler claims allocation in Placement for compute-0", "mode": "lightup", "target": "placement", "badge": "✓" },
+        { "text": "13. Conductor casts build_and_run_instance() → compute-0", "mode": "arrow", "from": "nova_conductor", "to": "rabbitmq", "color": "#58a6ff", "num": 13 },
+        { "text": "14. RabbitMQ routes to nova.compute.edpm-compute-0 queue", "mode": "arrow", "from": "rabbitmq", "to": "nova_compute_a", "color": "#58a6ff", "num": 14, "fromBottom": true, "toTop": true },
+        { "text": "15. Compute claims Neutron port: allocate_for_instance()", "mode": "arrow", "from": "nova_compute_a", "to": "neutron_api", "color": "#58a6ff", "num": 15, "fromTop": true, "toBottom": true },
+        { "text": "16. Neutron creates port → OVN NB creates logical port", "mode": "arrow", "from": "neutron_api", "to": "ovn_nb", "color": "#58a6ff", "num": 16, "fromBottom": true, "toTop": true },
+        { "text": "17. Compute downloads image from Glance → Ceph COW clone", "mode": "arrow", "from": "nova_compute_a", "to": "ceph_vms", "color": "#58a6ff", "num": 17, "fromRight": true, "toLeft": true },
+        { "text": "18. Libvirt defines domain XML + spawns QEMU process", "mode": "arrow", "from": "nova_compute_a", "to": "libvirt_a", "color": "#58a6ff", "num": 18, "fromBottom": true, "toTop": true },
+        { "text": "19. Libvirt: virDomainCreate() → QEMU -enable-kvm", "mode": "lightup", "target": "libvirt_a", "badge": 19 },
+        { "text": "20. OVN Controller binds port to chassis, programs OVS", "mode": "arrow", "from": "ovn_nb", "to": "ovn_ctrl_a", "color": "#58a6ff", "num": 20, "fromBottom": true, "toTop": true },
+        { "text": "21. OVS: br-int flow rules installed (sg, dhcp, tunnel)", "mode": "lightup", "target": "ovs_a", "badge": 21 },
+        { "text": "22. VM boots → DHCP from OVN → IP assigned", "mode": "lightup", "target": "vm_a", "badge": "✓" },
+        { "text": "23. Compute updates DB: vm_state=ACTIVE, power_state=RUNNING", "mode": "arrow", "from": "nova_compute_a", "to": "nova_conductor", "color": "#3fb950", "num": 23, "fromTop": true, "toBottom": true },
+        { "text": "24. Conductor persists final state to Galera", "mode": "arrow", "from": "nova_conductor", "to": "galera_db", "color": "#3fb950", "num": 24 },
+        { "text": "25. Response: 202 Accepted → VM ACTIVE (poll GET /servers/{id})", "mode": "arrow", "from": "nova_api", "to": "cloud_user", "color": "#3fb950", "num": 25, "fromLeft": true, "toRight": true, "yOff": 10 }
+      ]
+    },
+    "live_migration": {
+      "label": "② Live Migration (P2P)",
+      "steps": [
+        { "text": "1. Admin: POST /servers/{id}/action {migrate: {host: compute-1}}", "mode": "arrow", "from": "cloud_user", "to": "nova_api", "color": "#58a6ff", "num": 1, "fromRight": true, "toLeft": true },
+        { "text": "2. Nova API sets task_state=MIGRATING in Galera", "mode": "arrow", "from": "nova_api", "to": "galera_db", "color": "#58a6ff", "num": 2, "fromBottom": true, "toTop": true },
+        { "text": "3. API casts live_migrate_instance() to Conductor", "mode": "arrow", "from": "nova_api", "to": "nova_conductor", "color": "#58a6ff", "num": 3, "fromBottom": true, "toLeft": true },
+        { "text": "4. Conductor checks Placement: can destination host fit?", "mode": "arrow", "from": "nova_conductor", "to": "placement", "color": "#58a6ff", "num": 4 },
+        { "text": "5. Conductor claims allocation on dest (compute-1)", "mode": "lightup", "target": "placement", "badge": 5 },
+        { "text": "6. Conductor casts live_migration() to source compute-0", "mode": "arrow", "from": "nova_conductor", "to": "nova_compute_a", "color": "#58a6ff", "num": 6, "fromBottom": true, "toTop": true },
+        { "text": "7. Source compute calls pre_live_migration() on dest", "mode": "arrow", "from": "nova_compute_a", "to": "nova_compute_b", "color": "#58a6ff", "num": 7 },
+        { "text": "8. Dest compute prepares: connect volumes, create net", "mode": "lightup", "target": "nova_compute_b", "badge": 8 },
+        { "text": "9. Dest Libvirt prepares incoming migration listener", "mode": "lightup", "target": "libvirt_b", "badge": 9 },
+        { "text": "10. Source Libvirt: virDomainMigrateToURI3() (pre-copy)", "mode": "arrow", "from": "libvirt_a", "to": "libvirt_b", "color": "#f0883e", "num": 10 },
+        { "text": "11. Phase 1: Bulk RAM transfer (iterative dirty pages)", "mode": "lightup", "target": "libvirt_a", "badge": "RAM" },
+        { "text": "12. Phase 2: Converging — dirty page rate decreasing", "mode": "lightup", "target": "libvirt_b", "badge": "..." },
+        { "text": "13. Phase 3: Final switchover (brief pause <100ms)", "mode": "lightup", "target": "libvirt_b", "badge": "✓" },
+        { "text": "14. OVN rebinds port: Chassis=compute-1 in Southbound DB", "mode": "arrow", "from": "ovn_sb", "to": "ovn_ctrl_b", "color": "#79c0ff", "num": 14, "fromBottom": true, "toTop": true },
+        { "text": "15. New chassis OVN Controller programs local OVS flows", "mode": "lightup", "target": "ovn_ctrl_b", "badge": 15 },
+        { "text": "16. Gratuitous ARP sent — MAC moves to new compute", "mode": "lightup", "target": "ovs_b", "badge": "ARP" },
+        { "text": "17. Source cleans up: undefine domain, release resources", "mode": "lightup", "target": "libvirt_a", "badge": "🗑" },
+        { "text": "18. Source releases Placement allocation (compute-0)", "mode": "lightup", "target": "placement", "badge": "-" },
+        { "text": "19. Conductor updates DB: host=compute-1, state=ACTIVE", "mode": "arrow", "from": "nova_compute_b", "to": "nova_conductor", "color": "#3fb950", "num": 19, "fromTop": true, "toBottom": true },
+        { "text": "20. VM now running on compute-1 — zero downtime achieved", "mode": "lightup", "target": "vm_b", "badge": "✓" }
+      ]
+    },
+    "edpm_deploy": {
+      "label": "③ EDPM Node Deploy (Full)",
+      "steps": [
+        { "text": "1. Admin applies DataPlaneNodeSet YAML via oc apply", "mode": "arrow", "from": "platform_admin", "to": "nodeset_crd", "color": "#d2a8ff", "num": 1, "fromRight": true, "toLeft": true },
+        { "text": "2. K8s API server validates CRD schema + webhooks", "mode": "lightup", "target": "nodeset_crd", "badge": 2 },
+        { "text": "3. OpenStack Operator watch event fires (Reconcile)", "mode": "arrow", "from": "nodeset_crd", "to": "os_operator", "color": "#d2a8ff", "num": 3, "fromTop": true, "toBottom": true },
+        { "text": "4. Operator resolves ServiceList → ordered DataPlaneServices", "mode": "arrow", "from": "os_operator", "to": "dp_service", "color": "#d2a8ff", "num": 4, "fromBottom": true, "toTop": true },
+        { "text": "5. Services: install_os → configure_network → install_certs → nova → ovn", "mode": "lightup", "target": "dp_service", "badge": 5 },
+        { "text": "6. Admin creates DataPlaneDeployment CR (trigger)", "mode": "arrow", "from": "platform_admin", "to": "dp_deployment", "color": "#d2a8ff", "num": 6, "fromRight": true, "toLeft": true },
+        { "text": "7. Operator creates K8s Job for Ansible Runner", "mode": "arrow", "from": "dp_deployment", "to": "ansible_runner", "color": "#d2a8ff", "num": 7 },
+        { "text": "8. Runner mounts SSH key Secret + generates inventory", "mode": "lightup", "target": "ansible_runner", "badge": 8 },
+        { "text": "9. SSH → configure_network: apply NIC templates, routes", "mode": "arrow", "from": "ansible_runner", "to": "nova_compute_a", "color": "#d2a8ff", "num": 9, "fromBottom": true, "toTop": true },
+        { "text": "10. SSH → install_certs: deploy TLS CA + service certs", "mode": "lightup", "target": "nova_compute_a", "badge": "TLS" },
+        { "text": "11. SSH → ceph_client: deploy ceph.conf + client keyring", "mode": "arrow", "from": "ansible_runner", "to": "ceph_mon", "color": "#d2a8ff", "num": 11, "fromBottom": true, "toTop": true, "waypoints": [{"x": 900, "y": 680}, {"x": 1100, "y": 680}] },
+        { "text": "12. SSH → nova: install + configure nova-compute service", "mode": "lightup", "target": "nova_compute_a", "badge": "nova" },
+        { "text": "13. SSH → ovn: install ovn-controller + connect to SB", "mode": "arrow", "from": "ansible_runner", "to": "ovn_ctrl_a", "color": "#d2a8ff", "num": 13, "fromBottom": true, "toTop": true },
+        { "text": "14. OVN Controller registers chassis in Southbound DB", "mode": "arrow", "from": "ovn_ctrl_a", "to": "ovn_sb", "color": "#79c0ff", "num": 14, "fromTop": true, "toBottom": true },
+        { "text": "15. SSH → libvirt: configure QEMU + apparmor/selinux", "mode": "lightup", "target": "libvirt_a", "badge": 15 },
+        { "text": "16. Nova-compute reports hypervisor to Placement", "mode": "arrow", "from": "nova_compute_a", "to": "placement", "color": "#3fb950", "num": 16, "fromTop": true, "toBottom": true },
+        { "text": "17. Ansible Runner exits 0 — Job completes", "mode": "lightup", "target": "ansible_runner", "badge": "✓" },
+        { "text": "18. Operator sets NodeSet status.conditions: Ready=True", "mode": "arrow", "from": "os_operator", "to": "platform_admin", "color": "#3fb950", "num": 18, "fromLeft": true, "toRight": true, "yOff": 10 }
+      ]
+    },
+    "network_prov": {
+      "label": "④ Network + Router + FIP",
+      "steps": [
+        { "text": "1. Tenant: POST /v2.0/networks {type: geneve}", "mode": "arrow", "from": "cloud_user", "to": "keystone", "color": "#f0883e", "num": 1, "fromRight": true, "toLeft": true },
+        { "text": "2. Keystone: token valid, project scoped", "mode": "lightup", "target": "keystone", "badge": "✓" },
+        { "text": "3. Request → Neutron API (ML2/OVN plugin)", "mode": "arrow", "from": "keystone", "to": "neutron_api", "color": "#58a6ff", "num": 3 },
+        { "text": "4. Neutron persists network + subnet in Galera", "mode": "arrow", "from": "neutron_api", "to": "galera_db", "color": "#58a6ff", "num": 4, "fromBottom": true, "toTop": true },
+        { "text": "5. ML2/OVN driver: nb_ovn.ls_add(logical_switch)", "mode": "arrow", "from": "neutron_api", "to": "ovn_nb", "color": "#58a6ff", "num": 5, "fromBottom": true, "toTop": true },
+        { "text": "6. OVN NB: Logical_Switch + DHCP_Options created", "mode": "lightup", "target": "ovn_nb", "badge": 6 },
+        { "text": "7. Tenant: POST /v2.0/routers + add_router_interface", "mode": "lightup", "target": "neutron_api", "badge": 7 },
+        { "text": "8. OVN NB: Logical_Router + router port linking switch", "mode": "lightup", "target": "ovn_nb", "badge": 8 },
+        { "text": "9. ovn-northd compiles: NB logical → SB physical flows", "mode": "arrow", "from": "ovn_nb", "to": "ovn_sb", "color": "#79c0ff", "num": 9 },
+        { "text": "10. SB publishes flows to all chassis (OVSDB monitor)", "mode": "arrow", "from": "ovn_sb", "to": "ovn_ctrl_a", "color": "#79c0ff", "num": 10, "fromBottom": true, "toTop": true },
+        { "text": "11. OVN Controller: install OpenFlow rules in br-int", "mode": "lightup", "target": "ovn_ctrl_a", "badge": 11 },
+        { "text": "12. Gateway chassis: bind router for N-S traffic", "mode": "arrow", "from": "ovn_sb", "to": "ovn_gw", "color": "#79c0ff", "num": 12, "fromBottom": true, "toTop": true },
+        { "text": "13. Tenant: POST /v2.0/floatingips (associate to port)", "mode": "lightup", "target": "neutron_api", "badge": 13 },
+        { "text": "14. OVN NB: NAT rule on Logical_Router (dnat_and_snat)", "mode": "lightup", "target": "ovn_nb", "badge": "NAT" },
+        { "text": "15. Gateway: DNAT/SNAT flows installed for floating IP", "mode": "lightup", "target": "ovn_gw", "badge": 15 },
+        { "text": "16. FRR/BGP announces floating IP prefix to fabric", "mode": "lightup", "target": "frr", "badge": "BGP" },
+        { "text": "17. External network path ready — VM reachable from outside", "mode": "arrow", "from": "ovn_gw", "to": "ext_network", "color": "#3fb950", "num": 17, "fromBottom": true, "toTop": true },
+        { "text": "18. Response: floatingip ACTIVE → User", "mode": "arrow", "from": "neutron_api", "to": "cloud_user", "color": "#3fb950", "num": 18, "fromLeft": true, "toRight": true, "yOff": 10 }
+      ]
+    },
+    "storage_attach": {
+      "label": "⑤ Volume Create + Attach",
+      "steps": [
+        { "text": "1. Tenant: POST /v3/volumes {size:50, type:ceph-rbd}", "mode": "arrow", "from": "cloud_user", "to": "keystone", "color": "#f0883e", "num": 1, "fromRight": true, "toLeft": true },
+        { "text": "2. Keystone authenticates + authorizes", "mode": "lightup", "target": "keystone", "badge": "✓" },
+        { "text": "3. Cinder API receives create volume request", "mode": "arrow", "from": "keystone", "to": "cinder_api", "color": "#58a6ff", "num": 3 },
+        { "text": "4. Cinder persists volume record (status=creating)", "mode": "arrow", "from": "cinder_api", "to": "galera_db", "color": "#58a6ff", "num": 4, "fromBottom": true, "toTop": true },
+        { "text": "5. Cinder casts create_volume() to Scheduler", "mode": "arrow", "from": "cinder_api", "to": "cinder_sched", "color": "#58a6ff", "num": 5, "fromBottom": true, "toTop": true },
+        { "text": "6. Scheduler: capacity filter → weigher → select backend", "mode": "lightup", "target": "cinder_sched", "badge": 6 },
+        { "text": "7. Scheduler → cinder-volume: RPC create on ceph-rbd backend", "mode": "arrow", "from": "cinder_sched", "to": "ceph_mon", "color": "#58a6ff", "num": 7, "fromRight": true, "toLeft": true },
+        { "text": "8. Ceph MON authenticates client (cephx)", "mode": "lightup", "target": "ceph_mon", "badge": 8 },
+        { "text": "9. rbd create volume-{uuid} --pool volumes --size 50G", "mode": "arrow", "from": "ceph_mon", "to": "ceph_osd", "color": "#58a6ff", "num": 9 },
+        { "text": "10. OSD allocates PGs, thin-provisions RBD image", "mode": "lightup", "target": "ceph_osd", "badge": 10 },
+        { "text": "11. Volume status → available (Cinder updates Galera)", "mode": "arrow", "from": "ceph_osd", "to": "cinder_api", "color": "#3fb950", "num": 11, "fromLeft": true, "toRight": true },
+        { "text": "12. Tenant: POST /servers/{id}/os-volume_attachments", "mode": "lightup", "target": "nova_api", "badge": 12 },
+        { "text": "13. Nova calls Cinder: initialize_connection(volume_id)", "mode": "arrow", "from": "nova_api", "to": "cinder_api", "color": "#58a6ff", "num": 13 },
+        { "text": "14. Cinder returns RBD connection_info (pool, image, hosts)", "mode": "lightup", "target": "cinder_api", "badge": 14 },
+        { "text": "15. Nova Conductor sends attach to compute-0", "mode": "arrow", "from": "nova_conductor", "to": "nova_compute_a", "color": "#58a6ff", "num": 15, "fromBottom": true, "toTop": true },
+        { "text": "16. Libvirt: attach-device <disk type='network'> RBD", "mode": "arrow", "from": "nova_compute_a", "to": "libvirt_a", "color": "#58a6ff", "num": 16, "fromBottom": true, "toTop": true },
+        { "text": "17. Libvirt opens RBD connection → maps /dev/vdb in guest", "mode": "arrow", "from": "libvirt_a", "to": "ceph_osd", "color": "#58a6ff", "num": 17, "fromRight": true, "toLeft": true, "waypoints": [{"x": 450, "y": 1040}, {"x": 1050, "y": 1040}, {"x": 1050, "y": 344}] },
+        { "text": "18. Volume status: in-use → attachment confirmed", "mode": "arrow", "from": "cinder_api", "to": "cloud_user", "color": "#3fb950", "num": 18, "fromLeft": true, "toRight": true, "yOff": 10 }
+      ]
+    },
+    "ctrl_upgrade": {
+      "label": "⑥ Control Plane Upgrade",
+      "steps": [
+        { "text": "1. Admin edits OpenStackControlPlane CR (new version)", "mode": "arrow", "from": "platform_admin", "to": "os_operator", "color": "#d2a8ff", "num": 1, "fromRight": true, "toLeft": true },
+        { "text": "2. OLM updates operator image → new reconcile logic", "mode": "lightup", "target": "olm", "badge": 2 },
+        { "text": "3. Operator detects version drift → starts upgrade sequence", "mode": "lightup", "target": "os_operator", "badge": 3 },
+        { "text": "4. Step 1: DB schema migration (Galera ALTER TABLE)", "mode": "arrow", "from": "os_operator", "to": "galera_db", "color": "#d2a8ff", "num": 4, "fromTop": true, "toBottom": true },
+        { "text": "5. nova-manage db sync + cell_v2 map_instances", "mode": "lightup", "target": "galera_db", "badge": "SQL" },
+        { "text": "6. Step 2: RabbitMQ queue schema compatibility check", "mode": "lightup", "target": "rabbitmq", "badge": 6 },
+        { "text": "7. Step 3: Rolling restart Keystone pods (new image)", "mode": "lightup", "target": "keystone", "badge": "↻" },
+        { "text": "8. Step 4: Rolling restart Nova API (RollingUpdate)", "mode": "lightup", "target": "nova_api", "badge": "↻" },
+        { "text": "9. Step 5: Rolling restart Nova Conductor", "mode": "lightup", "target": "nova_conductor", "badge": "↻" },
+        { "text": "10. Step 6: Rolling restart Neutron API", "mode": "lightup", "target": "neutron_api", "badge": "↻" },
+        { "text": "11. Step 7: Rolling restart Cinder API + Scheduler", "mode": "lightup", "target": "cinder_api", "badge": "↻" },
+        { "text": "12. Cert-Manager renews any expiring TLS certificates", "mode": "lightup", "target": "certmgr", "badge": "TLS" },
+        { "text": "13. Operator verifies all Deployments: Available=True", "mode": "lightup", "target": "os_operator", "badge": "✓" },
+        { "text": "14. OpenStackControlPlane status: version=18.0.2, Ready", "mode": "arrow", "from": "os_operator", "to": "platform_admin", "color": "#3fb950", "num": 14, "fromLeft": true, "toRight": true, "yOff": 10 }
+      ]
+    },
+    "compute_fail": {
+      "label": "⑦ Compute Failure + Evacuate",
+      "steps": [
+        { "text": "1. compute-0 hardware failure (power loss / kernel panic)", "mode": "lightup", "target": "nova_compute_a", "badge": "✗", "errColor": "#f85149" },
+        { "text": "2. Libvirt/QEMU processes die — VMs unresponsive", "mode": "lightup", "target": "libvirt_a", "badge": "✗", "errColor": "#f85149" },
+        { "text": "3. OVN Controller disconnects from Southbound DB", "mode": "lightup", "target": "ovn_ctrl_a", "badge": "✗", "errColor": "#f85149" },
+        { "text": "4. Nova Conductor: service_is_up() returns False (timeout)", "mode": "lightup", "target": "nova_conductor", "badge": "!" },
+        { "text": "5. Compute marked DOWN in services table", "mode": "arrow", "from": "nova_conductor", "to": "galera_db", "color": "#f85149", "num": 5, "fromBottom": true, "toTop": true },
+        { "text": "6. Instance HA fencing agent detects failure", "mode": "lightup", "target": "os_operator", "badge": 6 },
+        { "text": "7. STONITH/IPMI fences compute-0 (ensures clean state)", "mode": "lightup", "target": "nova_compute_a", "badge": "⚡" },
+        { "text": "8. Admin/HA: nova evacuate → POST /servers/{id}/action", "mode": "arrow", "from": "os_operator", "to": "nova_api", "color": "#f85149", "num": 8, "fromTop": true, "toBottom": true },
+        { "text": "9. Nova API casts rebuild_instance() to Conductor", "mode": "arrow", "from": "nova_api", "to": "nova_conductor", "color": "#f85149", "num": 9, "fromBottom": true, "toLeft": true },
+        { "text": "10. Conductor: select new host (Scheduler → compute-1)", "mode": "arrow", "from": "nova_conductor", "to": "nova_sched", "color": "#58a6ff", "num": 10 },
+        { "text": "11. Scheduler picks compute-1 + claims Placement", "mode": "lightup", "target": "nova_sched", "badge": 11 },
+        { "text": "12. Conductor casts rebuild_instance() to compute-1", "mode": "arrow", "from": "nova_conductor", "to": "nova_compute_b", "color": "#58a6ff", "num": 12, "fromBottom": true, "toTop": true },
+        { "text": "13. Compute-1: attach existing RBD volume (shared storage)", "mode": "arrow", "from": "nova_compute_b", "to": "ceph_osd", "color": "#58a6ff", "num": 13, "fromRight": true, "toLeft": true, "waypoints": [{"x": 1050, "y": 940}] },
+        { "text": "14. Libvirt spawns VM from same RBD image on compute-1", "mode": "arrow", "from": "nova_compute_b", "to": "libvirt_b", "color": "#58a6ff", "num": 14, "fromBottom": true, "toTop": true },
+        { "text": "15. OVN rebinds port to compute-1 chassis", "mode": "arrow", "from": "ovn_sb", "to": "ovn_ctrl_b", "color": "#79c0ff", "num": 15, "fromBottom": true, "toTop": true },
+        { "text": "16. VM resumes on compute-1 (data preserved via Ceph)", "mode": "lightup", "target": "vm_b", "badge": "✓" },
+        { "text": "17. Placement: deallocate compute-0, confirm compute-1", "mode": "lightup", "target": "placement", "badge": "↻" },
+        { "text": "18. VM status: ACTIVE on new host — recovery complete", "mode": "arrow", "from": "nova_compute_b", "to": "nova_conductor", "color": "#3fb950", "num": 18, "fromTop": true, "toBottom": true }
+      ]
+    },
+    "image_boot": {
+      "label": "⑧ Glance Image + COW Boot",
+      "steps": [
+        { "text": "1. Admin: glance image-create --file rhel9.qcow2", "mode": "arrow", "from": "platform_admin", "to": "glance_api", "color": "#58a6ff", "num": 1, "fromRight": true, "toLeft": true },
+        { "text": "2. Glance API validates format + creates image record", "mode": "lightup", "target": "glance_api", "badge": 2 },
+        { "text": "3. Glance stores image data → Ceph RGW (S3 backend)", "mode": "arrow", "from": "glance_api", "to": "ceph_rgw", "color": "#58a6ff", "num": 3, "fromRight": true, "toLeft": true },
+        { "text": "4. Or: Glance stores as RBD image in 'images' pool", "mode": "arrow", "from": "glance_api", "to": "ceph_images", "color": "#58a6ff", "num": 4, "fromRight": true, "toLeft": true },
+        { "text": "5. Ceph: image fully replicated (3x) across OSDs", "mode": "lightup", "target": "ceph_images", "badge": "3x" },
+        { "text": "6. Image status: active (location stored in Galera)", "mode": "lightup", "target": "glance_api", "badge": "✓" },
+        { "text": "7. Tenant: nova boot --image rhel9 (VM creation begins)", "mode": "arrow", "from": "cloud_user", "to": "nova_api", "color": "#58a6ff", "num": 7, "fromRight": true, "toLeft": true },
+        { "text": "8. Nova Compute receives build request on compute-0", "mode": "arrow", "from": "nova_conductor", "to": "nova_compute_a", "color": "#58a6ff", "num": 8, "fromBottom": true, "toTop": true },
+        { "text": "9. Compute calls Glance: GET /v2/images/{id} (metadata)", "mode": "arrow", "from": "nova_compute_a", "to": "glance_api", "color": "#58a6ff", "num": 9, "fromTop": true, "toBottom": true },
+        { "text": "10. RBD backend: Ceph COW clone (instant, zero-copy)", "mode": "arrow", "from": "nova_compute_a", "to": "ceph_vms", "color": "#d2a8ff", "num": 10, "fromRight": true, "toLeft": true },
+        { "text": "11. rbd clone images/rhel9@snap → vms/instance-{uuid}_disk", "mode": "lightup", "target": "ceph_vms", "badge": "COW" },
+        { "text": "12. Clone is instant — only delta writes cost storage", "mode": "lightup", "target": "ceph_osd", "badge": 12 },
+        { "text": "13. Libvirt domain XML references RBD clone as root disk", "mode": "arrow", "from": "nova_compute_a", "to": "libvirt_a", "color": "#58a6ff", "num": 13, "fromBottom": true, "toTop": true },
+        { "text": "14. VM boots from COW clone — near-instant provisioning", "mode": "lightup", "target": "vm_a", "badge": "✓" }
+      ]
+    },
+    "galera_recovery": {
+      "label": "⑨ Galera Backup + Failure Recovery",
+      "steps": [
+        { "text": "1. CronJob triggers scheduled Galera backup (02:00 UTC)", "mode": "lightup", "target": "galera_backup", "badge": "⏰" },
+        { "text": "2. Backup pod connects to Galera wsrep donor node", "mode": "arrow", "from": "galera_backup", "to": "galera_db", "color": "#8b949e", "num": 2, "fromLeft": true, "toRight": true },
+        { "text": "3. SST snapshot via mariabackup (non-blocking, uses GTID)", "mode": "lightup", "target": "galera_db", "badge": "SST" },
+        { "text": "4. Compressed backup written to PVC (galera-backup-pvc)", "mode": "lightup", "target": "galera_backup", "badge": 4 },
+        { "text": "5. Backup verified: GTID position recorded in manifest", "mode": "lightup", "target": "galera_backup", "badge": "✓" },
+        { "text": "6. ⚠️ FAILURE: Galera node-0 crashes (OOM / disk full)", "mode": "lightup", "target": "galera_db", "badge": "✗", "errColor": "#f85149" },
+        { "text": "7. Galera cluster: quorum lost (2/3 nodes still up → OK)", "mode": "lightup", "target": "galera_db", "badge": "2/3" },
+        { "text": "8. OpenStack services: DB connections failover to node-1", "mode": "arrow", "from": "nova_api", "to": "galera_db", "color": "#f0883e", "num": 8, "fromBottom": true, "toTop": true },
+        { "text": "9. If quorum lost (2/3 down): ALL services pause writes", "mode": "lightup", "target": "keystone", "badge": "!" },
+        { "text": "10. Operator detects: MariaDB StatefulSet pod CrashLoopBackOff", "mode": "arrow", "from": "galera_db", "to": "os_operator", "color": "#f85149", "num": 10, "fromBottom": true, "toTop": true },
+        { "text": "11. Operator initiates Galera recovery: bootstrap from backup", "mode": "arrow", "from": "os_operator", "to": "galera_backup", "color": "#d2a8ff", "num": 11, "fromRight": true, "toLeft": true },
+        { "text": "12. Restore: mariabackup --prepare + --copy-back to PVC", "mode": "arrow", "from": "galera_backup", "to": "galera_db", "color": "#d2a8ff", "num": 12, "fromLeft": true, "toRight": true },
+        { "text": "13. First node bootstraps: galera_new_cluster (seqno from GTID)", "mode": "lightup", "target": "galera_db", "badge": "boot" },
+        { "text": "14. Remaining nodes IST (Incremental State Transfer) to catch up", "mode": "lightup", "target": "galera_db", "badge": "IST" },
+        { "text": "15. Cluster reformed: wsrep_cluster_size=3, synced", "mode": "lightup", "target": "galera_db", "badge": "3/3" },
+        { "text": "16. OpenStack services reconnect: write path restored", "mode": "arrow", "from": "galera_db", "to": "nova_api", "color": "#3fb950", "num": 16, "fromTop": true, "toBottom": true },
+        { "text": "17. Operator: Galera status Ready=True → Admin notified", "mode": "arrow", "from": "os_operator", "to": "platform_admin", "color": "#3fb950", "num": 17, "fromLeft": true, "toRight": true, "yOff": 10 }
+      ]
+    },
+    "ovn_dhcp": {
+      "label": "⑩ OVN Native DHCP (No dnsmasq)",
+      "steps": [
+        { "text": "1. VM boots → NIC sends DHCPDISCOVER (broadcast)", "mode": "arrow", "from": "vm_a", "to": "ovs_a", "color": "#58a6ff", "num": 1, "fromTop": true, "toBottom": true },
+        { "text": "2. OVS br-int: packet hits OpenFlow table (priority=100)", "mode": "lightup", "target": "ovs_a", "badge": 2 },
+        { "text": "3. OVN Controller intercepts DHCP via logical flow action", "mode": "arrow", "from": "ovs_a", "to": "ovn_ctrl_a", "color": "#58a6ff", "num": 3 },
+        { "text": "4. Controller matches port MAC → DHCP_Options in SB DB", "mode": "lightup", "target": "ovn_ctrl_a", "badge": 4 },
+        { "text": "5. OVN native DHCP: NO dnsmasq process needed!", "mode": "lightup", "target": "ovn_ctrl_a", "badge": "!" },
+        { "text": "6. DHCP_Options sourced from OVN Northbound DB", "mode": "arrow", "from": "ovn_ctrl_a", "to": "ovn_sb", "color": "#79c0ff", "num": 6, "fromTop": true, "toBottom": true },
+        { "text": "7. NB has: subnet CIDR, gateway, DNS, MTU, lease time", "mode": "lightup", "target": "ovn_nb", "badge": 7 },
+        { "text": "8. Neutron populated DHCP_Options when subnet was created", "mode": "arrow", "from": "neutron_api", "to": "ovn_nb", "color": "#79c0ff", "num": 8, "fromBottom": true, "toTop": true },
+        { "text": "9. OVN Controller constructs DHCPOFFER locally (in datapath)", "mode": "lightup", "target": "ovn_ctrl_a", "badge": "OFFER" },
+        { "text": "10. DHCPOFFER: IP=10.0.0.5, GW=10.0.0.1, DNS=8.8.8.8", "mode": "lightup", "target": "ovn_ctrl_a", "badge": 10 },
+        { "text": "11. OVS injects DHCPOFFER back to VM's tap interface", "mode": "arrow", "from": "ovn_ctrl_a", "to": "ovs_a", "color": "#3fb950", "num": 11 },
+        { "text": "12. VM receives OFFER → sends DHCPREQUEST", "mode": "arrow", "from": "ovs_a", "to": "ovn_ctrl_a", "color": "#58a6ff", "num": 12 },
+        { "text": "13. OVN Controller responds with DHCPACK", "mode": "arrow", "from": "ovn_ctrl_a", "to": "ovs_a", "color": "#3fb950", "num": 13 },
+        { "text": "14. VM configures: IP 10.0.0.5/24, GW 10.0.0.1", "mode": "lightup", "target": "vm_a", "badge": "✓" },
+        { "text": "15. Key insight: DHCP handled entirely in OVS datapath!", "mode": "lightup", "target": "ovs_a", "badge": "⚡" },
+        { "text": "16. No dnsmasq pod/process — scales to thousands of ports", "mode": "lightup", "target": "ovn_nb", "badge": "∞" }
+      ]
+    },
+    "provider_net": {
+      "label": "⑪ Provider Net (Bridge/Port Detail)",
+      "steps": [
+        { "text": "1. Admin: openstack network create --provider-network-type vlan --provider-segment 101 --provider-physical-network physnet1", "mode": "arrow", "from": "platform_admin", "to": "neutron_api", "color": "#58a6ff", "num": 1, "fromRight": true, "toLeft": true },
+        { "text": "2. Neutron ML2/OVN: creates provider network (VLAN 101, physnet1)", "mode": "lightup", "target": "neutron_api", "badge": 2 },
+        { "text": "3. OVN NB: Logical_Switch created with localnet port (type=localnet)", "mode": "arrow", "from": "neutron_api", "to": "ovn_nb", "color": "#58a6ff", "num": 3, "fromBottom": true, "toTop": true },
+        { "text": "4. localnet port options: network_name=physnet1, tag=101", "mode": "lightup", "target": "ovn_nb", "badge": "V101" },
+        { "text": "5. ovn-northd → SB: Port_Binding(type=localnet, tag=101)", "mode": "arrow", "from": "ovn_nb", "to": "ovn_sb", "color": "#79c0ff", "num": 5 },
+        { "text": "6. OVN Controller reads bridge_mappings: physnet1:br-ex", "mode": "arrow", "from": "ovn_sb", "to": "ovn_ctrl_a", "color": "#79c0ff", "num": 6, "fromBottom": true, "toTop": true },
+        { "text": "7. OVS creates patch ports: int-br-ex (on br-int) ↔ phy-br-ex (on br-ex)", "mode": "lightup", "target": "ovs_a", "badge": "patch" },
+        { "text": "8. br-ex already has physical NIC (eth1) as port (configured by EDPM)", "mode": "lightup", "target": "ovs_a", "badge": "eth1" },
+        { "text": "9. Tenant boots VM: nova boot --nic net-id=provider-vlan101", "mode": "arrow", "from": "cloud_user", "to": "nova_api", "color": "#58a6ff", "num": 9, "fromRight": true, "toLeft": true },
+        { "text": "10. Nova → Neutron: create port on provider net (gets IP 203.0.113.101)", "mode": "arrow", "from": "nova_api", "to": "neutron_api", "color": "#58a6ff", "num": 10 },
+        { "text": "11. OVN NB: logical port created, bound to chassis=compute-0", "mode": "lightup", "target": "ovn_nb", "badge": 11 },
+        { "text": "12. VM spawns → Libvirt creates tap interface (tapXXXX)", "mode": "arrow", "from": "nova_compute_a", "to": "libvirt_a", "color": "#58a6ff", "num": 12, "fromBottom": true, "toTop": true },
+        { "text": "13. OVN Controller adds tap port to br-int (iface-id = neutron port UUID)", "mode": "arrow", "from": "ovn_ctrl_a", "to": "ovs_a", "color": "#79c0ff", "num": 13 },
+        { "text": "14. === N-S EGRESS PACKET PATH (VM → External) ===", "mode": "lightup", "target": "vm_a", "badge": "TX" },
+        { "text": "15. (1) VM eth0 → tap port on br-int (packet enters OVS)", "mode": "arrow", "from": "vm_a", "to": "ovs_a", "color": "#58a6ff", "num": 15, "fromTop": true, "toBottom": true },
+        { "text": "16. (2) br-int: conntrack zone check (OVN security group ACLs)", "mode": "lightup", "target": "ovs_a", "badge": "CT" },
+        { "text": "17. (3) br-int: OpenFlow adds internal VLAN tag (e.g., tag=5)", "mode": "lightup", "target": "ovs_a", "badge": "tag:5" },
+        { "text": "18. (4) br-int: int-br-ex patch port → forwards to br-ex", "mode": "lightup", "target": "ovs_a", "badge": "→patch" },
+        { "text": "19. (5) br-ex: phy-br-ex patch port receives frame", "mode": "lightup", "target": "ovs_a", "badge": "patch→" },
+        { "text": "20. (6) br-ex: SWAPS internal VLAN tag=5 → actual VLAN 101 (802.1q)", "mode": "lightup", "target": "ovs_a", "badge": "5→101" },
+        { "text": "21. (7) br-ex: forwards tagged frame to physical port (eth1)", "mode": "arrow", "from": "ovs_a", "to": "ext_network", "color": "#58a6ff", "num": 21, "fromBottom": true, "toTop": true },
+        { "text": "22. (8) eth1 → physical switch: frame on VLAN 101 wire", "mode": "lightup", "target": "ext_network", "badge": "wire" },
+        { "text": "23. (9) Switch strips VLAN 101, routes to gateway/Internet", "mode": "lightup", "target": "ext_network", "badge": "→GW" },
+        { "text": "24. === INGRESS PATH (External → VM) ===", "mode": "lightup", "target": "ext_network", "badge": "RX" },
+        { "text": "25. (10) Switch sends VLAN 101 tagged frame → eth1 on compute-0", "mode": "arrow", "from": "ext_network", "to": "ovs_a", "color": "#3fb950", "num": 25, "fromTop": true, "toBottom": true },
+        { "text": "26. (11) br-ex: receives on eth1 port (VLAN 101 tagged)", "mode": "lightup", "target": "ovs_a", "badge": "V101" },
+        { "text": "27. (12) br-ex: SWAPS VLAN 101 → internal tag=5", "mode": "lightup", "target": "ovs_a", "badge": "101→5" },
+        { "text": "28. (13) br-ex: phy-br-ex → int-br-ex patch port to br-int", "mode": "lightup", "target": "ovs_a", "badge": "→br-int" },
+        { "text": "29. (14) br-int: matches internal tag=5 → finds dst tap port", "mode": "lightup", "target": "ovs_a", "badge": "lookup" },
+        { "text": "30. (15) br-int: conntrack (established) — SG allows reply", "mode": "lightup", "target": "ovn_ctrl_a", "badge": "CT:est" },
+        { "text": "31. (16) br-int: delivers frame to tap port → VM receives packet", "mode": "arrow", "from": "ovs_a", "to": "vm_a", "color": "#3fb950", "num": 31, "fromBottom": true, "toTop": true },
+        { "text": "32. Key: NO Geneve/tunnel — direct L2 via VLAN tag swap in OVS!", "mode": "lightup", "target": "vm_a", "badge": "✓" }
+      ]
+    },
+    "vm_to_vm_ping": {
+      "label": "⑫ VM-to-VM Ping (OVN/OVS Path)",
+      "steps": [
+        { "text": "1. VM-A (10.0.0.5) pings VM-B (10.0.0.6) on same subnet", "mode": "arrow", "from": "vm_a", "to": "ovs_a", "color": "#58a6ff", "num": 1, "fromTop": true, "toBottom": true },
+        { "text": "2. VM-A needs MAC of VM-B: sends ARP who-has 10.0.0.6", "mode": "lightup", "target": "ovs_a", "badge": "ARP" },
+        { "text": "3. OVS br-int: ARP hits OpenFlow table → OVN Controller", "mode": "arrow", "from": "ovs_a", "to": "ovn_ctrl_a", "color": "#58a6ff", "num": 3 },
+        { "text": "4. OVN has ARP responder flow (knows all port MACs from NB)", "mode": "lightup", "target": "ovn_ctrl_a", "badge": 4 },
+        { "text": "5. OVN replies: 10.0.0.6 is at MAC fa:16:3e:bb:bb:bb", "mode": "arrow", "from": "ovn_ctrl_a", "to": "ovs_a", "color": "#3fb950", "num": 5 },
+        { "text": "6. VM-A constructs ICMP echo: dst=fa:16:3e:bb:bb:bb", "mode": "lightup", "target": "vm_a", "badge": "ICMP" },
+        { "text": "7. Packet enters br-int on compute-0 via tap-A port", "mode": "arrow", "from": "vm_a", "to": "ovs_a", "color": "#58a6ff", "num": 7, "fromTop": true, "toBottom": true },
+        { "text": "8. OpenFlow lookup: dst MAC belongs to port on compute-1", "mode": "lightup", "target": "ovs_a", "badge": 8 },
+        { "text": "9. OVS encapsulates in Geneve header (VNI = network segID)", "mode": "arrow", "from": "ovs_a", "to": "geneve_tunnel", "color": "#58a6ff", "num": 9, "fromBottom": true, "toTop": true },
+        { "text": "10. Geneve packet: outer IP src=compute-0, dst=compute-1", "mode": "lightup", "target": "geneve_tunnel", "badge": "UDP:6081" },
+        { "text": "11. Physical network transports encapsulated packet", "mode": "arrow", "from": "geneve_tunnel", "to": "ovs_b", "color": "#58a6ff", "num": 11, "fromRight": true, "toLeft": true },
+        { "text": "12. Compute-1 OVS: decapsulates Geneve, extracts inner frame", "mode": "lightup", "target": "ovs_b", "badge": "decap" },
+        { "text": "13. OpenFlow: dst MAC matches local port tap-B", "mode": "lightup", "target": "ovs_b", "badge": 13 },
+        { "text": "14. Security group ACL check: ICMP ingress allowed?", "mode": "lightup", "target": "ovn_ctrl_b", "badge": "SG" },
+        { "text": "15. Conntrack: ct(commit) — stateful firewall allows", "mode": "lightup", "target": "ovs_b", "badge": "CT" },
+        { "text": "16. Packet delivered to VM-B via tap-B interface", "mode": "arrow", "from": "ovs_b", "to": "vm_b", "color": "#3fb950", "num": 16, "fromBottom": true, "toTop": true },
+        { "text": "17. VM-B kernel: ICMP echo reply generated", "mode": "lightup", "target": "vm_b", "badge": "reply" },
+        { "text": "18. Reply follows reverse path: tap-B → br-int → Geneve → compute-0", "mode": "arrow", "from": "vm_b", "to": "ovs_b", "color": "#3fb950", "num": 18, "fromTop": true, "toBottom": true },
+        { "text": "19. Geneve tunnel: compute-1 → compute-0 (reverse)", "mode": "arrow", "from": "ovs_b", "to": "geneve_tunnel", "color": "#3fb950", "num": 19 },
+        { "text": "20. Compute-0 decapsulates → delivers to VM-A: ping reply!", "mode": "arrow", "from": "geneve_tunnel", "to": "vm_a", "color": "#3fb950", "num": 20, "fromLeft": true, "toRight": true },
+        { "text": "21. VM-A: 64 bytes from 10.0.0.6: icmp_seq=1 time=0.8ms", "mode": "lightup", "target": "vm_a", "badge": "✓" }
+      ]
+    },
+    "ironic_bmc_onboard": {
+      "label": "⑬ Ironic + Redfish BMC — EDPM Node Onboarding",
+      "steps": [
+        { "text": "1. Admin: oc apply BareMetalHost CR for new compute node", "mode": "arrow", "from": "platform_admin", "to": "bmo", "color": "#d2a8ff", "num": 1, "fromRight": true, "toLeft": true },
+        { "text": "2. BMH spec: bmc.address=redfish+https://192.168.10.5/redfish/v1/Systems/1", "mode": "lightup", "target": "bmo", "badge": "BMH" },
+        { "text": "3. BMO reads BMC credentials from Secret (spec.bmc.credentialsName)", "mode": "lightup", "target": "bmo", "badge": "secret" },
+        { "text": "4. BMO calls Ironic API: POST /v1/nodes (driver=redfish, driver_info)", "mode": "arrow", "from": "bmo", "to": "ironic", "color": "#d2a8ff", "num": 4 },
+        { "text": "5. Ironic registers node: provision_state=enroll → manageable", "mode": "lightup", "target": "ironic", "badge": "enroll" },
+        { "text": "6. Ironic persists node record in Galera DB", "mode": "arrow", "from": "ironic", "to": "galera_db", "color": "#58a6ff", "num": 6, "fromBottom": true, "toTop": true },
+        { "text": "7. BMO sets BareMetalHost status: state=registering → inspecting", "mode": "lightup", "target": "bmo", "badge": "inspecting" },
+        { "text": "8. Ironic Conductor: GET /redfish/v1/Systems/1 (verify BMC reachable)", "mode": "arrow", "from": "ironic", "to": "redfish_bmc_a", "color": "#f0883e", "num": 8, "fromBottom": true, "toTop": true },
+        { "text": "9. BMC responds: 200 OK {PowerState: Off, Model: PowerEdge R750}", "mode": "lightup", "target": "redfish_bmc_a", "badge": "200" },
+        { "text": "10. Ironic: POST /redfish/v1/Managers/1/VirtualMedia/CD1/Actions/InsertMedia", "mode": "arrow", "from": "ironic", "to": "redfish_bmc_a", "color": "#f0883e", "num": 10, "fromBottom": true, "toTop": true },
+        { "text": "11. BMC mounts IPA deploy ramdisk ISO via virtual media", "mode": "lightup", "target": "redfish_bmc_a", "badge": "ISO" },
+        { "text": "12. Ironic: PATCH /redfish/v1/Systems/1 Boot={BootSourceOverrideTarget: Cd}", "mode": "lightup", "target": "redfish_bmc_a", "badge": "boot=CD" },
+        { "text": "13. Ironic: POST /Systems/1/Actions/ComputerSystem.Reset {ResetType: On}", "mode": "arrow", "from": "ironic", "to": "redfish_bmc_a", "color": "#f0883e", "num": 13, "fromBottom": true, "toTop": true },
+        { "text": "14. BMC powers on server → boots from virtual media ISO", "mode": "lightup", "target": "redfish_bmc_a", "badge": "POWER ON" },
+        { "text": "15. IPA ramdisk boots on bare metal, starts ironic-python-agent.service", "mode": "arrow", "from": "redfish_bmc_a", "to": "ipa_ramdisk", "color": "#d2a8ff", "num": 15 },
+        { "text": "16. IPA: POST /v1/lookup?addresses=aa:bb:cc:dd:ee:ff → finds Ironic node", "mode": "arrow", "from": "ipa_ramdisk", "to": "ironic", "color": "#d2a8ff", "num": 16, "fromTop": true, "toBottom": true },
+        { "text": "17. IPA begins heartbeat loop: POST /v1/heartbeat/{node_uuid}", "mode": "lightup", "target": "ipa_ramdisk", "badge": "heartbeat" },
+        { "text": "18. Ironic sends inspect command → IPA collects: lshw, lsblk, dmidecode", "mode": "lightup", "target": "ipa_ramdisk", "badge": "lshw" },
+        { "text": "19. IPA returns inventory: 2×Xeon, 512GB RAM, 4×NVMe, 2×25GbE NIC", "mode": "arrow", "from": "ipa_ramdisk", "to": "ironic", "color": "#3fb950", "num": 19, "fromTop": true, "toBottom": true },
+        { "text": "20. Ironic stores HW inventory → BMO updates BMH status.hardware", "mode": "arrow", "from": "ironic", "to": "bmo", "color": "#3fb950", "num": 20 },
+        { "text": "21. Node provision_state: inspecting → manageable → available", "mode": "lightup", "target": "ironic", "badge": "available" },
+        { "text": "22. Admin: oc apply OpenStackDataPlaneNodeSet (references BMH)", "mode": "arrow", "from": "platform_admin", "to": "nodeset_crd", "color": "#d2a8ff", "num": 22, "fromRight": true, "toLeft": true },
+        { "text": "23. OpenStack Operator reconciles: creates DataPlaneDeployment", "mode": "arrow", "from": "os_operator", "to": "dp_deployment", "color": "#d2a8ff", "num": 23 },
+        { "text": "24. Ironic provisions: IPA writes RHEL 9 image to /dev/sda", "mode": "arrow", "from": "ironic", "to": "ipa_ramdisk", "color": "#d2a8ff", "num": 24, "fromBottom": true, "toTop": true },
+        { "text": "25. IPA: dd if=rhel9.qcow2 → /dev/sda + configdrive partition", "mode": "lightup", "target": "ipa_ramdisk", "badge": "dd→sda" },
+        { "text": "26. Ironic sets boot to HDD, reboots via Redfish Reset", "mode": "arrow", "from": "ironic", "to": "redfish_bmc_a", "color": "#f0883e", "num": 26, "fromBottom": true, "toTop": true },
+        { "text": "27. BMC: Boot={BootSourceOverrideTarget: Hdd} + Reset{GracefulRestart}", "mode": "lightup", "target": "redfish_bmc_a", "badge": "boot=HDD" },
+        { "text": "28. Node boots into RHEL 9, provision_state: active", "mode": "lightup", "target": "ironic", "badge": "active" },
+        { "text": "29. EDPM Ansible Runner Pod connects via SSH to new node", "mode": "arrow", "from": "ansible_runner", "to": "nova_compute_a", "color": "#d2a8ff", "num": 29, "fromBottom": true, "toTop": true },
+        { "text": "30. Ansible installs: nova-compute, ovn-controller, libvirtd, ovs", "mode": "lightup", "target": "nova_compute_a", "badge": "install" },
+        { "text": "31. nova-compute registers with Nova Conductor (RabbitMQ heartbeat)", "mode": "arrow", "from": "nova_compute_a", "to": "rabbitmq", "color": "#3fb950", "num": 31, "fromTop": true, "toBottom": true },
+        { "text": "32. ovn-controller connects to OVN SB DB, registers chassis", "mode": "arrow", "from": "ovn_ctrl_a", "to": "ovn_sb", "color": "#3fb950", "num": 32, "fromTop": true, "toBottom": true },
+        { "text": "33. libvirtd starts, OVS bridges (br-int, br-ex) created", "mode": "lightup", "target": "ovs_a", "badge": "br-int" },
+        { "text": "34. Node fully operational — placement reports VCPU/RAM/DISK inventory", "mode": "arrow", "from": "nova_compute_a", "to": "placement", "color": "#3fb950", "num": 34, "fromTop": true, "toBottom": true },
+        { "text": "35. BMH status: provisioned, DataPlaneNodeSet: ready=true", "mode": "lightup", "target": "bmo", "badge": "✓ ready" }
+      ]
+    }
+  },
+  "inspector": {
+    "initialState": {
+      "phase": "request",
+      "label": "OpenStack API Request",
+      "headers": [
+        { "value": "POST /v2.1/servers", "style": "keep", "id": "h-method" },
+        { "value": "X-Auth-Token: gAAAAA...(Fernet token)", "style": "keep", "id": "h-token" },
+        { "value": "Content-Type: application/json", "style": "keep", "id": "h-ct" },
+        { "value": "X-OpenStack-Nova-API-Version: 2.95", "style": "keep", "id": "h-mv" },
+        { "value": "X-Project-Id: tenant-001-uuid", "style": "keep", "id": "h-proj" }
+      ],
+      "body": [
+        { "value": "\"name\": \"my-instance\"", "style": "keep", "id": "b-name" },
+        { "value": "\"flavorRef\": \"m1.small\" (vcpus:2, ram:4096, disk:40)", "style": "keep", "id": "b-flavor" },
+        { "value": "\"imageRef\": \"rhel-9.4-base\" (rbd:images/rhel9)", "style": "keep", "id": "b-image" },
+        { "value": "\"networks\": [{\"uuid\": \"tenant-net-1\"}]", "style": "keep", "id": "b-net" },
+        { "value": "\"block_device_mapping_v2\": [{\"boot_index\": 0}]", "style": "keep", "id": "b-bdm" }
+      ],
+      "cycleState": []
+    },
+    "mutations": {
+      "vm_launch": [
+        { "step": 1, "label": "① POST /servers with Fernet token", "actions": [{ "id": "h-token", "style": "highlight" }] },
+        { "step": 2, "label": "② Keystone validates via Memcached", "actions": [{ "id": "h-token", "style": "highlight" }] },
+        { "step": 3, "label": "③ Token valid — project roles confirmed", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "token_valid = true", "style": "add", "id": "c-tok" },
+            { "value": "project = tenant-001", "style": "add", "id": "c-proj" },
+            { "value": "roles = [member, compute:create]", "style": "add", "id": "c-roles" }
+          ]}
+        ]},
+        { "step": 4, "label": "④ Nova API validates + checks quota", "actions": [
+          { "id": "b-flavor", "style": "highlight" },
+          { "id": "b-image", "style": "highlight" }
+        ]},
+        { "step": 5, "label": "⑤ DB INSERT: instance (vm_state=BUILDING)", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "vm_state = BUILDING", "style": "add", "id": "c-state" },
+            { "value": "task_state = scheduling", "style": "add", "id": "c-task" },
+            { "value": "project = tenant-001", "style": "keep", "id": "c-proj" }
+          ]}
+        ]},
+        { "step": 6, "label": "⑥ AMQP cast build_instances() → conductor", "actions": [] },
+        { "step": 7, "label": "⑦ Conductor: nova.conductor queue pickup", "actions": [] },
+        { "step": 8, "label": "⑧ Conductor → Scheduler: select_destinations()", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "vm_state = BUILDING", "style": "keep", "id": "c-state" },
+            { "value": "task_state = scheduling", "style": "keep", "id": "c-task" },
+            { "value": "scheduler_hint = {}", "style": "add", "id": "c-hint" }
+          ]}
+        ]},
+        { "step": 9, "label": "⑨ Placement: GET /allocation_candidates", "actions": [
+          { "action": "add", "target": "headers", "value": "GET /placement/allocation_candidates?resources=VCPU:2,MEMORY_MB:4096,DISK_GB:40", "id": "h-placement" }
+        ]},
+        { "step": 10, "label": "⑩ Placement returns candidate hosts", "actions": [] },
+        { "step": 11, "label": "⑪ Filters: RAM→Disk→NUMA→ServerGroup", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "vm_state = BUILDING", "style": "keep", "id": "c-state" },
+            { "value": "selected_host = edpm-compute-0", "style": "add", "id": "c-host" },
+            { "value": "weigher_score = 1.0 (most free RAM)", "style": "add", "id": "c-weight" }
+          ]}
+        ]},
+        { "step": 12, "label": "⑫ Allocation claimed atomically in Placement", "actions": [] },
+        { "step": 13, "label": "⑬ AMQP cast build_and_run_instance()", "actions": [] },
+        { "step": 14, "label": "⑭ RabbitMQ → nova.compute.edpm-compute-0", "actions": [
+          { "action": "add", "target": "headers", "value": "AMQP routing_key: nova.compute.edpm-compute-0", "id": "h-amqp" }
+        ]},
+        { "step": 15, "label": "⑮ Compute claims Neutron port", "actions": [] },
+        { "step": 16, "label": "⑯ OVN NB: logical port created", "actions": [] },
+        { "step": 17, "label": "⑰ rbd clone images/rhel9@snap → vms/inst-disk", "actions": [] },
+        { "step": 18, "label": "⑱ Libvirt: define domain XML", "actions": [] },
+        { "step": 19, "label": "⑲ virDomainCreate() → QEMU spawned", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "vm_state = BUILDING", "style": "keep", "id": "c-state" },
+            { "value": "task_state = spawning", "style": "add", "id": "c-task2" },
+            { "value": "selected_host = edpm-compute-0", "style": "keep", "id": "c-host" }
+          ]}
+        ]},
+        { "step": 20, "label": "⑳ OVN: port binding → chassis=compute-0", "actions": [] },
+        { "step": 21, "label": "㉑ OVS br-int: flow rules installed", "actions": [] },
+        { "step": 22, "label": "㉒ VM DHCP → IP assigned → boot complete", "actions": [] },
+        { "step": 23, "label": "㉓ Compute → Conductor: state update RPC", "phase": "response", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "HTTP/1.1 202 Accepted", "style": "keep", "id": "r-status" },
+            { "value": "Content-Type: application/json", "style": "keep", "id": "r-ct" },
+            { "value": "Location: /v2.1/servers/a1b2c3d4-uuid", "style": "add", "id": "r-loc" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "\"id\": \"a1b2c3d4-e5f6-...\"", "style": "add", "id": "r-id" },
+            { "value": "\"name\": \"my-instance\"", "style": "keep", "id": "r-name" },
+            { "value": "\"status\": \"ACTIVE\"", "style": "add", "id": "r-stat" },
+            { "value": "\"OS-EXT-SRV-ATTR:host\": \"edpm-compute-0\"", "style": "add", "id": "r-host" },
+            { "value": "\"addresses\": {\"tenant-net-1\": [{\"addr\": \"192.168.1.10\", \"version\": 4}]}", "style": "add", "id": "r-addr" }
+          ]},
+          { "action": "clearCycleState" }
+        ]},
+        { "step": 24, "label": "㉔ Galera: vm_state=ACTIVE persisted", "actions": [{ "id": "r-stat", "style": "highlight" }] },
+        { "step": 25, "label": "㉕ 202 Accepted → User (poll for ACTIVE)", "actions": [
+          { "id": "r-id", "style": "highlight" },
+          { "id": "r-addr", "style": "highlight" }
+        ]}
+      ],
+      "live_migration": [
+        { "step": 1, "label": "① POST /servers/{id}/action {migrate}", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "POST /v2.1/servers/{id}/action", "style": "keep", "id": "h-method" },
+            { "value": "X-Auth-Token: gAAAAA...", "style": "keep", "id": "h-token" },
+            { "value": "Content-Type: application/json", "style": "keep", "id": "h-ct" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "\"os-migrateLive\": {", "style": "add", "id": "b-mig" },
+            { "value": "  \"host\": \"edpm-compute-1\",", "style": "add", "id": "b-dest" },
+            { "value": "  \"block_migration\": false,", "style": "add", "id": "b-block" },
+            { "value": "  \"force\": false", "style": "add", "id": "b-force" },
+            { "value": "}", "style": "add", "id": "b-end" }
+          ]}
+        ]},
+        { "step": 2, "label": "② task_state = MIGRATING in Galera", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "task_state = MIGRATING", "style": "add", "id": "c-task" },
+            { "value": "migration_type = live-migration", "style": "add", "id": "c-mtype" }
+          ]}
+        ]},
+        { "step": 3, "label": "③ cast live_migrate_instance() → Conductor", "actions": [] },
+        { "step": 4, "label": "④ Conductor checks Placement capacity", "actions": [] },
+        { "step": 5, "label": "⑤ Allocation claimed on compute-1", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "task_state = MIGRATING", "style": "keep", "id": "c-task" },
+            { "value": "source = edpm-compute-0", "style": "add", "id": "c-src" },
+            { "value": "dest = edpm-compute-1", "style": "add", "id": "c-dst" }
+          ]}
+        ]},
+        { "step": 6, "label": "⑥ cast live_migration() → source", "actions": [] },
+        { "step": 7, "label": "⑦ source pre_live_migration() → dest", "actions": [] },
+        { "step": 8, "label": "⑧ dest: connect volumes, prepare net", "actions": [] },
+        { "step": 9, "label": "⑨ dest libvirt: incoming migration URI", "actions": [] },
+        { "step": 10, "label": "⑩ virDomainMigrateToURI3 (pre-copy)", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "phase = pre-copy (iterative RAM)", "style": "add", "id": "c-phase" },
+            { "value": "source = edpm-compute-0", "style": "keep", "id": "c-src" },
+            { "value": "dest = edpm-compute-1", "style": "keep", "id": "c-dst" }
+          ]}
+        ]},
+        { "step": 11, "label": "⑪ Bulk RAM transfer (dirty page tracking)", "actions": [] },
+        { "step": 12, "label": "⑫ Converging — dirty rate decreasing", "actions": [] },
+        { "step": 13, "label": "⑬ Final switchover (pause < 100ms)", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "phase = switchover (< 100ms pause)", "style": "add", "id": "c-phase2" },
+            { "value": "source = edpm-compute-0", "style": "keep", "id": "c-src" },
+            { "value": "dest = edpm-compute-1", "style": "keep", "id": "c-dst" }
+          ]}
+        ]},
+        { "step": 14, "label": "⑭ OVN SB: Port_Binding.chassis = compute-1", "actions": [] },
+        { "step": 15, "label": "⑮ New OVN Controller programs OVS", "actions": [] },
+        { "step": 16, "label": "⑯ GARP sent — traffic switches instantly", "actions": [] },
+        { "step": 17, "label": "⑰ Source: virDomainUndefine (cleanup)", "actions": [] },
+        { "step": 18, "label": "⑱ Source: release Placement allocation", "actions": [] },
+        { "step": 19, "label": "⑲ DB: host=compute-1, task_state=None", "phase": "response", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "HTTP/1.1 202 Accepted", "style": "keep", "id": "r-status" },
+            { "value": "Content-Type: application/json", "style": "keep", "id": "r-ct" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "\"status\": \"ACTIVE\"", "style": "add", "id": "r-stat" },
+            { "value": "\"OS-EXT-SRV-ATTR:host\": \"edpm-compute-1\"", "style": "add", "id": "r-newhost" },
+            { "value": "\"OS-EXT-STS:task_state\": null", "style": "add", "id": "r-task" },
+            { "value": "\"migration_status\": \"completed\"", "style": "add", "id": "r-mstat" }
+          ]},
+          { "action": "clearCycleState" }
+        ]},
+        { "step": 20, "label": "⑳ Live migration complete — zero downtime", "actions": [{ "id": "r-newhost", "style": "highlight" }, { "id": "r-mstat", "style": "highlight" }] }
+      ],
+      "edpm_deploy": [
+        { "step": 1, "label": "① oc apply -f dataplane-nodeset.yaml", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "oc apply -f dataplane-nodeset.yaml", "style": "keep", "id": "h-cmd" },
+            { "value": "namespace: openstack", "style": "keep", "id": "h-ns" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "kind: OpenStackDataPlaneNodeSet", "style": "add", "id": "b-kind" },
+            { "value": "name: edpm-compute", "style": "add", "id": "b-name" },
+            { "value": "nodes: {edpm-compute-0: {hostName: ...}, edpm-compute-1: {...}}", "style": "add", "id": "b-nodes" },
+            { "value": "services: [install_os, configure_network, install_certs, ceph_client, ovn, libvirt, nova]", "style": "add", "id": "b-svcs" },
+            { "value": "nodeTemplate.ansibleSSHPrivateKeySecret: dataplane-ssh-key", "style": "add", "id": "b-ssh" }
+          ]}
+        ]},
+        { "step": 2, "label": "② Webhook validates CR (< 63 char names)", "actions": [] },
+        { "step": 3, "label": "③ Operator reconcile loop triggered", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "reconcile = triggered", "style": "add", "id": "c-recon" },
+            { "value": "generation = 1", "style": "add", "id": "c-gen" }
+          ]}
+        ]},
+        { "step": 4, "label": "④ Resolves ordered service list", "actions": [] },
+        { "step": 5, "label": "⑤ install_os → configure_network → certs → ...", "actions": [] },
+        { "step": 6, "label": "⑥ DataPlaneDeployment triggers execution", "actions": [] },
+        { "step": 7, "label": "⑦ K8s Job created → Pod → ansible-runner", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "reconcile = deploying", "style": "add", "id": "c-recon2" },
+            { "value": "ansible_phase = running", "style": "add", "id": "c-ansible" },
+            { "value": "current_service = install_os", "style": "add", "id": "c-svc" }
+          ]}
+        ]},
+        { "step": 8, "label": "⑧ SSH key mounted from Secret into Pod", "actions": [] },
+        { "step": 9, "label": "⑨ SSH → edpm_network_config role", "actions": [] },
+        { "step": 10, "label": "⑩ TLS certs deployed to /etc/pki", "actions": [] },
+        { "step": 11, "label": "⑪ Ceph client keyring + conf deployed", "actions": [] },
+        { "step": 12, "label": "⑫ nova-compute installed + configured", "actions": [] },
+        { "step": 13, "label": "⑬ ovn-controller → connects to SB DB", "actions": [] },
+        { "step": 14, "label": "⑭ Chassis registered in SB", "actions": [] },
+        { "step": 15, "label": "⑮ Libvirt/QEMU + SELinux configured", "actions": [] },
+        { "step": 16, "label": "⑯ Hypervisor resources → Placement API", "actions": [] },
+        { "step": 17, "label": "⑰ Ansible exit 0 — all services started", "phase": "response", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "oc get openstackdataplanenodeset edpm-compute -o yaml", "style": "keep", "id": "r-cmd" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "status.conditions:", "style": "keep", "id": "r-cond" },
+            { "value": "  - type: Ready, status: True", "style": "add", "id": "r-ready" },
+            { "value": "  - type: DeploymentReady, status: True", "style": "add", "id": "r-dep" },
+            { "value": "status.deployedVersion: 18.0.1", "style": "add", "id": "r-ver" },
+            { "value": "status.observedGeneration: 1", "style": "add", "id": "r-gen" }
+          ]},
+          { "action": "clearCycleState" }
+        ]},
+        { "step": 18, "label": "⑱ Status: Ready=True → Admin notified", "actions": [{ "id": "r-ready", "style": "highlight" }] }
+      ],
+      "network_prov": [
+        { "step": 1, "label": "① POST /v2.0/networks", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "POST /v2.0/networks", "style": "keep", "id": "h-method" },
+            { "value": "X-Auth-Token: gAAAAA...", "style": "keep", "id": "h-token" },
+            { "value": "Content-Type: application/json", "style": "keep", "id": "h-ct" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "\"network\": {\"name\": \"tenant-net-1\"}", "style": "keep", "id": "b-net" },
+            { "value": "\"provider:network_type\": \"geneve\"", "style": "keep", "id": "b-type" },
+            { "value": "\"subnet\": {\"cidr\": \"192.168.100.0/24\", \"gateway_ip\": \"192.168.100.1\"}", "style": "keep", "id": "b-subnet" }
+          ]}
+        ]},
+        { "step": 2, "label": "② Token validated", "actions": [{ "id": "h-token", "style": "highlight" }] },
+        { "step": 3, "label": "③ Neutron ML2/OVN plugin activated", "actions": [] },
+        { "step": 4, "label": "④ INSERT network + subnet in Galera", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "network_id = net-uuid-1234", "style": "add", "id": "c-netid" },
+            { "value": "segmentation_id = 42 (geneve VNI)", "style": "add", "id": "c-seg" }
+          ]}
+        ]},
+        { "step": 5, "label": "⑤ OVN NB: nb_ovn.ls_add('neutron-net-uuid')", "actions": [] },
+        { "step": 6, "label": "⑥ Logical_Switch + DHCP_Options created", "actions": [] },
+        { "step": 7, "label": "⑦ Router + router_interface added", "actions": [] },
+        { "step": 8, "label": "⑧ Logical_Router port links switch", "actions": [] },
+        { "step": 9, "label": "⑨ ovn-northd compiles NB → SB flows", "actions": [] },
+        { "step": 10, "label": "⑩ SB: Logical_Flow published to chassis", "actions": [] },
+        { "step": 11, "label": "⑪ OVN Ctrl: OpenFlow rules in br-int", "actions": [] },
+        { "step": 12, "label": "⑫ Gateway binds router for N-S", "actions": [] },
+        { "step": 13, "label": "⑬ POST /v2.0/floatingips (associate)", "actions": [] },
+        { "step": 14, "label": "⑭ NAT: dnat_and_snat on Logical_Router", "actions": [] },
+        { "step": 15, "label": "⑮ DNAT/SNAT flows on gateway chassis", "actions": [] },
+        { "step": 16, "label": "⑯ FRR/BGP announces FIP prefix", "actions": [] },
+        { "step": 17, "label": "⑰ External reachability confirmed", "actions": [] },
+        { "step": 18, "label": "⑱ Response: floatingip ACTIVE", "phase": "response", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "HTTP/1.1 201 Created", "style": "keep", "id": "r-status" },
+            { "value": "Content-Type: application/json", "style": "keep", "id": "r-ct" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "\"network.id\": \"net-uuid-1234\"", "style": "add", "id": "r-netid" },
+            { "value": "\"network.status\": \"ACTIVE\"", "style": "add", "id": "r-netstatus" },
+            { "value": "\"floatingip.floating_ip_address\": \"10.0.0.55\"", "style": "add", "id": "r-fip" },
+            { "value": "\"floatingip.status\": \"ACTIVE\"", "style": "add", "id": "r-fipst" }
+          ]},
+          { "action": "clearCycleState" }
+        ]}
+      ],
+      "storage_attach": [
+        { "step": 1, "label": "① POST /v3/volumes {ceph-rbd}", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "POST /v3/{project_id}/volumes", "style": "keep", "id": "h-method" },
+            { "value": "X-Auth-Token: gAAAAA...", "style": "keep", "id": "h-token" },
+            { "value": "Content-Type: application/json", "style": "keep", "id": "h-ct" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "\"volume\": {\"name\": \"data-vol-1\", \"size\": 50}", "style": "keep", "id": "b-vol" },
+            { "value": "\"volume_type\": \"ceph-rbd\"", "style": "keep", "id": "b-type" },
+            { "value": "\"availability_zone\": \"nova\"", "style": "keep", "id": "b-az" }
+          ]}
+        ]},
+        { "step": 2, "label": "② Keystone: token valid", "actions": [{ "id": "h-token", "style": "highlight" }] },
+        { "step": 3, "label": "③ Cinder API receives request", "actions": [] },
+        { "step": 4, "label": "④ INSERT volume (status=creating)", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "volume_status = creating", "style": "add", "id": "c-vst" },
+            { "value": "volume_id = vol-uuid-5678", "style": "add", "id": "c-vid" }
+          ]}
+        ]},
+        { "step": 5, "label": "⑤ AMQP cast create_volume()", "actions": [] },
+        { "step": 6, "label": "⑥ CapacityFilter → Weigher → select ceph", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "volume_status = creating", "style": "keep", "id": "c-vst" },
+            { "value": "backend = ceph-rbd@rbd-pool-volumes", "style": "add", "id": "c-back" },
+            { "value": "pool = volumes", "style": "add", "id": "c-pool" }
+          ]}
+        ]},
+        { "step": 7, "label": "⑦ RBD driver → cephx auth to MON", "actions": [] },
+        { "step": 8, "label": "⑧ MON: auth OK, CRUSH map returned", "actions": [] },
+        { "step": 9, "label": "⑨ rbd create volume-vol-uuid --size 50G", "actions": [] },
+        { "step": 10, "label": "⑩ OSD: PG allocated, thin-provisioned", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "volume_status = available", "style": "add", "id": "c-vst2" },
+            { "value": "rbd_image = volume-vol-uuid-5678", "style": "add", "id": "c-rbd" },
+            { "value": "backend = ceph-rbd@rbd-pool-volumes", "style": "keep", "id": "c-back" }
+          ]}
+        ]},
+        { "step": 11, "label": "⑪ Volume available (Galera updated)", "actions": [] },
+        { "step": 12, "label": "⑫ POST /servers/{id}/os-volume_attachments", "actions": [] },
+        { "step": 13, "label": "⑬ Nova → Cinder: initialize_connection()", "actions": [] },
+        { "step": 14, "label": "⑭ Returns: {driver_volume_type: rbd, ...}", "actions": [] },
+        { "step": 15, "label": "⑮ Conductor RPC → compute-0: attach", "actions": [] },
+        { "step": 16, "label": "⑯ Libvirt: virDomainAttachDevice(disk_xml)", "actions": [] },
+        { "step": 17, "label": "⑰ RBD mapped → /dev/vdb visible in guest", "actions": [] },
+        { "step": 18, "label": "⑱ Volume in-use → User", "phase": "response", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "HTTP/1.1 200 OK", "style": "keep", "id": "r-status" },
+            { "value": "Content-Type: application/json", "style": "keep", "id": "r-ct" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "\"id\": \"vol-uuid-5678\"", "style": "add", "id": "r-vid" },
+            { "value": "\"status\": \"in-use\"", "style": "add", "id": "r-vst" },
+            { "value": "\"attachments\": [{\"server_id\": \"a1b2c3\", \"device\": \"/dev/vdb\"}]", "style": "add", "id": "r-att" },
+            { "value": "\"volume_type\": \"ceph-rbd\"", "style": "add", "id": "r-vtype" }
+          ]},
+          { "action": "clearCycleState" }
+        ]}
+      ],
+      "ctrl_upgrade": [
+        { "step": 1, "label": "① Edit OpenStackControlPlane (new version)", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "oc edit openstackcontrolplane/controlplane", "style": "keep", "id": "h-cmd" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "spec.nova.template.apiImage: registry.redhat.io/.../nova-api:18.0.2", "style": "add", "id": "b-img" },
+            { "value": "spec.neutron.template.apiImage: .../neutron-server:18.0.2", "style": "add", "id": "b-nimg" },
+            { "value": "spec.cinder.template.apiImage: .../cinder-api:18.0.2", "style": "add", "id": "b-cimg" }
+          ]}
+        ]},
+        { "step": 2, "label": "② OLM: operator image updated", "actions": [] },
+        { "step": 3, "label": "③ Operator detects image drift", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "upgrade_state = in-progress", "style": "add", "id": "c-upg" },
+            { "value": "current_step = db-migration", "style": "add", "id": "c-step" }
+          ]}
+        ]},
+        { "step": 4, "label": "④ DB schema migration Job", "actions": [] },
+        { "step": 5, "label": "⑤ nova-manage db sync executed", "actions": [] },
+        { "step": 6, "label": "⑥ RabbitMQ compatibility check", "actions": [] },
+        { "step": 7, "label": "⑦ Keystone pods: RollingUpdate", "actions": [] },
+        { "step": 8, "label": "⑧ Nova API pods: RollingUpdate", "actions": [] },
+        { "step": 9, "label": "⑨ Nova Conductor: RollingUpdate", "actions": [] },
+        { "step": 10, "label": "⑩ Neutron API: RollingUpdate", "actions": [] },
+        { "step": 11, "label": "⑪ Cinder: RollingUpdate", "actions": [] },
+        { "step": 12, "label": "⑫ Cert-Manager: renew if expiring", "actions": [] },
+        { "step": 13, "label": "⑬ All Deployments Available=True", "actions": [] },
+        { "step": 14, "label": "⑭ ControlPlane: version=18.0.2 Ready", "phase": "response", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "oc get openstackcontrolplane -o yaml", "style": "keep", "id": "r-cmd" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "status.version: 18.0.2", "style": "add", "id": "r-ver" },
+            { "value": "status.conditions: Ready=True", "style": "add", "id": "r-cond" },
+            { "value": "status.services: all Deployed", "style": "add", "id": "r-svcs" }
+          ]},
+          { "action": "clearCycleState" }
+        ]}
+      ],
+      "compute_fail": [
+        { "step": 1, "label": "① HARDWARE FAILURE on compute-0", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "EVENT: compute-0 unreachable", "style": "err", "id": "h-event" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "kernel panic / power loss / NIC failure", "style": "err", "id": "b-cause" },
+            { "value": "affected VMs: [a1b2c3, d4e5f6, ...]", "style": "err", "id": "b-vms" }
+          ]}
+        ]},
+        { "step": 2, "label": "② VMs unresponsive — guests frozen", "actions": [] },
+        { "step": 3, "label": "③ OVN Controller disconnects from SB", "actions": [] },
+        { "step": 4, "label": "④ Conductor: service_is_up() = False", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "compute-0.state = DOWN", "style": "err", "id": "c-down" },
+            { "value": "detection_method = heartbeat timeout (60s)", "style": "add", "id": "c-detect" }
+          ]}
+        ]},
+        { "step": 5, "label": "⑤ DB: compute_nodes.forced_down = True", "actions": [] },
+        { "step": 6, "label": "⑥ Instance HA / Masakari detects failure", "actions": [] },
+        { "step": 7, "label": "⑦ STONITH fences via IPMI (ensure off)", "actions": [] },
+        { "step": 8, "label": "⑧ nova evacuate triggered for each VM", "actions": [] },
+        { "step": 9, "label": "⑨ cast rebuild_instance() → Conductor", "actions": [] },
+        { "step": 10, "label": "⑩ Scheduler selects compute-1", "actions": [] },
+        { "step": 11, "label": "⑪ Placement: claim on compute-1", "actions": [] },
+        { "step": 12, "label": "⑫ cast rebuild() → compute-1", "actions": [] },
+        { "step": 13, "label": "⑬ RBD volumes intact (shared storage)", "actions": [] },
+        { "step": 14, "label": "⑭ Libvirt spawns from existing RBD", "actions": [] },
+        { "step": 15, "label": "⑮ OVN rebinds port → compute-1", "actions": [] },
+        { "step": 16, "label": "⑯ VM resumes (data preserved)", "phase": "response", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "RECOVERY COMPLETE", "style": "keep", "id": "r-status" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "VMs evacuated: 3/3 successful", "style": "add", "id": "r-count" },
+            { "value": "new_host: edpm-compute-1", "style": "add", "id": "r-host" },
+            { "value": "data_loss: none (Ceph shared storage)", "style": "add", "id": "r-loss" },
+            { "value": "downtime: ~90s (detect + fence + rebuild)", "style": "add", "id": "r-dt" }
+          ]},
+          { "action": "clearCycleState" }
+        ]},
+        { "step": 17, "label": "⑰ Placement: deallocate compute-0", "actions": [] },
+        { "step": 18, "label": "⑱ All VMs ACTIVE on new host", "actions": [{ "id": "r-count", "style": "highlight" }] }
+      ],
+      "image_boot": [
+        { "step": 1, "label": "① glance image-create --file rhel9.qcow2", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "POST /v2/images", "style": "keep", "id": "h-method" },
+            { "value": "X-Auth-Token: gAAAAA... (admin)", "style": "keep", "id": "h-token" },
+            { "value": "Content-Type: application/octet-stream", "style": "keep", "id": "h-ct" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "name: rhel-9.4-base", "style": "add", "id": "b-name" },
+            { "value": "disk_format: qcow2", "style": "add", "id": "b-fmt" },
+            { "value": "container_format: bare", "style": "add", "id": "b-cfmt" },
+            { "value": "size: 1.2 GB (compressed)", "style": "add", "id": "b-size" }
+          ]}
+        ]},
+        { "step": 2, "label": "② Glance validates metadata", "actions": [] },
+        { "step": 3, "label": "③ Upload to Ceph RGW (swift backend)", "actions": [] },
+        { "step": 4, "label": "④ Or: store as RBD in images pool", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "store = rbd://images/rhel-9.4-base", "style": "add", "id": "c-store" },
+            { "value": "status = saving", "style": "add", "id": "c-saving" }
+          ]}
+        ]},
+        { "step": 5, "label": "⑤ Ceph: 3x replicated across OSDs", "actions": [] },
+        { "step": 6, "label": "⑥ Image status: active", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "store = rbd://images/rhel-9.4-base", "style": "keep", "id": "c-store" },
+            { "value": "status = active", "style": "add", "id": "c-active" },
+            { "value": "snapshot = rhel-9.4-base@snap", "style": "add", "id": "c-snap" }
+          ]}
+        ]},
+        { "step": 7, "label": "⑦ nova boot --image rhel-9.4-base", "actions": [] },
+        { "step": 8, "label": "⑧ Conductor → compute-0: build", "actions": [] },
+        { "step": 9, "label": "⑨ Compute GET /v2/images/{id} (meta)", "actions": [] },
+        { "step": 10, "label": "⑩ COW clone: O(1) instant operation!", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "operation = rbd clone (instant)", "style": "add", "id": "c-op" },
+            { "value": "parent = images/rhel-9.4-base@snap", "style": "add", "id": "c-parent" },
+            { "value": "child = vms/instance-{uuid}_disk", "style": "add", "id": "c-child" }
+          ]}
+        ]},
+        { "step": 11, "label": "⑪ rbd clone images/...@snap → vms/...", "actions": [] },
+        { "step": 12, "label": "⑫ Only delta writes use storage", "actions": [] },
+        { "step": 13, "label": "⑬ Libvirt XML: <disk> type='network' RBD", "actions": [] },
+        { "step": 14, "label": "⑭ VM boots instantly from COW clone", "phase": "response", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "Boot time comparison:", "style": "keep", "id": "r-cmp" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "COW clone boot: ~2 seconds (instant clone)", "style": "add", "id": "r-cow" },
+            { "value": "vs. file copy boot: ~45 seconds (1.2GB copy)", "style": "add", "id": "r-copy" },
+            { "value": "storage efficiency: only writes are stored", "style": "add", "id": "r-eff" },
+            { "value": "snapshot: read-only parent shared by all VMs", "style": "add", "id": "r-shared" }
+          ]},
+          { "action": "clearCycleState" }
+        ]}
+      ],
+      "galera_recovery": [
+        { "step": 1, "label": "① CronJob: scheduled backup", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "CronJob: galera-backup (02:00 UTC daily)", "style": "keep", "id": "h-cron" },
+            { "value": "Tool: mariabackup --backup --target-dir=/backup", "style": "keep", "id": "h-tool" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "backup_type: full (mariabackup SST)", "style": "add", "id": "b-type" },
+            { "value": "wsrep_donor: galera-0 (least loaded node)", "style": "add", "id": "b-donor" },
+            { "value": "compression: gzip (PVC: galera-backup-pvc)", "style": "add", "id": "b-comp" }
+          ]}
+        ]},
+        { "step": 2, "label": "② Connect to donor node", "actions": [] },
+        { "step": 3, "label": "③ SST snapshot (non-blocking)", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "backup_state = in_progress", "style": "add", "id": "c-bst" },
+            { "value": "method = mariabackup (hot)", "style": "add", "id": "c-method" }
+          ]}
+        ]},
+        { "step": 4, "label": "④ Written to PVC", "actions": [] },
+        { "step": 5, "label": "⑤ GTID position recorded", "actions": [] },
+        { "step": 6, "label": "⑥ ⚠️ FAILURE: node-0 OOM crash", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "cluster_state = DEGRADED", "style": "err", "id": "c-clust" },
+            { "value": "wsrep_cluster_size = 2/3", "style": "err", "id": "c-size" },
+            { "value": "quorum = maintained (majority)", "style": "add", "id": "c-quorum" }
+          ]}
+        ]},
+        { "step": 7, "label": "⑦ Quorum check: 2/3 = OK", "actions": [] },
+        { "step": 8, "label": "⑧ Services failover to node-1", "actions": [] },
+        { "step": 9, "label": "⑨ If 2/3 down: writes PAUSED", "actions": [] },
+        { "step": 10, "label": "⑩ Operator detects CrashLoopBackOff", "actions": [] },
+        { "step": 11, "label": "⑪ Recovery: restore from backup", "actions": [] },
+        { "step": 12, "label": "⑫ mariabackup --prepare + --copy-back", "actions": [] },
+        { "step": 13, "label": "⑬ Bootstrap: galera_new_cluster", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "cluster_state = RECOVERING", "style": "add", "id": "c-rec" },
+            { "value": "bootstrap_node = galera-0", "style": "add", "id": "c-boot" }
+          ]}
+        ]},
+        { "step": 14, "label": "⑭ IST: remaining nodes sync", "actions": [] },
+        { "step": 15, "label": "⑮ Cluster reformed: size=3 synced", "phase": "response", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "SHOW STATUS LIKE 'wsrep%';", "style": "keep", "id": "r-cmd" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "wsrep_cluster_size = 3", "style": "add", "id": "r-size" },
+            { "value": "wsrep_cluster_status = Primary", "style": "add", "id": "r-status" },
+            { "value": "wsrep_local_state_comment = Synced", "style": "add", "id": "r-sync" },
+            { "value": "wsrep_ready = ON", "style": "add", "id": "r-ready" }
+          ]},
+          { "action": "clearCycleState" }
+        ]},
+        { "step": 16, "label": "⑯ Services reconnected", "actions": [{ "id": "r-ready", "style": "highlight" }] },
+        { "step": 17, "label": "⑰ Galera Ready=True", "actions": [{ "id": "r-status", "style": "highlight" }] }
+      ],
+      "ovn_dhcp": [
+        { "step": 1, "label": "① VM NIC: DHCPDISCOVER (broadcast)", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "DHCP Packet (Layer 2 broadcast)", "style": "keep", "id": "h-proto" },
+            { "value": "src MAC: fa:16:3e:aa:aa:aa (VM-A)", "style": "keep", "id": "h-mac" },
+            { "value": "dst MAC: ff:ff:ff:ff:ff:ff", "style": "keep", "id": "h-dst" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "msg_type: DHCPDISCOVER", "style": "add", "id": "b-type" },
+            { "value": "client_mac: fa:16:3e:aa:aa:aa", "style": "add", "id": "b-cmac" },
+            { "value": "requested_params: [subnet, router, dns, mtu]", "style": "add", "id": "b-params" }
+          ]}
+        ]},
+        { "step": 2, "label": "② OVS: OpenFlow table match", "actions": [] },
+        { "step": 3, "label": "③ OVN Controller intercepts DHCP", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "handler = OVN native DHCP (in-datapath)", "style": "add", "id": "c-handler" },
+            { "value": "no_dnsmasq = true!", "style": "add", "id": "c-nodns" }
+          ]}
+        ]},
+        { "step": 4, "label": "④ Match port MAC → DHCP_Options", "actions": [] },
+        { "step": 5, "label": "⑤ NO dnsmasq process needed!", "actions": [] },
+        { "step": 6, "label": "⑥ Reads DHCP_Options from SB DB", "actions": [] },
+        { "step": 7, "label": "⑦ NB DHCP_Options (subnet config)", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "handler = OVN native DHCP (in-datapath)", "style": "keep", "id": "c-handler" },
+            { "value": "cidr = 10.0.0.0/24", "style": "add", "id": "c-cidr" },
+            { "value": "router = 10.0.0.1", "style": "add", "id": "c-gw" },
+            { "value": "dns = 8.8.8.8", "style": "add", "id": "c-dns" },
+            { "value": "lease_time = 43200", "style": "add", "id": "c-lease" }
+          ]}
+        ]},
+        { "step": 8, "label": "⑧ Neutron populated on subnet create", "actions": [] },
+        { "step": 9, "label": "⑨ Controller crafts DHCPOFFER locally", "actions": [] },
+        { "step": 10, "label": "⑩ IP=10.0.0.5 GW=10.0.0.1 DNS=8.8.8.8", "actions": [
+          { "action": "replaceBody", "body": [
+            { "value": "msg_type: DHCPOFFER", "style": "add", "id": "b-offer" },
+            { "value": "your_ip: 10.0.0.5", "style": "add", "id": "b-ip" },
+            { "value": "subnet_mask: 255.255.255.0", "style": "add", "id": "b-mask" },
+            { "value": "router: 10.0.0.1", "style": "add", "id": "b-gw" },
+            { "value": "dns: 8.8.8.8", "style": "add", "id": "b-dns" },
+            { "value": "lease_time: 43200s (12h)", "style": "add", "id": "b-lease" }
+          ]}
+        ]},
+        { "step": 11, "label": "⑪ OFFER injected back to tap", "actions": [] },
+        { "step": 12, "label": "⑫ VM: DHCPREQUEST (accepts)", "actions": [] },
+        { "step": 13, "label": "⑬ OVN: DHCPACK confirmed", "actions": [] },
+        { "step": 14, "label": "⑭ VM configured: 10.0.0.5/24", "phase": "response", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "VM Network State (post-DHCP):", "style": "keep", "id": "r-state" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "eth0: 10.0.0.5/24 (via DHCP)", "style": "add", "id": "r-eth" },
+            { "value": "default via 10.0.0.1 dev eth0", "style": "add", "id": "r-route" },
+            { "value": "nameserver 8.8.8.8", "style": "add", "id": "r-dns" },
+            { "value": "DHCP server: OVN Controller (not dnsmasq!)", "style": "add", "id": "r-server" }
+          ]},
+          { "action": "clearCycleState" }
+        ]},
+        { "step": 15, "label": "⑮ All in OVS datapath — no extra pods", "actions": [{ "id": "r-server", "style": "highlight" }] },
+        { "step": 16, "label": "⑯ Scales to thousands of ports", "actions": [] }
+      ],
+      "provider_net": [
+        { "step": 1, "label": "① Admin: create provider network", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "POST /v2.0/networks", "style": "keep", "id": "h-method" },
+            { "value": "X-Auth-Token: gAAAAA... (admin)", "style": "keep", "id": "h-token" },
+            { "value": "Content-Type: application/json", "style": "keep", "id": "h-ct" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "\"provider:network_type\": \"vlan\"", "style": "add", "id": "b-type" },
+            { "value": "\"provider:physical_network\": \"physnet1\"", "style": "add", "id": "b-phys" },
+            { "value": "\"provider:segmentation_id\": 100", "style": "add", "id": "b-seg" },
+            { "value": "\"router:external\": true", "style": "add", "id": "b-ext" }
+          ]}
+        ]},
+        { "step": 2, "label": "② Provider network created", "actions": [] },
+        { "step": 3, "label": "③ OVN NB: LS + localnet port", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "type = localnet (direct L2)", "style": "add", "id": "c-type" },
+            { "value": "physical_network = physnet1", "style": "add", "id": "c-phys" },
+            { "value": "vlan_id = 100", "style": "add", "id": "c-vlan" }
+          ]}
+        ]},
+        { "step": 4, "label": "④ localnet → physnet1 mapping", "actions": [] },
+        { "step": 5, "label": "⑤ VLAN tag=100 on localnet port", "actions": [] },
+        { "step": 6, "label": "⑥ ovn-northd → SB Port_Binding", "actions": [] },
+        { "step": 7, "label": "⑦ OVN Ctrl: bridge_mappings lookup", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "type = localnet (direct L2)", "style": "keep", "id": "c-type" },
+            { "value": "bridge_mappings = physnet1:br-ex", "style": "add", "id": "c-brmap" },
+            { "value": "traffic_path = tap → br-int → br-ex → NIC", "style": "add", "id": "c-path" }
+          ]}
+        ]},
+        { "step": 8, "label": "⑧ OVS: patch br-int ↔ br-ex", "actions": [] },
+        { "step": 9, "label": "⑨ nova boot --nic net-id=provider", "actions": [] },
+        { "step": 10, "label": "⑩ Neutron allocates port (172.16.0.50)", "actions": [] },
+        { "step": 11, "label": "⑪ Port with provider IP assigned", "actions": [] },
+        { "step": 12, "label": "⑫ VM port bound to chassis", "actions": [] },
+        { "step": 13, "label": "⑬ OVS: VLAN 100 tag on egress", "actions": [] },
+        { "step": 14, "label": "⑭ Direct to physical fabric", "actions": [] },
+        { "step": 15, "label": "⑮ No NAT, no tunneling!", "phase": "response", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "Provider Network — Traffic Path:", "style": "keep", "id": "r-title" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "VM tap → br-int → patch-port → br-ex → eth0 (VLAN 100)", "style": "add", "id": "r-path" },
+            { "value": "IP: 172.16.0.50 (directly on physical segment)", "style": "add", "id": "r-ip" },
+            { "value": "No Geneve encapsulation (flat/VLAN only)", "style": "add", "id": "r-notun" },
+            { "value": "No NAT/router needed — direct L2 adjacency", "style": "add", "id": "r-nonat" }
+          ]},
+          { "action": "clearCycleState" }
+        ]},
+        { "step": 16, "label": "⑯ Reachable from external fabric", "actions": [{ "id": "r-path", "style": "highlight" }] }
+      ],
+      "vm_to_vm_ping": [
+        { "step": 1, "label": "① VM-A pings VM-B (same subnet)", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "ICMP Echo Request (Layer 3)", "style": "keep", "id": "h-proto" },
+            { "value": "src: 10.0.0.5 (VM-A on compute-0)", "style": "keep", "id": "h-src" },
+            { "value": "dst: 10.0.0.6 (VM-B on compute-1)", "style": "keep", "id": "h-dst" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "L2: src=fa:16:3e:aa dst=? (need ARP first)", "style": "add", "id": "b-l2" },
+            { "value": "L3: ICMP type=8 code=0 (echo request)", "style": "add", "id": "b-l3" },
+            { "value": "payload: 64 bytes", "style": "add", "id": "b-pay" }
+          ]}
+        ]},
+        { "step": 2, "label": "② ARP: who-has 10.0.0.6?", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "phase = ARP resolution", "style": "add", "id": "c-phase" }
+          ]}
+        ]},
+        { "step": 3, "label": "③ OVS → OVN Controller (ARP table)", "actions": [] },
+        { "step": 4, "label": "④ OVN has all MACs from NB port table", "actions": [] },
+        { "step": 5, "label": "⑤ ARP reply: MAC=fa:16:3e:bb:bb:bb", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "phase = ICMP forwarding", "style": "add", "id": "c-phase2" },
+            { "value": "dst_mac = fa:16:3e:bb:bb:bb (resolved)", "style": "add", "id": "c-mac" }
+          ]}
+        ]},
+        { "step": 6, "label": "⑥ ICMP frame constructed", "actions": [
+          { "action": "replaceBody", "body": [
+            { "value": "L2: src=fa:16:3e:aa dst=fa:16:3e:bb", "style": "add", "id": "b-l2r" },
+            { "value": "L3: 10.0.0.5 → 10.0.0.6 ICMP echo", "style": "add", "id": "b-l3r" },
+            { "value": "Enters OVS br-int via tap-A", "style": "add", "id": "b-enter" }
+          ]}
+        ]},
+        { "step": 7, "label": "⑦ Packet enters br-int on compute-0", "actions": [] },
+        { "step": 8, "label": "⑧ OpenFlow: dst on remote chassis", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "phase = Geneve encapsulation", "style": "add", "id": "c-phase3" },
+            { "value": "dst_chassis = compute-1 (from SB)", "style": "add", "id": "c-chassis" }
+          ]}
+        ]},
+        { "step": 9, "label": "⑨ Geneve encap: VNI=segmentation_id", "actions": [
+          { "action": "replaceBody", "body": [
+            { "value": "Outer: src=192.168.24.10(c0) dst=192.168.24.11(c1)", "style": "add", "id": "b-outer" },
+            { "value": "Outer: UDP port 6081 (Geneve)", "style": "add", "id": "b-udp" },
+            { "value": "Geneve header: VNI=0x2A (seg_id=42)", "style": "add", "id": "b-vni" },
+            { "value": "Inner: original L2 frame (unchanged)", "style": "add", "id": "b-inner" }
+          ]}
+        ]},
+        { "step": 10, "label": "⑩ Outer IP: compute-0 → compute-1", "actions": [] },
+        { "step": 11, "label": "⑪ Physical network transports packet", "actions": [] },
+        { "step": 12, "label": "⑫ Compute-1: Geneve decapsulation", "actions": [
+          { "action": "setCycleState", "cycleState": [
+            { "value": "phase = delivery on compute-1", "style": "add", "id": "c-phase4" },
+            { "value": "decap: extract inner frame", "style": "add", "id": "c-decap" }
+          ]}
+        ]},
+        { "step": 13, "label": "⑬ OpenFlow: dst MAC → local tap-B", "actions": [] },
+        { "step": 14, "label": "⑭ Security Group: check ICMP ingress", "actions": [] },
+        { "step": 15, "label": "⑮ Conntrack: ct(commit) stateful allow", "actions": [] },
+        { "step": 16, "label": "⑯ Delivered to VM-B (tap-B)", "actions": [] },
+        { "step": 17, "label": "⑰ VM-B: ICMP echo reply", "actions": [] },
+        { "step": 18, "label": "⑱ Reverse: tap-B → Geneve → compute-0", "actions": [] },
+        { "step": 19, "label": "⑲ Geneve tunnel reverse direction", "actions": [] },
+        { "step": 20, "label": "⑳ Decap → deliver to VM-A", "actions": [] },
+        { "step": 21, "label": "㉑ ping: 64 bytes time=0.8ms ✓", "phase": "response", "actions": [
+          { "action": "replaceHeaders", "headers": [
+            { "value": "ping 10.0.0.6 (from VM-A):", "style": "keep", "id": "r-cmd" }
+          ]},
+          { "action": "replaceBody", "body": [
+            { "value": "64 bytes from 10.0.0.6: icmp_seq=1 ttl=64 time=0.8ms", "style": "add", "id": "r-ping" },
+            { "value": "Path: tap-A → br-int → Geneve(VNI:42) → br-int → tap-B", "style": "add", "id": "r-path" },
+            { "value": "Security: OVN ACL (conntrack stateful)", "style": "add", "id": "r-sg" },
+            { "value": "Encap overhead: 50 bytes (Geneve+UDP+outer IP)", "style": "add", "id": "r-overhead" }
+          ]},
+          { "action": "clearCycleState" }
+        ]}
+      ],
+      "ironic_bmc_onboard": [
+      { "step": 1, "label": "① Admin applies BareMetalHost CR", "phase": "request", "actions": [
+        { "action": "replaceHeaders", "headers": [
+          { "value": "oc apply -f baremetal-host.yaml", "style": "highlight", "id": "h-bmh-apply" },
+          { "value": "apiVersion: metal3.io/v1alpha1", "style": "keep", "id": "h-bmh-api" },
+          { "value": "kind: BareMetalHost", "style": "keep", "id": "h-bmh-kind" }
+        ]},
+        { "action": "replaceBody", "body": [
+          { "value": "metadata:", "style": "keep", "id": "b-meta" },
+          { "value": "  name: edpm-compute-0", "style": "add", "id": "b-name" },
+          { "value": "  namespace: openshift-machine-api", "style": "add", "id": "b-ns" },
+          { "value": "spec:", "style": "keep", "id": "b-spec" },
+          { "value": "  bmc:", "style": "keep", "id": "b-bmc" },
+          { "value": "    address: redfish+https://192.168.10.5/redfish/v1/Systems/1", "style": "add", "id": "b-addr" },
+          { "value": "    credentialsName: bmc-secret-compute-0", "style": "add", "id": "b-cred" },
+          { "value": "  bootMACAddress: aa:bb:cc:dd:ee:ff", "style": "add", "id": "b-mac" },
+          { "value": "  online: true", "style": "add", "id": "b-online" }
+        ]}
+      ]},
+      { "step": 2, "label": "② BMH spec: Redfish address", "actions": [] },
+      { "step": 3, "label": "③ BMO reads BMC Secret", "actions": [
+        { "action": "setCycleState", "cycleState": [
+          { "value": "BMH state: registering", "style": "add", "id": "c-reg" },
+          { "value": "Secret: user=admin, pass=****", "style": "add", "id": "c-secret" }
+        ]}
+      ]},
+      { "step": 4, "label": "④ BMO → Ironic: POST /v1/nodes", "actions": [
+        { "action": "replaceHeaders", "headers": [
+          { "value": "POST /v1/nodes HTTP/1.1", "style": "highlight", "id": "h-ironic-post" },
+          { "value": "X-OpenStack-Ironic-API-Version: 1.82", "style": "keep", "id": "h-api-ver" }
+        ]},
+        { "action": "replaceBody", "body": [
+          { "value": "{", "style": "keep", "id": "b-open" },
+          { "value": "  \"driver\": \"redfish\",", "style": "add", "id": "b-driver" },
+          { "value": "  \"driver_info\": {", "style": "add", "id": "b-di" },
+          { "value": "    \"redfish_address\": \"https://192.168.10.5\",", "style": "add", "id": "b-rf-addr" },
+          { "value": "    \"redfish_system_id\": \"/redfish/v1/Systems/1\",", "style": "add", "id": "b-rf-sys" },
+          { "value": "    \"redfish_username\": \"admin\",", "style": "add", "id": "b-rf-user" },
+          { "value": "    \"redfish_password\": \"****\"", "style": "add", "id": "b-rf-pass" },
+          { "value": "  },", "style": "keep", "id": "b-di-close" },
+          { "value": "  \"boot_interface\": \"redfish-virtual-media\",", "style": "add", "id": "b-boot-if" },
+          { "value": "  \"power_interface\": \"redfish\"", "style": "add", "id": "b-pwr-if" },
+          { "value": "}", "style": "keep", "id": "b-close" }
+        ]}
+      ]},
+      { "step": 5, "label": "⑤ Ironic: enroll → manageable", "actions": [
+        { "action": "setCycleState", "cycleState": [
+          { "value": "provision_state: enroll → manageable", "style": "add", "id": "c-enroll" },
+          { "value": "Ironic node UUID assigned", "style": "add", "id": "c-uuid" }
+        ]}
+      ]},
+      { "step": 6, "label": "⑥ Ironic persists node in Galera", "actions": [] },
+      { "step": 7, "label": "⑦ BMH status: inspecting", "actions": [
+        { "action": "setCycleState", "cycleState": [
+          { "value": "BMH state: registering → inspecting", "style": "add", "id": "c-inspect" }
+        ]}
+      ]},
+      { "step": 8, "label": "⑧ Redfish: GET /Systems/1", "actions": [
+        { "action": "replaceHeaders", "headers": [
+          { "value": "GET /redfish/v1/Systems/1 HTTP/1.1", "style": "highlight", "id": "h-rf-get" },
+          { "value": "Host: 192.168.10.5", "style": "keep", "id": "h-rf-host" },
+          { "value": "Authorization: Basic YWRtaW46cGFzcw==", "style": "keep", "id": "h-rf-auth" }
+        ]}
+      ]},
+      { "step": 9, "label": "⑨ BMC responds: PowerEdge R750", "actions": [
+        { "action": "replaceBody", "body": [
+          { "value": "200 OK — BMC Response:", "style": "highlight", "id": "b-rf-200" },
+          { "value": "  PowerState: Off", "style": "add", "id": "b-rf-pwr" },
+          { "value": "  Model: PowerEdge R750", "style": "add", "id": "b-rf-model" },
+          { "value": "  SerialNumber: JXYZ1234", "style": "add", "id": "b-rf-serial" },
+          { "value": "  ProcessorSummary: 2× Intel Xeon 8380", "style": "add", "id": "b-rf-cpu" },
+          { "value": "  MemorySummary: 512 GiB DDR4", "style": "add", "id": "b-rf-ram" },
+          { "value": "  Boot: {BootSourceOverrideTarget: None}", "style": "add", "id": "b-rf-boot" }
+        ]}
+      ]},
+      { "step": 10, "label": "⑩ Redfish: InsertMedia (IPA ISO)", "actions": [
+        { "action": "replaceHeaders", "headers": [
+          { "value": "POST /redfish/v1/Managers/1/VirtualMedia/CD1/Actions/InsertMedia", "style": "highlight", "id": "h-insert" }
+        ]},
+        { "action": "replaceBody", "body": [
+          { "value": "{", "style": "keep", "id": "b-ins-open" },
+          { "value": "  \"Image\": \"http://ironic-httpd/ipa-centos9.iso\",", "style": "add", "id": "b-ins-img" },
+          { "value": "  \"Inserted\": true,", "style": "add", "id": "b-ins-ins" },
+          { "value": "  \"TransferMethod\": \"Stream\"", "style": "add", "id": "b-ins-method" },
+          { "value": "}", "style": "keep", "id": "b-ins-close" }
+        ]}
+      ]},
+      { "step": 11, "label": "⑪ BMC mounts IPA ISO", "actions": [] },
+      { "step": 12, "label": "⑫ Boot override: target=Cd", "actions": [
+        { "action": "setCycleState", "cycleState": [
+          { "value": "Boot: BootSourceOverrideTarget → Cd", "style": "add", "id": "c-boot-cd" },
+          { "value": "VirtualMedia/CD1: Connected", "style": "add", "id": "c-vmedia" }
+        ]}
+      ]},
+      { "step": 13, "label": "⑬ Redfish: PowerOn (Reset)", "actions": [
+        { "action": "replaceHeaders", "headers": [
+          { "value": "POST /redfish/v1/Systems/1/Actions/ComputerSystem.Reset", "style": "highlight", "id": "h-reset" }
+        ]},
+        { "action": "replaceBody", "body": [
+          { "value": "{ \"ResetType\": \"On\" }", "style": "add", "id": "b-reset" },
+          { "value": "Response: 204 No Content", "style": "add", "id": "b-reset-resp" }
+        ]}
+      ]},
+      { "step": 14, "label": "⑭ Server powers on → boots ISO", "actions": [
+        { "action": "setCycleState", "cycleState": [
+          { "value": "PowerState: Off → On", "style": "add", "id": "c-power-on" },
+          { "value": "Boot: CD (IPA ramdisk)", "style": "add", "id": "c-boot-ipa" }
+        ]}
+      ]},
+      { "step": 15, "label": "⑮ IPA ramdisk boots, starts agent", "actions": [] },
+      { "step": 16, "label": "⑯ IPA: POST /v1/lookup (find my node)", "actions": [
+        { "action": "replaceHeaders", "headers": [
+          { "value": "POST /v1/lookup?addresses=aa:bb:cc:dd:ee:ff", "style": "highlight", "id": "h-lookup" }
+        ]},
+        { "action": "replaceBody", "body": [
+          { "value": "IPA → Ironic: which node am I?", "style": "add", "id": "b-lookup" },
+          { "value": "Response: node_uuid=xxx, heartbeat_timeout=300", "style": "add", "id": "b-lookup-resp" }
+        ]}
+      ]},
+      { "step": 17, "label": "⑰ IPA heartbeat loop starts", "actions": [] },
+      { "step": 18, "label": "⑱ IPA: hardware inspection (lshw)", "actions": [
+        { "action": "setCycleState", "cycleState": [
+          { "value": "IPA running: lshw -json, lsblk, dmidecode", "style": "add", "id": "c-lshw" },
+          { "value": "Collecting: CPU, RAM, NIC MACs, disk serial#", "style": "add", "id": "c-collect" }
+        ]}
+      ]},
+      { "step": 19, "label": "⑲ IPA returns HW inventory", "phase": "response", "actions": [
+        { "action": "replaceHeaders", "headers": [
+          { "value": "IPA → Ironic: inventory report", "style": "highlight", "id": "h-inv" }
+        ]},
+        { "action": "replaceBody", "body": [
+          { "value": "inventory:", "style": "keep", "id": "b-inv" },
+          { "value": "  cpu: 2× Intel Xeon 8380 (80 cores / 160 threads)", "style": "add", "id": "b-inv-cpu" },
+          { "value": "  memory: 512 GiB DDR4 (16×32GiB DIMMs)", "style": "add", "id": "b-inv-ram" },
+          { "value": "  disks:", "style": "keep", "id": "b-inv-disk" },
+          { "value": "    - /dev/nvme0n1: 3.84TB NVMe (Samsung PM9A3)", "style": "add", "id": "b-inv-d0" },
+          { "value": "    - /dev/nvme1n1: 3.84TB NVMe (Samsung PM9A3)", "style": "add", "id": "b-inv-d1" },
+          { "value": "  nics:", "style": "keep", "id": "b-inv-nic" },
+          { "value": "    - ens3f0: 25GbE (MAC: aa:bb:cc:dd:ee:ff)", "style": "add", "id": "b-inv-n0" },
+          { "value": "    - ens3f1: 25GbE (MAC: aa:bb:cc:dd:ee:00)", "style": "add", "id": "b-inv-n1" }
+        ]}
+      ]},
+      { "step": 20, "label": "⑳ Ironic → BMO: HW inventory stored", "actions": [] },
+      { "step": 21, "label": "㉑ provision_state: available", "actions": [
+        { "action": "setCycleState", "cycleState": [
+          { "value": "provision_state: inspecting → manageable → available", "style": "add", "id": "c-avail" },
+          { "value": "BMH status.hardware populated", "style": "add", "id": "c-hw-pop" }
+        ]}
+      ]},
+      { "step": 22, "label": "㉒ Admin: apply DataPlaneNodeSet", "actions": [
+        { "action": "replaceHeaders", "headers": [
+          { "value": "oc apply -f dataplane-nodeset.yaml", "style": "highlight", "id": "h-dpns" }
+        ]},
+        { "action": "replaceBody", "body": [
+          { "value": "kind: OpenStackDataPlaneNodeSet", "style": "add", "id": "b-dpns-kind" },
+          { "value": "spec:", "style": "keep", "id": "b-dpns-spec" },
+          { "value": "  nodes:", "style": "keep", "id": "b-dpns-nodes" },
+          { "value": "    edpm-compute-0:", "style": "add", "id": "b-dpns-node0" },
+          { "value": "      hostName: edpm-compute-0.example.com", "style": "add", "id": "b-dpns-host" },
+          { "value": "      bmhRef: edpm-compute-0 (BareMetalHost)", "style": "add", "id": "b-dpns-bmh" },
+          { "value": "      networks: [{name: ctlplane}, {name: internalapi}]", "style": "add", "id": "b-dpns-nets" }
+        ]}
+      ]},
+      { "step": 23, "label": "㉓ Operator: DataPlaneDeployment", "actions": [] },
+      { "step": 24, "label": "㉔ Ironic provisions: write RHEL image", "actions": [
+        { "action": "setCycleState", "cycleState": [
+          { "value": "provision_state: available → deploying", "style": "add", "id": "c-deploying" },
+          { "value": "IPA: downloading RHEL 9 image", "style": "add", "id": "c-dl-img" }
+        ]}
+      ]},
+      { "step": 25, "label": "㉕ IPA: dd image → /dev/sda", "actions": [] },
+      { "step": 26, "label": "㉖ Redfish: set boot=HDD, reboot", "actions": [
+        { "action": "replaceHeaders", "headers": [
+          { "value": "PATCH /redfish/v1/Systems/1", "style": "highlight", "id": "h-boot-hdd" }
+        ]},
+        { "action": "replaceBody", "body": [
+          { "value": "{ \"Boot\": { \"BootSourceOverrideTarget\": \"Hdd\" } }", "style": "add", "id": "b-boot-hdd" },
+          { "value": "POST /Systems/1/Actions/Reset → {GracefulRestart}", "style": "add", "id": "b-reboot" }
+        ]}
+      ]},
+      { "step": 27, "label": "㉗ BMC: boot=HDD + restart", "actions": [] },
+      { "step": 28, "label": "㉘ Node boots RHEL 9: active", "actions": [
+        { "action": "setCycleState", "cycleState": [
+          { "value": "provision_state: deploying → active", "style": "add", "id": "c-active" },
+          { "value": "RHEL 9 booted, SSH accessible", "style": "add", "id": "c-rhel-up" }
+        ]}
+      ]},
+      { "step": 29, "label": "㉙ EDPM Ansible connects via SSH", "actions": [
+        { "action": "replaceHeaders", "headers": [
+          { "value": "Ansible Runner → SSH edpm-compute-0", "style": "highlight", "id": "h-ssh" }
+        ]},
+        { "action": "replaceBody", "body": [
+          { "value": "TASK [edpm_nova_compute : install]", "style": "add", "id": "b-nova-inst" },
+          { "value": "TASK [edpm_ovn : install]", "style": "add", "id": "b-ovn-inst" },
+          { "value": "TASK [edpm_libvirt : install]", "style": "add", "id": "b-libv-inst" },
+          { "value": "TASK [edpm_ovs : configure bridges]", "style": "add", "id": "b-ovs-inst" }
+        ]}
+      ]},
+      { "step": 30, "label": "㉚ Install nova-compute, ovn, libvirt", "actions": [] },
+      { "step": 31, "label": "㉛ nova-compute → RabbitMQ heartbeat", "actions": [] },
+      { "step": 32, "label": "㉜ ovn-controller → SB DB chassis", "actions": [] },
+      { "step": 33, "label": "㉝ OVS bridges (br-int, br-ex) created", "actions": [] },
+      { "step": 34, "label": "㉞ Placement: VCPU/RAM/DISK inventory", "actions": [] },
+      { "step": 35, "label": "㉟ Node ready ✓ (BMH: provisioned)", "phase": "response", "actions": [
+        { "action": "replaceHeaders", "headers": [
+          { "value": "✓ EDPM Node Onboarding Complete", "style": "highlight", "id": "h-done" }
+        ]},
+        { "action": "replaceBody", "body": [
+          { "value": "BareMetalHost: provisioned", "style": "add", "id": "b-bmh-done" },
+          { "value": "Ironic: provision_state=active", "style": "add", "id": "b-iron-done" },
+          { "value": "DataPlaneNodeSet: ready=true", "style": "add", "id": "b-dpns-done" },
+          { "value": "nova-compute: registered (placement inventory reported)", "style": "add", "id": "b-nova-done" },
+          { "value": "ovn-controller: chassis registered in SB DB", "style": "add", "id": "b-ovn-done" },
+          { "value": "Node accepting VM workloads", "style": "add", "id": "b-workload" }
+        ]},
+        { "action": "clearCycleState" }
+      ]}
+    ]
+    }
+  },
+  "flowOrder": ["vm_launch", "live_migration", "edpm_deploy", "network_prov", "storage_attach", "ctrl_upgrade", "compute_fail", "image_boot", "galera_recovery", "ovn_dhcp", "provider_net", "vm_to_vm_ping", "ironic_bmc_onboard"],
+  "defaultFlow": "vm_launch",
+  "legend": [
+    { "color": "#58a6ff", "label": "Request / API Call" },
+    { "color": "#3fb950", "label": "Response / Success" },
+    { "color": "#f0883e", "label": "Authentication / Redfish BMC" },
+    { "color": "#d2a8ff", "label": "EDPM / Operator / Ironic / Ceph" },
+    { "color": "#79c0ff", "label": "OVN / Networking" },
+    { "color": "#8b949e", "label": "Infrastructure" },
+    { "color": "#f85149", "label": "Failure / Error" }
+  ]
+};
+
+const viz = new FlowStory(document.getElementById('fs-canvas'), {
+  stepsContainer: document.getElementById('fs-steps-container'),
+  inspectorTitle: document.getElementById('fs-inspector-title'),
+  inspectorContent: document.getElementById('fs-inspector-content'),
+  overlay: document.getElementById('fs-overlay'),
+  overlayCard: document.getElementById('fs-overlay-card'),
+  overlayTitle: document.getElementById('fs-overlay-title'),
+  overlayDesc: document.getElementById('fs-overlay-desc'),
+  overlayDetails: document.getElementById('fs-overlay-details'),
+  overlayLinks: document.getElementById('fs-overlay-links'),
+  overlayAccent: document.getElementById('fs-overlay-accent'),
+  overlayClose: document.getElementById('fs-overlay-close'),
+  overlayResume: document.getElementById('fs-overlay-resume'),
+  highlightBox: document.getElementById('fs-highlight-box'),
+  brand: document.getElementById('fs-brand'),
+  title: document.getElementById('fs-title'),
+  legend: document.getElementById('fs-legend'),
+  flowSelect: document.getElementById('fs-flow-select'),
+  playBtn: document.getElementById('fs-play'),
+  speedBtn: document.getElementById('fs-speed'),
+  loopBtn: document.getElementById('fs-loop'),
+  resetBtn: document.getElementById('fs-reset'),
+  themeBtn: document.getElementById('fs-theme'),
+});
+
+window.__flowstory = viz;
+
+try {
+  await viz.load(diagram);
+
+  viz.state.loopMode = true;
+  const loopBtn = document.getElementById('fs-loop');
+  if (loopBtn) {
+    loopBtn.textContent = '\u27F3 Loop ON';
+    loopBtn.style.borderColor = '#3fb950';
+    loopBtn.style.color = '#3fb950';
+  }
+  viz.play();
+} catch (e) {
+  console.error('FlowStory load error:', e);
+  document.body.innerHTML = `<pre style="color:#f85149;padding:2em;">FlowStory Load Error\n${e.message}\n\n${e.stack || ''}</pre>`;
+}
+</script>
+</body>
+</html>
