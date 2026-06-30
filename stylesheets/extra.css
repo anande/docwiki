@@ -1,1 +1,96 @@
-/* Site-wide custom styles — Cloud Native Field Notes */
+/* Archive widget — right sidebar */
+.archive-nav {
+  padding: 0 0.6rem;
+}
+.archive-nav .sidebar-widget-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--md-default-fg-color--light);
+  padding: 0.4rem 0;
+  margin: 0;
+}
+.archive-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.archive-year {
+  margin-bottom: 0.2rem;
+}
+.archive-year summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.72rem;
+  padding: 0.3rem 0;
+  color: var(--md-default-fg-color);
+}
+.archive-year summary::marker {
+  color: var(--md-default-fg-color--lighter);
+}
+.archive-year > details > ul {
+  list-style: none;
+  padding: 0 0 0 0.8rem;
+  margin: 0;
+}
+.archive-year > details > ul li {
+  padding: 0.15rem 0;
+}
+.archive-year > details > ul li a {
+  font-size: 0.68rem;
+  color: var(--md-default-fg-color--light);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.archive-year > details > ul li a:hover {
+  color: var(--md-accent-fg-color);
+}
+.archive-count {
+  font-size: 0.6rem;
+  color: var(--md-default-fg-color--lighter);
+}
+
+/* Tags widget — left sidebar */
+.tags-widget {
+  padding: 0.8rem 0.6rem 1.2rem;
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+  margin-top: 0.4rem;
+}
+.tags-widget .sidebar-widget-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--md-default-fg-color--light);
+  padding: 0.4rem 0;
+  margin: 0;
+}
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  padding-top: 0.3rem;
+}
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  padding: 0.15em 0.55em;
+  border-radius: 2em;
+  background: var(--md-default-fg-color--lightest);
+  color: var(--md-default-fg-color--light);
+  text-decoration: none;
+  font-size: 0.68rem;
+  line-height: 1.6;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.tag-pill:hover {
+  background: var(--md-accent-fg-color);
+  color: var(--md-accent-bg-color);
+}
+.tag-count {
+  font-size: 0.85em;
+  opacity: 0.7;
+}
