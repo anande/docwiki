@@ -1,99 +1,99 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://anande.github.io/docwiki/</loc>
+         <loc>https://anande.github.io/blog/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/tags/</loc>
+         <loc>https://anande.github.io/blog/tags/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/</loc>
+         <loc>https://anande.github.io/blog/blog/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/2026/06/04/secure-argocd-jwt-tokens-for-cursor-mcp/</loc>
+         <loc>https://anande.github.io/blog/blog/2026/06/04/secure-argocd-jwt-tokens-for-cursor-mcp/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/2026/05/20/ceph-ansible-to-cephadm-migration-lab/</loc>
+         <loc>https://anande.github.io/blog/blog/2026/05/20/ceph-ansible-to-cephadm-migration-lab/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/2026/05/15/how-kubeconfig-is-generated-by-kubespray-and-k3d/</loc>
+         <loc>https://anande.github.io/blog/blog/2026/05/15/how-kubeconfig-is-generated-by-kubespray-and-k3d/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/2026/06/09/kserve-vs-vllm-vs-kubeflow--understanding-the-ml-serving-stack/</loc>
+         <loc>https://anande.github.io/blog/blog/2026/06/09/kserve-vs-vllm-vs-kubeflow--understanding-the-ml-serving-stack/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/2026/06/27/abacus-mathematics-relearning-roadmap-from-basics-to-mastery/</loc>
+         <loc>https://anande.github.io/blog/blog/2026/06/27/abacus-mathematics-relearning-roadmap-from-basics-to-mastery/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/2026/04/15/mortar_board-self-paced-msai-learning-plan/</loc>
+         <loc>https://anande.github.io/blog/blog/2026/04/15/mortar_board-self-paced-msai-learning-plan/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/2026/06/30/openstack-in-the-wild-community-use-cases-problems-and-solutions/</loc>
+         <loc>https://anande.github.io/blog/blog/2026/06/30/openstack-in-the-wild-community-use-cases-problems-and-solutions/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/2026/05/12/freezer-backup-retention-policy/</loc>
+         <loc>https://anande.github.io/blog/blog/2026/05/12/freezer-backup-retention-policy/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/2026/05/10/deploy-freezer/</loc>
+         <loc>https://anande.github.io/blog/blog/2026/05/10/deploy-freezer/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/2026/05/25/magnum-enablement/</loc>
+         <loc>https://anande.github.io/blog/blog/2026/05/25/magnum-enablement/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/2026/05/28/mariadb-operator-upgrade-runbook/</loc>
+         <loc>https://anande.github.io/blog/blog/2026/05/28/mariadb-operator-upgrade-runbook/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/2026/06/09/production-ml-reference-architecture--kserve-vllm--kubeflow-on-openshiftopenstack/</loc>
+         <loc>https://anande.github.io/blog/blog/2026/06/09/production-ml-reference-architecture--kserve-vllm--kubeflow-on-openshiftopenstack/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/2026/06/29/rhoso-180-architecture--interactive-flowstory-visualizer/</loc>
+         <loc>https://anande.github.io/blog/blog/2026/06/29/rhoso-180-architecture--interactive-flowstory-visualizer/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/2026/06/18/technical-blueprint-and-curricular-syllabus-for-mastering-red-hat-openstack-services-on-openshift/</loc>
+         <loc>https://anande.github.io/blog/blog/2026/06/18/technical-blueprint-and-curricular-syllabus-for-mastering-red-hat-openstack-services-on-openshift/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/2026/06/30/bulletproof-rhoso-performance-tuning-and-security-hardening-guide/</loc>
+         <loc>https://anande.github.io/blog/blog/2026/06/30/bulletproof-rhoso-performance-tuning-and-security-hardening-guide/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/2026/06/09/vllm-architecture-deep-dive--from-kv-cache-bottleneck-to-production-inference/</loc>
+         <loc>https://anande.github.io/blog/blog/2026/06/09/vllm-architecture-deep-dive--from-kv-cache-bottleneck-to-production-inference/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/archive/2026/</loc>
+         <loc>https://anande.github.io/blog/blog/archive/2026/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/author/anande/</loc>
+         <loc>https://anande.github.io/blog/blog/author/anande/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/page/2/</loc>
+         <loc>https://anande.github.io/blog/blog/page/2/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/archive/2026/page/2/</loc>
+         <loc>https://anande.github.io/blog/blog/archive/2026/page/2/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
-         <loc>https://anande.github.io/docwiki/blog/author/anande/page/2/</loc>
+         <loc>https://anande.github.io/blog/blog/author/anande/page/2/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
 </urlset>
