@@ -1,0 +1,1574 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Practical notes on Kubernetes, GitOps, AI infrastructure, and cloud native operations.">
+      
+      
+      
+        <link rel="canonical" href="https://anande.github.io/blog/2026/06/30/openstack-in-the-wild-community-use-cases-problems-and-solutions/">
+      
+      
+        <link rel="prev" href="../bulletproof-rhoso-performance-tuning-and-security-hardening-guide/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>OpenStack in the Wild: Community Use Cases, Problems, and Solutions - Cloud Native Field Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="black">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#openstack-in-the-wild-community-use-cases-problems-and-solutions" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../.." title="Cloud Native Field Notes" class="md-header__button md-logo" aria-label="Cloud Native Field Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cloud Native Field Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              OpenStack in the Wild: Community Use Cases, Problems, and Solutions
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="black"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="black"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anande/blog" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anande/blog
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" hidden>
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../.." title="Cloud Native Field Notes" class="md-nav__button md-logo" aria-label="Cloud Native Field Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Cloud Native Field Notes
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anande/blog" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anande/blog
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      <a href="../../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Blog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Archive
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Archive
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../archive/2026/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2026
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authors
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Authors
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../author/anande/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Anande
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-hyperscale-private-cloud" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Hyperscale Private Cloud
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Hyperscale Private Cloud">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#walmart-1-million-cores" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Walmart — 1 Million+ Cores
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#target-32000-cores" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Target — 32,000 Cores
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#platforma-2000-vms-in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PLATFORMA — 2,000+ VMs in Production
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-vmware-migration-post-broadcom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. VMware Migration (Post-Broadcom)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. VMware Migration (Post-Broadcom)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#uponu-gmbh-full-vmware-exit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UPONU GmbH — Full VMware Exit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#community-consensus-on-migration-timelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Community Consensus on Migration Timelines
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-ai-gpu-factory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. AI / GPU Factory
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. AI / GPU Factory">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fpt-smart-cloud-2000-gpus-across-two-countries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FPT Smart Cloud — 2,000 GPUs Across Two Countries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dawn-supercomputer-uks-fastest-ai-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dawn Supercomputer — UK's Fastest AI System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openstack-for-ai-platform-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenStack for AI — Platform Capabilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-telco-nfv-5g-edge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Telco / NFV / 5G Edge
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Telco / NFV / 5G Edge">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kddi-shift-on-stack-for-5g-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KDDI — "Shift on Stack" for 5G Core
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bt-charmed-openstack-for-5g-core-nfvi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BT — Charmed OpenStack for 5G Core NFVI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#edge-architecture-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Edge Architecture Patterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-retail-and-automotive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Retail and Automotive
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Retail and Automotive">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#schwarz-it-stackit-lidl-and-kaufland" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schwarz IT / STACKIT — Lidl and Kaufland
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hyundai-motor-group-hcloud-for-connected-cars" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hyundai Motor Group — HCloud for Connected Cars
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-scientific-research-and-hpc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Scientific Research and HPC
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Scientific Research and HPC">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nasa-9000-cores" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NASA — 9,000+ Cores
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vienna-biocenter-hpc-for-500-scientists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vienna Biocenter — HPC for 500 Scientists
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#infn-cloud-area-padovana-physics-research" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INFN Cloud Area Padovana — Physics Research
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dkrz-climate-research" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DKRZ — Climate Research
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-networking-deep-dives-mailing-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Networking Deep Dives (Mailing List)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Networking Deep Dives (Mailing List)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dvr-to-ovn-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DVR to OVN Migration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#standalone-ironic-with-ovn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Standalone Ironic with OVN
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#l2-networks-do-not-scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        L2 Networks Do Not Scale
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-ceph-storage-tuning-community-lessons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Ceph Storage Tuning (Community Lessons)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Ceph Storage Tuning (Community Lessons)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#linux-kernel-defaults-are-your-enemy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linux Kernel Defaults Are Your Enemy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#numa-pinning-is-critical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NUMA Pinning Is Critical
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#your-cluster-is-only-as-fast-as-your-slowest-osd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Your Cluster Is Only as Fast as Your Slowest OSD"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#network-tuning-for-ceph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network Tuning for Ceph
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#upgrade-lessons-from-the-trenches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Upgrade Lessons from the Trenches
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Upgrade Lessons from the Trenches">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kolla-ansible-slurp-upgrade-20241-to-20251" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kolla-Ansible SLURP Upgrade (2024.1 to 2025.1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openstack-as-a-service-with-krateo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenStack-as-a-Service with Krateo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources-and-further-reading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sources and Further Reading
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+  <div class="md-content md-content--post" data-md-component="content">
+    <div class="md-sidebar md-sidebar--post" data-md-component="sidebar" data-md-type="navigation">
+      <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner md-post">
+          <nav class="md-nav md-nav--primary">
+            <div class="md-post__back">
+              <div class="md-nav__title md-nav__container">
+                <a href="../../../.." class="md-nav__link">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+                  <span class="md-ellipsis">
+                    Back to index
+                  </span>
+                </a>
+              </div>
+            </div>
+            
+              <div class="md-post__authors md-typeset">
+                
+                  <div class="md-profile md-post__profile">
+                    <span class="md-author md-author--long">
+                      <img src="https://github.com/anande.png" alt="Anande">
+                    </span>
+                    <span class="md-profile__description">
+                      <strong>
+                        
+                          <a href="../../../../author/anande/">Anande</a>
+                        
+                      </strong>
+                      <br>
+                      Cloud Native Engineer
+                    </span>
+                  </div>
+                
+              </div>
+            
+            <ul class="md-post__meta md-nav__list">
+              <li class="md-nav__item md-nav__item--section">
+                <div class="md-post__title">
+                  <span class="md-ellipsis">
+                    Metadata
+                  </span>
+                </div>
+                <nav class="md-nav">
+                  <ul class="md-nav__list">
+                    <li class="md-nav__item">
+                      <div class="md-nav__link">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 19H5V8h14m-3-7v2H8V1H6v2H5c-1.11 0-2 .89-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-1V1m-1 11h-5v5h5z"/></svg>
+                        <time datetime="2026-06-30 00:00:00+00:00" class="md-ellipsis">June 30, 2026</time>
+                      </div>
+                    </li>
+                    
+                    
+                    
+                      
+                      <li class="md-nav__item">
+                        <div class="md-nav__link">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 20a8 8 0 0 0 8-8 8 8 0 0 0-8-8 8 8 0 0 0-8 8 8 8 0 0 0 8 8m0-18a10 10 0 0 1 10 10 10 10 0 0 1-10 10C6.47 22 2 17.5 2 12A10 10 0 0 1 12 2m.5 5v5.25l4.5 2.67-.75 1.23L11 13V7z"/></svg>
+                          <span class="md-ellipsis">
+                            
+                              13 min read
+                            
+                          </span>
+                        </div>
+                      </li>
+                    
+                  </ul>
+                </nav>
+              </li>
+            </ul>
+            
+          </nav>
+          
+        </div>
+      </div>
+    </div>
+    <article class="md-content__inner md-typeset">
+      
+        
+  
+
+
+  <nav class="md-tags" >
+    
+      
+      
+      
+      
+        <a href="../../../../tags/#tag:ai" class="md-tag">AI</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../tags/#tag:ceph" class="md-tag">Ceph</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../tags/#tag:containers" class="md-tag">Containers</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../tags/#tag:devops" class="md-tag">DevOps</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../tags/#tag:migration" class="md-tag">Migration</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../tags/#tag:openstack" class="md-tag">OpenStack</a>
+      
+    
+  </nav>
+
+
+  
+    <a href="https://github.com/anande/blog/edit/main/docs/posts/openstack-community-use-cases.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="openstack-in-the-wild-community-use-cases-problems-and-solutions">OpenStack in the Wild: Community Use Cases, Problems, and Solutions<a class="headerlink" href="#openstack-in-the-wild-community-use-cases-problems-and-solutions" title="Permanent link">&para;</a></h1>
+<p>A curated catalogue of real-world OpenStack deployments drawn from the <a href="https://lists.openstack.org/archives/list/openstack-discuss@lists.openstack.org">openstack-discuss mailing list</a>, <a href="https://www.reddit.com/r/openstack/">r/openstack</a>, <a href="https://www.openstack.org/blog/">OpenInfra Foundation user stories</a>, and production write-ups. Each entry covers the <strong>use case</strong>, the <strong>problems</strong> encountered, and the <strong>solutions</strong> that worked. As of October 2025, OpenStack's global footprint exceeds <strong>55 million compute cores</strong> across thousands of production deployments.</p>
+<!-- more -->
+
+<hr />
+<h2 id="1-hyperscale-private-cloud">1. Hyperscale Private Cloud<a class="headerlink" href="#1-hyperscale-private-cloud" title="Permanent link">&para;</a></h2>
+<h3 id="walmart-1-million-cores">Walmart — 1 Million+ Cores<a class="headerlink" href="#walmart-1-million-cores" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Scale</strong></td>
+<td>1,000,000+ compute cores across multiple data centres</td>
+</tr>
+<tr>
+<td><strong>Team</strong></td>
+<td>Small platform team relative to fleet size</td>
+</tr>
+<tr>
+<td><strong>Deployment</strong></td>
+<td>Hybrid cloud blending OpenStack with public cloud services</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Use Case:</strong> Walmart runs one of the largest OpenStack private clouds in the world, powering retail operations, supply chain, and e-commerce workloads. When they outgrew their data centres, they engineered a hybrid cloud rather than abandoning OpenStack.</p>
+<p><strong>Problems:</strong></p>
+<ul>
+<li>Manual upgrades at hyperscale are impossible — a million cores cannot tolerate downtime windows.</li>
+<li>Hardware failures at this scale are not exceptions; they are constant background noise.</li>
+<li>Visibility into cloud health across such a massive fleet requires purpose-built tooling.</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ul>
+<li>Built a <strong>stateless, in-place upgrade system</strong> starting in 2018. The entire million-core fleet is upgraded annually in three months, skipping intermediate versions.</li>
+<li>Developed <strong>self-healing automation</strong> at two layers: control plane automation to fix OpenStack component issues, and hardware-layer automation to detect and remove failing machines before they cause problems.</li>
+<li>Created <strong>Galaxy</strong>, an internal real-time visual health-check tool that enables pinpointing and fixing issues within minutes.</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Key takeaway</p>
+<p>Running 1M+ cores with a small team is only possible with deep automation. Manual processes are simply not an option. — <em>Gerald (Walmart), <a href="https://tinybigspark.com/p/walmart-s-million-core-cloud-revolution-how-openstack-defies-myths-and-redefines-hybrid-scaling">OpenInfra User Story</a></em></p>
+</div>
+<hr />
+<h3 id="target-32000-cores">Target — 32,000 Cores<a class="headerlink" href="#target-32000-cores" title="Permanent link">&para;</a></h3>
+<p><strong>Use Case:</strong> Target started with OpenStack Icehouse and Ceph in 2015 as a development experiment. After proving the platform, they expanded to 32,000 cores with over 750,000 VMs launched across development and production, keeping approximately 13,000 VMs active at any time.</p>
+<p><strong>Problem:</strong> Initial HDD-backed Ceph storage did not meet performance requirements for their growing workload diversity.</p>
+<p><strong>Solution:</strong> Migrated Ceph to SSD-backed storage for both block and object, significantly improving I/O performance. Ceph is now used as the unified storage backend.</p>
+<hr />
+<h3 id="platforma-2000-vms-in-production">PLATFORMA — 2,000+ VMs in Production<a class="headerlink" href="#platforma-2000-vms-in-production" title="Permanent link">&para;</a></h3>
+<p><strong>Use Case:</strong> PLATFORMA deploys OpenStack for multiple clients as a managed cloud platform, running over 2,000 VMs in production.</p>
+<p><strong>Problems:</strong></p>
+<ul>
+<li>Neutron is the single biggest source of complexity and failure — VLAN config, floating IP allocation, security groups, and DNS must all work perfectly for every tenant.</li>
+<li>OpenStack does not fail gracefully. A Nova scheduler running out of memory silently stops scheduling. A Neutron agent that loses RabbitMQ connectivity silently stops processing.</li>
+<li>Upgrade processes involve database migrations, service-by-service restarts, and API compatibility windows.</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ul>
+<li><strong>Standardized the network topology.</strong> Every deployment uses the same VLAN layout, security group templates, and floating IP pools. Clients cannot customise network architecture — "that's where chaos lives."</li>
+<li><strong>Monitor 200+ metrics per deployment:</strong> service health, RabbitMQ queue depths, database connection pools, API response times, hypervisor utilisation, and Ceph cluster health. Every metric has an alert threshold, and every alert has a runbook.</li>
+<li><strong>Rolling upgrade process</strong> that upgrades one service at a time with automated health checks between each step. Every upgrade is first tested in a lab with production-realistic data.</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Silent failures</p>
+<p>Without deep monitoring, you only discover OpenStack failures when customers complain. Silence is often a sign of failure — agents may stop processing without alerting the API. — <em><a href="https://platforma.rs/blog/openstack-at-scale-lessons-learned">PLATFORMA Blog</a></em></p>
+</div>
+<hr />
+<h2 id="2-vmware-migration-post-broadcom">2. VMware Migration (Post-Broadcom)<a class="headerlink" href="#2-vmware-migration-post-broadcom" title="Permanent link">&para;</a></h2>
+<p>Broadcom's acquisition of VMware and subsequent licensing changes have triggered a mass re-evaluation of virtualisation strategies. Over <strong>80% of OpenInfra members</strong> have received requests to migrate workloads from VMware to OpenStack, and <strong>60% have already completed</strong> a successful migration.</p>
+<h3 id="uponu-gmbh-full-vmware-exit">UPONU GmbH — Full VMware Exit<a class="headerlink" href="#uponu-gmbh-full-vmware-exit" title="Permanent link">&para;</a></h3>
+<p><strong>Use Case:</strong> UPONU migrated their entire infrastructure from VMware to OpenStack, not as a cost decision but as a strategic one — control over infrastructure, development, dependencies, and no surprise licence changes.</p>
+<p><strong>Problem:</strong> The migration required replacing not just a hypervisor but an entire operational philosophy — runbooks, monitoring, compliance workflows, and team skills all needed to change.</p>
+<p><strong>Solution:</strong> Adopted the <strong>Sovereign Cloud Stack (SCS)</strong> reference architecture — a European open-source initiative providing standardised, validated OpenStack with certified components and defined upgrade paths. Built a parallel environment over time rather than attempting a weekend cutover. Today they operate their OpenStack platform completely autonomously.</p>
+<blockquote>
+<p><em>"We deliberately chose to use the OpenStack operations platform of the Sovereign Cloud Stack. Our decision in favour of OpenStack was not a cost decision. It was a strategic one."</em> — <a href="https://uponu.com/en/blog/vmware-openstack-umstellung">UPONU Blog</a></p>
+</blockquote>
+<hr />
+<h3 id="community-consensus-on-migration-timelines">Community Consensus on Migration Timelines<a class="headerlink" href="#community-consensus-on-migration-timelines" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Migration Approach</th>
+<th>Typical Labour Multiplier</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VMware to OpenStack (commercial distribution)</td>
+<td>1.8 - 2.5x original estimate</td>
+</tr>
+<tr>
+<td>VMware to Nutanix AHV</td>
+<td>1.2 - 1.7x</td>
+</tr>
+<tr>
+<td>VMware to KVM (unmanaged)</td>
+<td>2.0 - 3.0x</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key lessons from the community:</strong></p>
+<ol>
+<li><strong>Do the operational archaeology first.</strong> Document every integration, every runbook, every team dependency — not just the ones in your architecture diagrams, the real ones that make your infrastructure work.</li>
+<li><strong>Plan for 18-24 months minimum.</strong> Not because you're slow, but because operational transformation takes time.</li>
+<li><strong>Accept that some workloads should stay on VMware.</strong> Some applications are so deeply integrated that the cost of unwinding exceeds the cost of staying. That's a business decision, not a technical failure.</li>
+<li><strong>Storage migration deserves particular attention.</strong> VMware's VMFS and vSAN have different performance characteristics than Ceph. Validate performance under realistic workload conditions before committing production data.</li>
+</ol>
+<p><strong>Migration tools available:</strong></p>
+<ul>
+<li><a href="https://github.com/os-migrate/os-migrate">os-migrate</a> — Ansible collection for OpenStack-to-OpenStack migrations</li>
+<li><code>virt-v2v</code> — Open-source disk format conversion (VMDK to QCOW2)</li>
+<li><a href="https://www.openstack.org/vmware-migration-to-openstack/">OpenInfra VMware Migration Guide</a> — Free, vendor-neutral playbook</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Key takeaway</p>
+<p>The VMware migration is not a technology problem. It is an operational unwinding problem masquerading as a technology problem. — <em><a href="https://thectoadvisor.com/blog/2025/11/24/the-vmware-migration-everyones-getting-wrong-why-your-6-month-project-just-became-24-months/">The CTO Advisor</a></em></p>
+</div>
+<hr />
+<h2 id="3-ai-gpu-factory">3. AI / GPU Factory<a class="headerlink" href="#3-ai-gpu-factory" title="Permanent link">&para;</a></h2>
+<h3 id="fpt-smart-cloud-2000-gpus-across-two-countries">FPT Smart Cloud — 2,000 GPUs Across Two Countries<a class="headerlink" href="#fpt-smart-cloud-2000-gpus-across-two-countries" title="Permanent link">&para;</a></h3>
+<p><strong>Use Case:</strong> FPT Smart Cloud built an OpenStack and NVIDIA-powered AI factory managing 1,000 H100 GPUs in Vietnam and 1,000 H200 GPUs in Japan. Workloads include eKYC bank authentication (50 GPU cards across 2 regions) and GPU-accelerated cloud desktops.</p>
+<p><strong>Problem:</strong> Proprietary solutions (VMware, Azure) introduced overhead and licensing costs that scaled poorly with GPU-intensive AI workloads.</p>
+<p><strong>Solutions:</strong></p>
+<ul>
+<li>Achieved <strong>7% GPU efficiency improvement</strong> over VMware by using OpenStack's direct passthrough and NUMA-aware placement, translating to multi-million-dollar savings.</li>
+<li>Leveraged <strong>GPU live migration</strong> (introduced in OpenStack 2024.2) to transfer running VMs with attached vGPUs between hosts without workload interruption.</li>
+<li>Used <strong>Senlin autoscaling</strong> with GPU flavours for elastic scaling of eKYC workloads.</li>
+</ul>
+<hr />
+<h3 id="dawn-supercomputer-uks-fastest-ai-system">Dawn Supercomputer — UK's Fastest AI System<a class="headerlink" href="#dawn-supercomputer-uks-fastest-ai-system" title="Permanent link">&para;</a></h3>
+<p><strong>Use Case:</strong> The University of Cambridge, Intel, and Dell Technologies built Dawn — the UK's fastest AI supercomputer — using <strong>Scientific OpenStack</strong> developed by <a href="https://www.stackhpc.com/cambridge-dawn.html">StackHPC</a>. The system provides 256 Dell PowerEdge XE9640 nodes with 1,024 Intel Data Center GPU Max 1550 accelerators.</p>
+<p><strong>Problem:</strong> Traditional HPC batch-only interfaces are inaccessible to researchers not versed in supercomputer systems. The system needed to serve 140+ users across 65 different AI and simulation projects with varying skill levels.</p>
+<p><strong>Solution:</strong> Scientific OpenStack presents the complex supercomputer through a <strong>cloud API experience</strong>, allowing engineers and scientists to self-serve compute resources without understanding the underlying hardware complexity. The system is part of the UK AI Research Resource (AIRR), a national facility supporting research in healthcare, fusion energy, and climate modelling.</p>
+<blockquote>
+<p><em>"We've got really fast results from the machine, so for a system straight out of the blocks, it's working extremely well."</em> — Dr. Paul Calleja, Director of Research Computing</p>
+</blockquote>
+<hr />
+<h3 id="openstack-for-ai-platform-capabilities">OpenStack for AI — Platform Capabilities<a class="headerlink" href="#openstack-for-ai-platform-capabilities" title="Permanent link">&para;</a></h3>
+<p>The OpenInfra community has been building AI-specific capabilities into OpenStack:</p>
+<ul>
+<li><strong>NUMA-aware placement</strong> — Pin GPU workloads to the same NUMA node as their network and storage I/O paths</li>
+<li><strong>Multi-tenant GPU scheduling</strong> — Nova can schedule fractional GPUs (vGPU) or full passthrough GPUs per tenant</li>
+<li><strong>Ironic bare-metal provisioning</strong> — Deploy bootable container images directly to bare-metal hosts for ML training without hypervisor overhead</li>
+<li><strong>Agent-to-agent protocol support</strong> — Distributed LLM orchestration across multiple compute nodes</li>
+</ul>
+<p>See the <a href="https://www.openstack.org/openstack-for-ai/">OpenStack for AI white paper</a> for architecture details.</p>
+<hr />
+<h2 id="4-telco-nfv-5g-edge">4. Telco / NFV / 5G Edge<a class="headerlink" href="#4-telco-nfv-5g-edge" title="Permanent link">&para;</a></h2>
+<p>OpenStack is the de facto infrastructure layer for Network Functions Virtualisation. <strong>84% of Communication Service Providers</strong> say OpenStack is essential or important to their company's success.</p>
+<h3 id="kddi-shift-on-stack-for-5g-core">KDDI — "Shift on Stack" for 5G Core<a class="headerlink" href="#kddi-shift-on-stack-for-5g-core" title="Permanent link">&para;</a></h3>
+<p><strong>Use Case:</strong> KDDI, one of Japan's leading telecom operators, runs OpenShift on top of OpenStack ("Shift on Stack") to host cloud-native 5G Core network functions (CNFs) defined in 3GPP Release 16+.</p>
+<p><strong>Problems:</strong></p>
+<ul>
+<li>Virtualisation introduces overhead compared to bare metal, particularly for latency-sensitive telco workloads.</li>
+<li>Short product lifecycles of CNF vendors create constant integration churn.</li>
+<li>Complex networking requirements (SR-IOV, DPDK, Multus) add deployment complexity.</li>
+</ul>
+<p><strong>Solution:</strong> Leveraged Red Hat OpenStack Platform as the IaaS foundation with OpenShift for container orchestration. The "Shift on Stack" architecture provides hardware abstraction and automation while meeting telco-grade performance requirements through SR-IOV passthrough and CPU pinning.</p>
+<hr />
+<h3 id="bt-charmed-openstack-for-5g-core-nfvi">BT — Charmed OpenStack for 5G Core NFVI<a class="headerlink" href="#bt-charmed-openstack-for-5g-core-nfvi" title="Permanent link">&para;</a></h3>
+<p><strong>Use Case:</strong> BT, one of Europe's largest telcos, uses Canonical's Charmed OpenStack to build NFV Infrastructure for their 5G Core deployment across hundreds of distributed edge nodes.</p>
+<p><strong>Problem:</strong> Deploying and operating OpenStack in distributed environments with hundreds of nodes is extremely complex, especially with telco extensions like SDN and DPDK.</p>
+<p><strong>Solution:</strong> Used <strong>Juju charms</strong> for application modelling and orchestration — deploying not just OpenStack but the entire logging, monitoring, and supporting services stack. MAAS handles bare-metal provisioning, LXD containerises control services, and charms abstract the operational complexity so the telco team can focus on VNFs rather than infrastructure plumbing.</p>
+<hr />
+<h3 id="edge-architecture-patterns">Edge Architecture Patterns<a class="headerlink" href="#edge-architecture-patterns" title="Permanent link">&para;</a></h3>
+<p>The community has converged on architectural patterns for distributed 5G edge:</p>
+<ul>
+<li><strong>Hyperconverged Infrastructure (HCI)</strong> with Ceph at each edge site — compute and storage co-located on the same nodes</li>
+<li><strong>Distributed Compute Nodes (DCN)</strong> — centralised control plane managing far-edge compute nodes, reducing the number of control planes needed</li>
+<li><strong>3-node minimum</strong> per edge site for Ceph quorum and HA</li>
+<li><strong>StarlingX</strong> for edge-specific lifecycle management in telco environments</li>
+</ul>
+<hr />
+<h2 id="5-retail-and-automotive">5. Retail and Automotive<a class="headerlink" href="#5-retail-and-automotive" title="Permanent link">&para;</a></h2>
+<h3 id="schwarz-it-stackit-lidl-and-kaufland">Schwarz IT / STACKIT — Lidl and Kaufland<a class="headerlink" href="#schwarz-it-stackit-lidl-and-kaufland" title="Permanent link">&para;</a></h3>
+<p><strong>Use Case:</strong> STACKIT, the digital brand of Schwarz IT (Europe's largest retail group), runs OpenStack as the foundation for services powering nearly 13,000 Lidl and Kaufland stores plus PreZero logistics.</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Compute nodes</td>
+<td>300+ across 3 data centres</td>
+</tr>
+<tr>
+<td>CPU cores</td>
+<td>7,000+</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>140 TB</td>
+</tr>
+<tr>
+<td>Monthly data transfer</td>
+<td>150 TB to/from OpenStack, 11 PB between data centres</td>
+</tr>
+<tr>
+<td>Higher-level services</td>
+<td>Hundreds of K8s clusters, 2 Cloud Foundry environments, multiple databases</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Problem:</strong> Rapid growth during the pandemic required fast scaling. Dependency on an external service provider for lifecycle management limited agility.</p>
+<p><strong>Solution:</strong> Developed <strong><a href="https://yaook.cloud/">Yaook</a></strong> — an open-source OpenStack Lifecycle Management solution based on the Kubernetes Operator Pattern (Apache-2 licensed). This gave them independence from external providers and the ability to add OpenStack clusters and disaster recovery data centres on their own terms.</p>
+<hr />
+<h3 id="hyundai-motor-group-hcloud-for-connected-cars">Hyundai Motor Group — HCloud for Connected Cars<a class="headerlink" href="#hyundai-motor-group-hcloud-for-connected-cars" title="Permanent link">&para;</a></h3>
+<p><strong>Use Case:</strong> Hyundai built HCloud, a private cloud on OpenStack managed with Rancher, to support connected car services for <strong>10 million+ vehicles</strong> across 4 global regions (Seoul, Los Angeles, Frankfurt, and more via Equinix).</p>
+<p><strong>Problem:</strong> Rapid growth in connected car subscribers created scalability and service quality challenges. Features like remote engine start, on-demand diagnostics, remote door lock/unlock, and OTA updates require low-latency, highly available infrastructure across continents.</p>
+<p><strong>Solution:</strong> Deployed HCloud in Equinix International Business Exchange data centres and interconnected to AWS via Equinix Fabric for a hybrid multicloud architecture. This provides reliable connectivity, consistent service coverage, and lower latency globally.</p>
+<blockquote>
+<p><em>"These cloud services built using Open Source have allowed us to reduce downtime and improve services to our customers. In the latest JD Power Rankings, Hyundai, Kia, and Genesis cars consistently rank in the top 5 for services in their relevant sectors."</em> — Hyundai Motor Group</p>
+</blockquote>
+<hr />
+<h2 id="6-scientific-research-and-hpc">6. Scientific Research and HPC<a class="headerlink" href="#6-scientific-research-and-hpc" title="Permanent link">&para;</a></h2>
+<h3 id="nasa-9000-cores">NASA — 9,000+ Cores<a class="headerlink" href="#nasa-9000-cores" title="Permanent link">&para;</a></h3>
+<p>NASA was an early adopter of OpenStack and co-developed Nova (the compute project) alongside Rackspace. They currently run over 9,000 OpenStack cores in production, trusting open-source infrastructure for space flight simulations and research computing.</p>
+<hr />
+<h3 id="vienna-biocenter-hpc-for-500-scientists">Vienna Biocenter — HPC for 500 Scientists<a class="headerlink" href="#vienna-biocenter-hpc-for-500-scientists" title="Permanent link">&para;</a></h3>
+<p><strong>Use Case:</strong> The Vienna Biocenter campus (IMBA, GMI) serves 40 research groups and ~500 scientists with HPC infrastructure. A team of 14 delivers IT services from workstations to high-performance computing.</p>
+<p><strong>Problem:</strong> The existing infrastructure was "a nightmare to manage" — siloed islands that couldn't communicate, with no way to automate across them.</p>
+<p><strong>Solution:</strong> Built an OpenStack private cloud with Slurm workload manager that adjusts to demand. Timeline: ~2 months for proof-of-concept, ~8 months for analysis and planning, ~2 months to move into production. Runs 3 environments (dev, staging, production) to practice upgrades.</p>
+<div class="admonition warning">
+<p class="admonition-title">Lesson learned</p>
+<p>"OpenStack is not a product. It is a framework." The out-of-box experience and scalability for certain subcomponents is "not optimal" and should be considered more like a reference implementation. — <em>Florian Forai, Vienna Biocenter, <a href="https://superuser.openinfra.org/articles/how-the-vienna-biocenter-powers-hpc-with-openstack/">Superuser</a></em></p>
+</div>
+<hr />
+<h3 id="infn-cloud-area-padovana-physics-research">INFN Cloud Area Padovana — Physics Research<a class="headerlink" href="#infn-cloud-area-padovana-physics-research" title="Permanent link">&para;</a></h3>
+<p><strong>Use Case:</strong> The Italian National Institute for Nuclear Physics (INFN) runs an OpenStack-based IaaS for ~100 scientists across ~30 research groups, handling interactive jobs, batch and parallel applications, and development workloads. In production since 2014.</p>
+<p><strong>Problem:</strong> Balancing the need for latest features/fixes against limited manpower for upgrades.</p>
+<p><strong>Solution:</strong> Adopted a policy of <strong>one OpenStack upgrade per year</strong> (skipping one release). Updates are automatically tested using monitoring infrastructure before being applied to production. This strategy has kept the platform stable since 2014 with minimal staff.</p>
+<hr />
+<h3 id="dkrz-climate-research">DKRZ — Climate Research<a class="headerlink" href="#dkrz-climate-research" title="Permanent link">&para;</a></h3>
+<p>The German Climate Computing Centre (DKRZ) runs a <strong>FishOS-managed OpenStack</strong> deployment specifically for climate modelling workloads, demonstrating OpenStack's applicability to large-scale environmental science simulations.</p>
+<hr />
+<h2 id="7-networking-deep-dives-mailing-list">7. Networking Deep Dives (Mailing List)<a class="headerlink" href="#7-networking-deep-dives-mailing-list" title="Permanent link">&para;</a></h2>
+<h3 id="dvr-to-ovn-migration">DVR to OVN Migration<a class="headerlink" href="#dvr-to-ovn-migration" title="Permanent link">&para;</a></h3>
+<p><strong>Thread:</strong> <a href="https://lists.openstack.org/archives/list/openstack-discuss@lists.openstack.org/message/S2JHNIDTUIYJCAVQDW6JSFVDQYJAVNFN/">openstack-discuss — New deployment / suggestions for network</a></p>
+<p><strong>Problem:</strong> DVR (Distributed Virtual Router) in Neutron has unfixed bugs relating to ARP and protocols like VRRP, which Octavia Amphora load balancers rely on. This results in essentially non-functional automated failover for Amphora VIPs.</p>
+<p><strong>Solution:</strong> Migrate to OVN, which handles <code>allowed-address-pairs</code> correctly. OVN resolves the DVR issues.</p>
+<p><strong>Trade-off:</strong> OVN does not support VPNaaS and only provides Layer 4 load balancing natively. However, Octavia Amphora-based load balancers (Layer 7) <strong>can still be used</strong> with the OVN ML2 plugin — you do not need to use the OVN provider driver in Octavia.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a># Recommended: OVN as ML2 plugin + Octavia Amphora for L7 LB
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>neutron_plugin_agent = ovn
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a># Octavia still uses Amphora driver, NOT the OVN provider
+</code></pre></div>
+<hr />
+<h3 id="standalone-ironic-with-ovn">Standalone Ironic with OVN<a class="headerlink" href="#standalone-ironic-with-ovn" title="Permanent link">&para;</a></h3>
+<p><strong>Thread:</strong> <a href="https://lists.openstack.org/archives/list/openstack-discuss@lists.openstack.org/thread/PGV3PDCSURAZCH6G63G4QEQ4QJIQ7IIF/">openstack-discuss — What I had to do to get standalone Ironic working with OVN</a></p>
+<p><strong>Problem:</strong> Standalone Ironic deployments with OVN enabled experience port binding failures because the default ML2 driver does not understand bare-metal port types.</p>
+<p><strong>Solution:</strong> Use the <strong>baremetal ML2 driver</strong> and ensure proper network interface configuration for Ironic nodes. This is a subtle but critical requirement that is not well-documented.</p>
+<hr />
+<h3 id="l2-networks-do-not-scale">L2 Networks Do Not Scale<a class="headerlink" href="#l2-networks-do-not-scale" title="Permanent link">&para;</a></h3>
+<p><strong>Source:</strong> <a href="https://ceph.io/assets/pdfs/events/2024/ceph-days-nyc/">Ceph Days NYC 2024 — Designing and Tuning for All-Flash Ceph RBD Storage</a></p>
+<p><strong>Problem:</strong> L2 networks cause weird interoperability issues between different vendors at thousands of VMs. Debugging ARP storms, broadcast domains, and spanning tree issues in large flat L2 networks is extremely difficult.</p>
+<p><strong>Solution:</strong> Switch to <strong>L3 fabrics</strong> (BGP-based spine-leaf topologies). L3 routing eliminates broadcast domains and provides deterministic, debuggable traffic paths at scale.</p>
+<hr />
+<h2 id="8-ceph-storage-tuning-community-lessons">8. Ceph Storage Tuning (Community Lessons)<a class="headerlink" href="#8-ceph-storage-tuning-community-lessons" title="Permanent link">&para;</a></h2>
+<p>These lessons come from production Ceph deployments backing OpenStack clouds, compiled from community blogs, Ceph Days talks, and mailing list discussions.</p>
+<h3 id="linux-kernel-defaults-are-your-enemy">Linux Kernel Defaults Are Your Enemy<a class="headerlink" href="#linux-kernel-defaults-are-your-enemy" title="Permanent link">&para;</a></h3>
+<p>The root cause of most Ceph performance issues is not Ceph itself but the Linux kernel, which ships defaults optimised for general-purpose workloads.</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Default</th>
+<th>Recommended</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU Governor</td>
+<td><code>powersave</code> / <code>ondemand</code></td>
+<td><code>performance</code></td>
+<td>Prevents latency spikes during I/O bursts; benchmarks show dramatically lower IOPS with <code>powersave</code></td>
+</tr>
+<tr>
+<td>Transparent Huge Pages</td>
+<td><code>always</code></td>
+<td><code>never</code></td>
+<td>THP + tcmalloc causes uncontrolled OSD memory growth, potentially OOM kills</td>
+</tr>
+<tr>
+<td>Swappiness</td>
+<td>60</td>
+<td>0-1</td>
+<td>Prevents OSD stalling from paging; but do not disable swap entirely</td>
+</tr>
+<tr>
+<td>I/O Scheduler (NVMe)</td>
+<td><code>mq-deadline</code></td>
+<td><code>none</code></td>
+<td>NVMe devices have their own hardware queues; kernel scheduling adds overhead</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Apply on all Ceph nodes</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nb">echo</span><span class="w"> </span>performance<span class="w"> </span><span class="p">|</span><span class="w"> </span>tee<span class="w"> </span>/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nb">echo</span><span class="w"> </span>never<span class="w"> </span>&gt;<span class="w"> </span>/sys/kernel/mm/transparent_hugepage/enabled
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nb">echo</span><span class="w"> </span><span class="m">0</span><span class="w"> </span>&gt;<span class="w"> </span>/proc/sys/vm/swappiness
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nb">echo</span><span class="w"> </span>none<span class="w"> </span>&gt;<span class="w"> </span>/sys/block/nvme*/queue/scheduler
+</code></pre></div>
+<hr />
+<h3 id="numa-pinning-is-critical">NUMA Pinning Is Critical<a class="headerlink" href="#numa-pinning-is-critical" title="Permanent link">&para;</a></h3>
+<p>Cross-NUMA-socket latency is a silent performance killer, especially in all-flash deployments.</p>
+<p><strong>Problem:</strong> When an OSD process runs on CPU socket 0 but its NVMe drive is attached to PCIe lanes on socket 1, every I/O operation pays a cross-socket memory access penalty. At high IOPS this becomes the dominant latency source.</p>
+<p><strong>Solution:</strong> Pin OSD processes, NICs, and NVMe drives to the <strong>same NUMA node</strong>. Verify with:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Check NUMA node for NVMe device</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>cat<span class="w"> </span>/sys/block/nvme0n1/device/numa_node
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Check NUMA node for network interface</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>cat<span class="w"> </span>/sys/class/net/ens3f0/device/numa_node
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># Pin OSD to matching NUMA node via systemd</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="c1"># [Service]</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># CPUAffinity=0-31  # cores on NUMA node 0</span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Hidden BIOS settings</p>
+<p>Check your BIOS for settings that claim to "optimise" NUMA. Many server BIOSes enable interleaving or sub-NUMA clustering by default, which defeats manual NUMA pinning. Disable these unless you have specifically tested their impact.</p>
+</div>
+<hr />
+<h3 id="your-cluster-is-only-as-fast-as-your-slowest-osd">"Your Cluster Is Only as Fast as Your Slowest OSD"<a class="headerlink" href="#your-cluster-is-only-as-fast-as-your-slowest-osd" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> In an all-flash cluster, a single sluggish OSD drags down the entire pool's latency because clients wait for the slowest replica to acknowledge writes.</p>
+<p><strong>Solutions:</strong></p>
+<ul>
+<li>Use <strong>time-series telemetry</strong> to detect intermittent outliers — an OSD that is slow now may be fine later, and vice versa.</li>
+<li>Monitor <code>osd_op_latency</code> percentiles (p99, p999) not just averages.</li>
+<li>Do not blindly copy <code>ceph.conf</code> settings from online guides. Understand <em>why</em> each setting exists and how it interacts with your hardware.</li>
+<li>Set <code>osd_op_thread_suicide_timeout</code> appropriately for SSD (lower, e.g. &lt;30s) vs HDD (higher) use cases.</li>
+</ul>
+<hr />
+<h3 id="network-tuning-for-ceph">Network Tuning for Ceph<a class="headerlink" href="#network-tuning-for-ceph" title="Permanent link">&para;</a></h3>
+<p>Default TCP settings are optimised for web traffic, not the bursty, high-connection-count workload that Ceph generates.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Expand socket buffers for bursty I/O (apply on all Ceph nodes)</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>sysctl<span class="w"> </span>-w<span class="w"> </span>net.core.rmem_max<span class="o">=</span><span class="m">67108864</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>sysctl<span class="w"> </span>-w<span class="w"> </span>net.core.wmem_max<span class="o">=</span><span class="m">67108864</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>sysctl<span class="w"> </span>-w<span class="w"> </span>net.ipv4.tcp_rmem<span class="o">=</span><span class="s2">&quot;4096 87380 33554432&quot;</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>sysctl<span class="w"> </span>-w<span class="w"> </span>net.ipv4.tcp_wmem<span class="o">=</span><span class="s2">&quot;4096 65536 33554432&quot;</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># Keep congestion window warm between bursts</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>sysctl<span class="w"> </span>-w<span class="w"> </span>net.ipv4.tcp_slow_start_after_idle<span class="o">=</span><span class="m">0</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="c1"># Wide ephemeral port range for high connection counts</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>sysctl<span class="w"> </span>-w<span class="w"> </span>net.ipv4.ip_local_port_range<span class="o">=</span><span class="s2">&quot;1024 65535&quot;</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="c1"># Deep connection queue for spike handling</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>sysctl<span class="w"> </span>-w<span class="w"> </span>net.core.somaxconn<span class="o">=</span><span class="m">65535</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="c1"># Enable jumbo frames on Ceph cluster network (MTU 9000)</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>ip<span class="w"> </span>link<span class="w"> </span><span class="nb">set</span><span class="w"> </span>dev<span class="w"> </span>ens3f0<span class="w"> </span>mtu<span class="w"> </span><span class="m">9000</span>
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Test before and after</p>
+<p>Always benchmark with <code>fio</code> or <code>ceph tell osd.* bench</code> before and after applying tunings to confirm actual gains. Default settings are rarely optimal for production scale, but changes should be validated against your specific hardware and workload mix. — <em><a href="https://brettpetch.ca/2026/03/22/tuning-a-ceph-cluster-for-high-throughput-workloads/">Brett Petch</a></em></p>
+</div>
+<hr />
+<h2 id="upgrade-lessons-from-the-trenches">Upgrade Lessons from the Trenches<a class="headerlink" href="#upgrade-lessons-from-the-trenches" title="Permanent link">&para;</a></h2>
+<p>A bonus section on the universal challenge of OpenStack upgrades:</p>
+<h3 id="kolla-ansible-slurp-upgrade-20241-to-20251">Kolla-Ansible SLURP Upgrade (2024.1 to 2025.1)<a class="headerlink" href="#kolla-ansible-slurp-upgrade-20241-to-20251" title="Permanent link">&para;</a></h3>
+<p><strong>Source:</strong> <a href="https://www.roksblog.de/openstack-2024-1-2025-1-slurp-upgrade-with-kolla-ansible-lessons-from-the-trenches/">Rok's Blog — Lessons from the Trenches</a></p>
+<p><strong>Lessons learned:</strong></p>
+<ol>
+<li><strong>Always update within the same release first</strong> — update to the latest Kolla-Ansible patch release for your current version before attempting a major upgrade.</li>
+<li><strong>Never trust backups without restore tests</strong> — untested backups are not backups.</li>
+<li><strong>RabbitMQ changes are more disruptive than they look</strong> — queue durability changes require careful handling; API calls will fail during the queue reset window.</li>
+<li><strong>Running workloads survive</strong> — VMs connected via SSH had no disconnects during the upgrade. The data plane is isolated from control plane disruption.</li>
+<li><strong>Test Magnum after upgrade</strong> — if you use Container-as-a-Service, validate CAPI integration post-upgrade as it is a common regression point.</li>
+</ol>
+<h3 id="openstack-as-a-service-with-krateo">OpenStack-as-a-Service with Krateo<a class="headerlink" href="#openstack-as-a-service-with-krateo" title="Permanent link">&para;</a></h3>
+<p><strong>Source:</strong> <a href="https://medium.com/@diego.braga86/openstack-as-a-service-with-krateo-one-composition-one-cloud-1ff0bbb68809">Diego Braga — OpenStack-as-a-Service with Krateo (June 2026)</a></p>
+<p>A novel approach: package the entire OpenStack-Helm stack as <strong>Krateo PlatformOps blueprints</strong> so that a single <code>kubectl apply</code> rolls out a working OpenStack. Key bugs discovered:</p>
+<ul>
+<li>Helm hook annotations appear in two forms (<code>helm.sh/hook:</code> and <code>"helm.sh/hook":</code>) — missing the quoted form deadlocked Keystone's fernet-setup.</li>
+<li>OpenStack-Helm's <code>configmap-etc</code> generates a random <code>memcache_secret_key</code> on each render, causing rolling restarts on every reconcile. Fix: pin the key in values.</li>
+</ul>
+<hr />
+<h2 id="sources-and-further-reading">Sources and Further Reading<a class="headerlink" href="#sources-and-further-reading" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://www.openstack.org/blog/">OpenInfra Foundation Blog</a></li>
+<li><a href="https://superuser.openinfra.org/">Superuser Magazine</a></li>
+<li><a href="https://lists.openstack.org/archives/list/openstack-discuss@lists.openstack.org">openstack-discuss Mailing List</a></li>
+<li><a href="https://www.reddit.com/r/openstack/">r/openstack</a></li>
+<li><a href="https://www.openstack.org/vmware-migration-to-openstack/">OpenStack VMware Migration Guide</a></li>
+<li><a href="https://www.openstack.org/openstack-for-ai/">OpenStack for AI White Paper</a></li>
+<li><a href="https://ceph.io/en/community/events/">Ceph Days NYC 2024 Talks</a></li>
+<li><a href="https://www.openstack.org/blog/openstack-gazpacho-built-by-a-global-community-designed-for-real-world-infrastructure/">OpenStack Gazpacho (2026.1) Release Notes</a></li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+  
+
+
+
+      
+    </article>
+  </div>
+
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../../../javascripts/extra.js"></script>
+      
+    
+  </body>
+</html>
