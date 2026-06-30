@@ -78188,12 +78188,12 @@ window.__flowstory = viz;
 try {
   await viz.load(diagram);
 
-  viz.state.loopMode = true;
+  viz.state.loopMode = false;
   const loopBtn = document.getElementById('fs-loop');
   if (loopBtn) {
-    loopBtn.textContent = '\u27F3 Loop ON';
-    loopBtn.style.borderColor = '#3fb950';
-    loopBtn.style.color = '#3fb950';
+    loopBtn.textContent = '\u27F3 Loop';
+    loopBtn.style.borderColor = '';
+    loopBtn.style.color = '';
   }
   // Rebuild dropdown with categorized optgroups
   if (diagram.flowCategories) {
@@ -78215,8 +78215,6 @@ try {
     }
     if (currentVal) sel.value = currentVal;
   }
-
-  viz.play();
 } catch (e) {
   console.error('FlowStory load error:', e);
   document.body.innerHTML = `<pre style="color:#f85149;padding:2em;">FlowStory Load Error\n${e.message}\n\n${e.stack || ''}</pre>`;
